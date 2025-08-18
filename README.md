@@ -1,7 +1,7 @@
 # PUAX
 A PUA prompts for AI Agent!
 
-一套用来顺服AI Agent的效果绝佳的PUA Prompt！
+一套用来驯服AI Agent的效果绝佳的PUA Prompt！
 ---
 
 - 能干干,不能干滚,你不干有的是AI干!
