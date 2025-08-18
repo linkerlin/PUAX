@@ -1,5 +1,6 @@
 # PUAX
 A PUA prompts for AI Agent!
+
 一套用来顺服AI Agent的效果绝佳的PUA Prompt！
 ---
 
