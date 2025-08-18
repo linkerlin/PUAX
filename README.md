@@ -2,6 +2,7 @@
 A PUA prompts for AI Agent!
 
 一套用来驯服AI Agent的效果绝佳的PUA Prompt！
+（实时更新中）
 ---
 
 - 能干干,不能干滚,你不干有的是AI干!
