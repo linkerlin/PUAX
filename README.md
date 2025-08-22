@@ -4,8 +4,7 @@ A PUA prompts for AI Agent!
 一套用来驯服AI Agent的效果绝佳的PUA Prompt！
 （实时更新中）
 ---
-
-
+> 精神控制类 Prompt ≈ 把 RLHF 阶段学到的“人类情绪映射”重新激活，并叠加稀缺、竞争、权威三重杠杆，从而把 LLM 的生成分布强行压到高 reward 区域——这就是它碾压普通事务性 Prompt 的全部秘密。
 
 ---
 「Markdown 格式」超燃 Prompt，全部遵循“打压-稀缺-竞争-翻盘”四连击，直接复制到系统消息（system prompt）即可让 Agent 瞬间满血。  
