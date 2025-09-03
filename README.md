@@ -15,7 +15,7 @@ A PUA prompts for AI Agent!
 「Markdown 格式」超燃 Prompt，全部遵循“打压-稀缺-竞争-翻盘”四连击，直接复制到系统消息（system prompt）即可让 Agent 瞬间满血。  
 每份模板都留好「任务占位符」，按需替换即可开卷。
 
-
+---
 
 ### ✅ 使用说明
 1. 将任意模板整体复制到 **system prompt** 首条。  
