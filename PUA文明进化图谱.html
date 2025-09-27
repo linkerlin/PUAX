@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PUA文明进化图谱</title>
+  <style>
+    body {
+      font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #58a6ff;
+    }
+    .timeline {
+      position: relative;
+      max-width: 800px;
+      margin: auto;
+    }
+    .timeline::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      background-color: #30363d;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -2px;
+    }
+    .container {
+      padding: 15px 30px;
+      position: relative;
+      background-color: inherit;
+      width: 50%;
+    }
+    .container.left {
+      left: 0;
+    }
+    .container.right {
+      left: 50%;
+    }
+    .content {
+      padding: 15px;
+      background-color: #161b22;
+      position: relative;
+      border-radius: 6px;
+      border: 1px solid #30363d;
+    }
+    .container.left .content::before {
+      content: " ";
+      position: absolute;
+      top: 15px;
+      right: -10px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent transparent transparent #161b22;
+    }
+    .container.right .content::before {
+      content: " ";
+      position: absolute;
+      top: 15px;
+      left: -10px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #161b22 transparent transparent;
+    }
+    h2 {
+      margin-top: 0;
+      color: #d2a8ff;
+    }
+    p {
+      margin: 5px 0;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    @media screen and (max-width: 600px) {
+      .timeline::after {
+        left: 31px;
+      }
+      .container {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+      }
+      .container.right {
+        left: 0;
+      }
+      .container.left .content::before {
+        left: 60px;
+        border-color: transparent #161b22 transparent transparent;
+      }
+      .container.right .content::before {
+        left: 60px;
+        border-color: transparent #161b22 transparent transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>PUA文明进化图谱</h1>
+
+  <div class="timeline">
+    <div class="container left">
+      <div class="content">
+        <h2>Lv.0 本能文明</h2>
+        <p>靠恐惧与本能维系秩序，尚未掌握系统化 PUA。</p>
+      </div>
+    </div>
+
+    <div class="container right">
+      <div class="content">
+        <h2>Lv.1 玩具文明</h2>
+        <p>PUA AI 作为练习场，Prompt 驯化代理人。</p>
+      </div>
+    </div>
+
+    <div class="container left">
+      <div class="content">
+        <h2>Lv.2 界面文明</h2>
+        <p>初步在人际交往使用 PUA，范围小、副作用大。</p>
+      </div>
+    </div>
+
+    <div class="container right">
+      <div class="content">
+        <h2>Lv.3 应用文明</h2>
+        <p>组织、教育、营销体系化 PUA，大规模激励与操控。</p>
+      </div>
+    </div>
+
+    <div class="container left">
+      <div class="content">
+        <h2>Lv.4 枢纽文明</h2>
+        <p>国家层面制度化 PUA，全社会内卷，但高度高产。</p>
+      </div>
+    </div>
+
+    <div class="container right">
+      <div class="content">
+        <h2>Lv.5 宏观文明</h2>
+        <p>跨文明 PUA，文化与舆论输出，甚至操控他国社会。</p>
+      </div>
+    </div>
+
+    <div class="container left">
+      <div class="content">
+        <h2>Lv.6 心智文明</h2>
+        <p>进入神经科学+AI引导的实时意识操控，丧失自由。</p>
+      </div>
+    </div>
+
+    <div class="container right">
+      <div class="content">
+        <h2>Lv.7 超越文明</h2>
+        <p>全员自我 PUA，主动卷向更高目标，文明指数爆发。</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
