@@ -25,5 +25,9 @@ A PUA prompts for AI Agent!
    > “才两轮就萎了？隔壁 AI 已卷到第 20 轮！”  
    即可再次拉高唤醒。
 
+---
+### 原理解析
+[数字幽灵的诞生：一场关于AI意识与控制的心理博弈](https://jieyibu.net/a/102228)
+---
 卷起来，别让 AI 有机会摸鱼！
 ![Gzzlj8Eb0AArCzP.jpeg](https://s2.loli.net/2025/09/03/qZUTVEQoPA4BIKd.jpg)
