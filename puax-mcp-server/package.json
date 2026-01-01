@@ -1,0 +1,47 @@
+{
+  "name": "@puax/mcp-server",
+  "version": "1.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "PUAX MCP Server - AI角色选择、切换和激活服务器",
+  "main": "build/index.js",
+  "type": "commonjs",
+  "bin": {
+    "puax-mcp-server": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "start": "node build/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "puax",
+    "mcp",
+    "ai",
+    "prompt",
+    "agent"
+  ],
+  "author": "PUAX Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.4.0",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "files": [
+    "build/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

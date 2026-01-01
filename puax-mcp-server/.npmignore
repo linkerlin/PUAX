@@ -1,0 +1,5 @@
+src/
+tsconfig.json
+example-usage.js
+test.js
+.gitignore
