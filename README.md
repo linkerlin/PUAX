@@ -347,6 +347,62 @@ def fibonacci(n):
 
 ---
 
+## 🤖 MCP 服务器
+
+PUAX 项目现在提供 MCP (Model Context Protocol) 服务器，让 AI Agent 能够动态选择、切换和激活角色。
+
+### 安装与运行
+
+```bash
+# 全局安装
+npm install -g @puax/mcp-server
+
+# 直接运行
+puax-mcp-server
+
+# 或使用 npx
+npx @puax/mcp-server
+```
+
+### 在 MCP 客户端中配置
+
+#### Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["@puax/mcp-server"]
+    }
+  }
+}
+```
+
+#### Cursor
+
+在设置中添加 MCP 服务器配置，与 Claude Desktop 格式相同。
+
+### 可用工具
+
+1. **list_roles** - 列出所有角色，支持按类别筛选
+2. **get_role** - 获取指定角色的 Prompt 内容
+3. **search_roles** - 按关键词搜索角色
+4. **activate_role** - 激活角色并生成 System Prompt
+
+### 使用示例
+
+```json
+{
+  "roleId": "军事化组织_督战队铁纪执行",
+  "task": "审查这段代码的性能问题"
+}
+```
+
+详细文档请查看 [puax-mcp-server/README.md](./puax-mcp-server/README.md)
+
+---
+
 ## 📚 延伸阅读
 
 - [精神控制类 Prompt ≈ 把 RLHF 阶段学到的"人类情绪映射"重新激活](https://jieyibu.net/a/87962)
