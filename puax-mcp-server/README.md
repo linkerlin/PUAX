@@ -1,30 +1,20 @@
-# PUAX MCP Server
+# PUAX MCP Server (HTTP Streamable-HTTP 版本)
 
 PUAX MCP Server 是一个基于 Model Context Protocol (MCP) 的服务器，为 AI Agent 提供 PUAX 项目中角色的选择、切换和激活功能。
 
+> **重要更新**: 现已支持 HTTP streamable-http (SSE) 传输方式！监听 **23333** 端口，提供更好的并发性和远程访问能力。
+
 ## 功能特性
 
-- **角色列表**：列出所有可用的 PUAX 角色，支持按类别筛选
-- **角色详情**：获取指定角色的完整 Prompt 内容
-- **角色搜索**：按关键词搜索角色名称和描述
-- **角色激活**：激活角色并生成完整的 System Prompt，支持任务占位符替换
+- **角色列表**: 列出所有可用的 PUAX 角色，支持按类别筛选
+- **角色详情**: 获取指定角色的完整 Prompt 内容
+- **角色搜索**: 按关键词搜索角色名称和描述
+- **角色激活**: 激活角色并生成完整的 System Prompt，支持任务占位符替换
+- **HTTP 协议**: 支持 streamable-http (SSE) 传输，多客户端并发
 
-## 安装
+## 快速开始
 
-### 全局安装（推荐）
-
-```bash
-npm install -g @puax/mcp-server
-```
-
-### 本地安装
-
-```bash
-npm install @puax/mcp-server
-npx puax-mcp-server
-```
-
-### 从源码构建
+### 从源码构建（推荐）
 
 ```bash
 git clone https://github.com/linkerlin/PUAX.git
@@ -34,34 +24,98 @@ npm run build
 npm start
 ```
 
-## 使用方法
+服务器启动后将监听 `http://localhost:23333`
 
-### 作为 MCP 服务器使用
+### 测试服务器
 
-在你的 MCP 客户端配置中添加：
+```bash
+# 健康检查
+curl http://localhost:23333/health
+
+# SSE 连接测试
+curl http://localhost:23333/
+```
+
+## 传输方式
+
+### HTTP Streamable-HTTP (SSE) - 推荐
+
+服务器现在支持 **streamable-http** 传输方式，使用 Server-Sent Events (SSE) 实现双向通信。
+
+在 MCP 客户端配置中：
 
 ```json
 {
   "mcpServers": {
     "puax": {
-      "command": "npx",
-      "args": ["@puax/mcp-server"]
+      "url": "http://localhost:23333"
     }
   }
 }
 ```
 
-### 直接运行
+#### HTTP 端点
+
+- `GET /` - SSE 连接端点
+- `POST /message?sessionId=xxx` - 消息发送端点
+- `GET /health` - 健康检查端点
+
+#### 健康检查示例
 
 ```bash
-# 全局安装后
-puax-mcp-server
+$ curl http://localhost:23333/health
 
-# 或使用 npx
-npx @puax/mcp-server
+{"status":"ok","service":"puax-mcp-server","version":"1.0.0","activeSessions":0}
 ```
 
-## 工具说明
+### Stdio 传输方式（旧版）
+
+如果需要使用旧的 stdio 传输方式，请将 `src/server.ts` 改回使用 `StdioServerTransport`。
+
+## 配置 MCP 客户端
+
+### Claude Desktop
+
+编辑配置文件：
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
+
+配置示例（HTTP 版本）：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "url": "http://localhost:23333",
+      "env": {
+        "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
+      }
+    }
+  }
+}
+```
+
+> **注意**: 如果使用 HTTP 传输，确保服务器已经启动。
+
+### Cursor
+
+在 Cursor 设置中添加：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "url": "http://localhost:23333",
+      "env": {
+        "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
+      }
+    }
+  }
+}
+```
+
+## 可用工具
 
 ### 1. list_roles
 
@@ -134,70 +188,18 @@ npx @puax/mcp-server
 }
 ```
 
-## 使用示例
+## 开发与测试
 
-### 在 Claude Desktop 中使用
+### 使用 MCP Inspector 测试
 
-1. 打开 Claude Desktop 配置：
-   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-2. 添加 MCP 服务器配置：
-
-```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["@puax/mcp-server"],
-      "env": {
-        "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
-      }
-    }
-  }
-}
+```bash
+npx @modelcontextprotocol/inspector http://localhost:23333
 ```
 
-3. 重启 Claude Desktop
-
-### 在 Cursor 中使用
-
-在 Cursor 设置中添加 MCP 服务器：
-
-```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["@puax/mcp-server"],
-      "env": {
-        "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
-      }
-    }
-  }
-}
-```
-
-## 环境变量
-
-- `PUAX_PROJECT_PATH`: 指定 PUAX 项目的路径。如果未设置，服务器会自动尝试找到 PUAX 项目目录。
-
-## 开发
-
-### 项目结构
-
-```
-puax-mcp-server/
-├── src/
-│   ├── index.ts          # 主入口
-│   ├── server.ts         # MCP 服务器实现
-│   ├── tools.ts          # 工具定义
-│   └── prompts/
-│       └── index.ts      # Prompt 数据管理
-├── package.json
-├── tsconfig.json
-└── README.md
-```
+浏览器将自动打开 Inspector 界面，你可以：
+1. 测试工具列表
+2. 调用具体工具
+3. 查看请求和响应
 
 ### 开发命令
 
@@ -218,15 +220,149 @@ npm start
 npm run dev
 ```
 
-### 发布
+### 项目结构
+
+```
+puax-mcp-server/
+├── src/
+│   ├── index.ts          # 主入口
+│   ├── server.ts         # MCP 服务器实现（HTTP 版本）
+│   ├── tools.ts          # 工具定义
+│   └── prompts/          # Prompt 数据管理
+│       └── index.ts
+├── build/                # 编译输出
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 环境变量
+
+- `PUAX_PROJECT_PATH`: 指定 PUAX 项目的路径。如果未设置，服务器会自动尝试找到 PUAX 项目目录。
+
+## 部署建议
+
+### 使用进程管理器
 
 ```bash
-# 构建
-npm run build
+# 安装 pm2
+npm install -g pm2
 
-# 发布到 npm
-npm publish
+# 启动服务器
+pm2 start build/index.js --name puax-mcp-server
+
+# 查看状态
+pm2 status
+
+# 查看日志
+pm2 logs puax-mcp-server
 ```
+
+### 使用 Docker（未来支持）
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 23333
+CMD ["node", "build/index.js"]
+```
+
+### Nginx 反向代理
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:23333;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## HTTP 传输优势
+
+相比传统的 stdio 传输方式，HTTP 版本提供：
+
+✅ **多客户端支持** - 同时处理多个连接  
+✅ **远程访问** - 可通过网络访问  
+✅ **易于调试** - 支持 curl、浏览器工具  
+✅ **健康监控** - 内置健康检查端点  
+✅ **标准兼容** - 符合 MCP streamable-http 规范  
+✅ **生产就绪** - 易于部署和监控  
+
+## 常见问题
+
+### Q: 如何确认服务器正在运行？
+
+**A**: 使用健康检查端点：
+```bash
+curl http://localhost:23333/health
+```
+
+### Q: 如何更改监听端口？
+
+**A**: 修改 `src/server.ts` 中的端口配置（默认为 23333）。
+
+### Q: 是否支持 HTTPS？
+
+**A**: 当前版本仅支持 HTTP，建议在生产环境使用 Nginx 反向代理并配置 SSL。
+
+### Q: 连接超时怎么办？
+
+**A**: 检查：
+1. 服务器是否正常运行
+2. 端口是否被防火墙阻止
+3. 网络连接是否正常
+
+### Q: 如何查看服务器日志？
+
+**A**: 服务器日志输出到 stderr，使用 pm2 时：
+```bash
+pm2 logs puax-mcp-server
+```
+
+## 故障排除
+
+### 端口被占用
+
+```bash
+# Windows
+netstat -ano | findstr :23333
+taskkill /PID <pid> /F
+
+# Linux/Mac
+lsof -i :23333
+kill -9 <pid>
+```
+
+### 无法连接
+
+1. 确认服务器已启动：
+   ```bash
+   curl http://localhost:23333/health
+   ```
+
+2. 检查防火墙设置
+3. 验证 Node.js 版本（>= 18.0.0）
+
+### 工具调用失败
+
+1. 检查服务器日志中的错误信息
+2. 验证参数格式是否正确
+3. 确认 roleId 是否存在
 
 ## 许可证
 
@@ -240,3 +376,22 @@ MIT License
 
 - [PUAX 项目主页](https://github.com/linkerlin/PUAX)
 - [PUAX 文档](https://github.com/linkerlin/PUAX/blob/main/README.md)
+- [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
+
+## 版本历史
+
+### v1.1.0 (2026-01-02)
+- ✅ 新增 HTTP streamable-http (SSE) 传输方式
+- ✅ 支持多客户端并发连接
+- ✅ 添加健康检查端点
+- ✅ 监听 23333 端口
+- ✅ 改进错误处理和日志记录
+
+### v1.0.0 (Initial)
+- ✅ Stdio 传输方式
+- ✅ 角色管理工具
+- ✅ Prompt 加载和激活
+
+---
+
+**注意**: 这是 HTTP streamable-http 版本。如需使用传统的 stdio 版本，请查看 Git 历史记录或切换到相关分支。
