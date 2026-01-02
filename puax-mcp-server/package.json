@@ -1,6 +1,6 @@
 {
   "name": "puax-mcp-server",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（HTTP Streamable-HTTP版本）",
   "main": "build/index.js",
   "type": "commonjs",
