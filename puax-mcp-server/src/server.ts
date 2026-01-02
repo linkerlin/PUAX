@@ -11,17 +11,27 @@ import { promptManager } from './prompts/index.js';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
 import { Readable } from 'stream';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export class PuaxMcpServer {
     private server: Server;
     private transports: Map<string, SSEServerTransport> = new Map();
     private httpServer: any;
+    private version: string;
 
     constructor() {
+        // 从 package.json 读取版本号，避免硬编码
+        const packageJsonPath = join(process.cwd(), 'package.json');
+        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+        this.version = packageJson.version;
+        
+        console.error(`Starting PUAX MCP Server v${this.version}...`);
+        
         this.server = new Server(
             {
                 name: 'puax-mcp-server',
-                version: '1.0.0'
+                version: this.version
             },
             {
                 capabilities: {
@@ -291,7 +301,7 @@ export class PuaxMcpServer {
                 res.end(JSON.stringify({
                     status: 'ok',
                     service: 'puax-mcp-server',
-                    version: '1.0.0',
+                    version: this.version,
                     activeSessions: this.transports.size
                 }));
             }
@@ -358,7 +368,7 @@ export class PuaxMcpServer {
                         },
                         serverInfo: {
                             name: 'puax-mcp-server',
-                            version: '1.1.1'
+                            version: this.version
                         }
                     }
                 };
