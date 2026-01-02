@@ -196,6 +196,40 @@ export class PromptManager {
       ]
     }));
   }
+
+  public getPrompt(name: string, args?: Record<string, string>): { description?: string; messages: any[] } | null {
+    const role = this.getRoleById(name);
+    if (!role) {
+      return null;
+    }
+
+    const promptContent = this.getPromptContent(name);
+    if (!promptContent) {
+      return null;
+    }
+
+    // 处理参数替换
+    let processedContent = promptContent;
+    if (args) {
+      for (const [key, value] of Object.entries(args)) {
+        processedContent = processedContent.replace(new RegExp(`{{${key}}}`, 'g'), value);
+      }
+    }
+
+    // 返回符合 MCP 格式的 prompt
+    return {
+      description: `${role.name} - ${role.description}`,
+      messages: [
+        {
+          role: 'user' as const,
+          content: {
+            type: 'text',
+            text: processedContent
+          }
+        }
+      ]
+    };
+  }
 }
 
 export const promptManager = new PromptManager();
