@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "id": 13,
+  "method": "resources/read",
+  "params": {
+    "uri": "puax://roles/军事化组织_指挥员钢铁指挥"
+  }
+}
