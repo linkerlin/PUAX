@@ -12,7 +12,10 @@ const fs = require('fs');
 const path = require('path');
 
 // 项目根目录（puax-mcp-server 的父目录）
-const projectRoot = path.resolve(__dirname, '../../..');
+// __dirname = C:\GitHub\PUAX\puax-mcp-server\scripts
+// parent = C:\GitHub\PUAX\puax-mcp-server
+// projectRoot = C:\GitHub\PUAX
+const projectRoot = path.resolve(__dirname, '../..');
 console.log(`[Bundle Prompts] Project root: ${projectRoot}`);
 
 /**
@@ -22,21 +25,33 @@ async function bundlePrompts() {
   try {
     console.log('[Bundle Prompts] Scanning for .md files...');
     
-    // 查找所有 .md 文件（除 puax-mcp-server 目录外）
-    const pattern = '**/*.md';
-    const files = await glob(pattern, {
+    // 查找所有 .md 文件（仅 PUAX 项目的主要分类目录）
+    // 明确指定要扫描的目录，避免扫描 node_modules 等
+    const categories = [
+      '萨满系列',
+      '军事化组织',
+      'SillyTavern系列',
+      '主题场景',
+      '自我激励',
+      '特色角色与工具',
+      '通用文档'
+    ];
+    
+    const files = [];
+    for (const category of categories) {
+      const categoryFiles = await glob(category + '/*.md', {
+        cwd: projectRoot,
+        absolute: true
+      });
+      files.push(...categoryFiles);
+    }
+    
+    // 也扫描根目录的 .md 文件（README等）
+    const rootFiles = await glob('*.md', {
       cwd: projectRoot,
-      absolute: true,
-      ignore: [
-        '**/node_modules/**',
-        '**/.git/**',
-        '**/puax-mcp-server/**',
-        '**/build/**',
-        '**/*.min.md',
-        '**/dist/**',
-        '**/coverage/**'
-      ]
+      absolute: true
     });
+    files.push(...rootFiles);
 
     console.log(`[Bundle Prompts] Found ${files.length} .md files`);
     
