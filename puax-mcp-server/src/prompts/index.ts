@@ -46,19 +46,22 @@ export class PromptManager {
     }
 
     // 方法 2: 相对于当前模块的路径（最可靠）
-    // 当前文件: src/prompts/index.ts
-    // 项目根目录: 向上两级
-    const relativeToModule = path.resolve(__dirname, '../../..');
-    if (this.isValidProjectRoot(relativeToModule)) {
-      console.error(`[PromptManager] Found project root relative to module: ${relativeToModule}`);
-      return relativeToModule;
+    // 当前文件: C:\GitHub\PUAX\puax-mcp-server\src\prompts\index.ts
+    // puax-mcp-server 目录: C:\GitHub\PUAX\puax-mcp-server
+    // 项目根目录: C:\GitHub\PUAX （puax-mcp-server 的父目录）
+    const puaxMcpServerDir = path.resolve(__dirname, '..'); // puax-mcp-server 目录
+    const projectRoot = path.resolve(puaxMcpServerDir, '..'); // PUAX 项目根目录
+    
+    if (this.isValidProjectRoot(projectRoot)) {
+      console.error(`[PromptManager] Found project root (parent of puax-mcp-server): ${projectRoot}`);
+      return projectRoot;
     }
 
-    // 方法 3: process.cwd() 及其父目录
+    // 方法 3: process.cwd() 及其父目录（备用方案）
     const currentDir = process.cwd();
     console.error(`[PromptManager] Checking process.cwd(): ${currentDir}`);
     
-    // 检查当前目录是否是项目根（包含 .git 或 package.json）
+    // 检查当前目录是否是项目根（包含 .git 或 package.json 或 README.md）
     if (this.isValidProjectRoot(currentDir)) {
       return currentDir;
     }
