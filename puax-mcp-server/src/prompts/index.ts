@@ -3,6 +3,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { RoleInfo } from '../tools.js';
 
+// __dirname 在 CommonJS 模块中自动可用（由 tsconfig.json 配置）
+// 无需手动定义
+
 export class PromptManager {
   private roles: RoleInfo[] = [];
   private promptsCache = new Map<string, string>();
@@ -10,21 +13,101 @@ export class PromptManager {
 
   constructor(projectRoot?: string) {
     this.projectRoot = projectRoot || this.findProjectRoot();
+    
+    // 规范化路径（跨平台）
+    this.projectRoot = path.normalize(this.projectRoot);
+    
+    console.error(`[PromptManager] Initialized with project root: ${this.projectRoot}`);
   }
 
   public async initialize(): Promise<void> {
     await this.loadRoles();
   }
 
+  /**
+   * 智能查找项目根目录（跨平台支持）
+   * 
+   * 优先级：
+   * 1. 环境变量 PUAX_PROJECT_PATH
+   * 2. 相对于当前模块的路径（src/prompts/index.ts）
+   * 3. process.cwd() 及其父目录
+   * 4. 默认值：当前工作目录
+   */
   private findProjectRoot(): string {
+    // 方法 1: 环境变量（最高优先级）
+    const envPath = process.env.PUAX_PROJECT_PATH;
+    if (envPath) {
+      const normalizedPath = path.normalize(envPath);
+      if (fs.existsSync(normalizedPath)) {
+        console.error(`[PromptManager] Using PUAX_PROJECT_PATH: ${normalizedPath}`);
+        return normalizedPath;
+      }
+      console.error(`[PromptManager] Warning: PUAX_PROJECT_PATH (${envPath}) does not exist`);
+    }
+
+    // 方法 2: 相对于当前模块的路径（最可靠）
+    // 当前文件: src/prompts/index.ts
+    // 项目根目录: 向上两级
+    const relativeToModule = path.resolve(__dirname, '../../..');
+    if (this.isValidProjectRoot(relativeToModule)) {
+      console.error(`[PromptManager] Found project root relative to module: ${relativeToModule}`);
+      return relativeToModule;
+    }
+
+    // 方法 3: process.cwd() 及其父目录
     const currentDir = process.cwd();
-    const parentDir = path.resolve(currentDir, '..');
+    console.error(`[PromptManager] Checking process.cwd(): ${currentDir}`);
     
-    if (path.basename(currentDir) === 'puax-mcp-server') {
+    // 检查当前目录是否是项目根（包含 .git 或 package.json）
+    if (this.isValidProjectRoot(currentDir)) {
+      return currentDir;
+    }
+    
+    // 检查父目录
+    const parentDir = path.resolve(currentDir, '..');
+    if (this.isValidProjectRoot(parentDir)) {
       return parentDir;
     }
     
+    // 检查祖父母目录
+    const grandParentDir = path.resolve(currentDir, '../..');
+    if (this.isValidProjectRoot(grandParentDir)) {
+      return grandParentDir;
+    }
+
+    // 方法 4: 默认值（警告）
+    console.error(`[PromptManager] Warning: Could not find project root, using: ${currentDir}`);
+    console.error(`[PromptManager] Set PUAX_PROJECT_PATH env variable for explicit configuration`);
     return currentDir;
+  }
+
+  /**
+   * 验证目录是否是有效的 PUAX 项目根目录
+   */
+  private isValidProjectRoot(dir: string): boolean {
+    const gitPath = path.join(dir, '.git');
+    const packageJsonPath = path.join(dir, 'package.json');
+    const readmePath = path.join(dir, 'README.md');
+    
+    try {
+      const hasGit = fs.existsSync(gitPath) && fs.statSync(gitPath).isDirectory();
+      const hasPackageJson = fs.existsSync(packageJsonPath);
+      const hasReadme = fs.existsSync(readmePath);
+      
+      const isValid = hasGit || hasPackageJson || hasReadme;
+      
+      if (isValid) {
+        console.error(`[PromptManager] Valid project root found: ${dir}`);
+        console.error(`[PromptManager]   - Has .git: ${hasGit}`);
+        console.error(`[PromptManager]   - Has package.json: ${hasPackageJson}`);
+        console.error(`[PromptManager]   - Has README.md: ${hasReadme}`);
+      }
+      
+      return isValid;
+    } catch (error) {
+      console.error(`[PromptManager] Error checking directory ${dir}:`, error);
+      return false;
+    }
   }
 
   private async loadRoles(): Promise<void> {
