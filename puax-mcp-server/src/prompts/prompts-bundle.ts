@@ -1,7 +1,7 @@
 /**
  * PUAX Prompts Bundle - Auto-generated
  * 
- * Generated at: 2026-01-02T11:24:09.407Z
+ * Generated at: 2026-01-02T12:03:26.883Z
  * Version: 1.0.0
  * 
  * This file contains all PUAX prompts embedded in the code.
@@ -25,7 +25,7 @@ export interface PromptsBundle {
 
 export const promptsBundle: PromptsBundle = {
   version: '1.0.0',
-  generatedAt: '2026-01-02T11:24:09.407Z',
+  generatedAt: '2026-01-02T12:03:26.883Z',
   roles: [
   {
     "id": "萨满系列_萨满_马斯克___未来科技狂人附体",
