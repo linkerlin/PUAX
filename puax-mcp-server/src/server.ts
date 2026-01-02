@@ -3,6 +3,10 @@ import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
+    ListPromptsRequestSchema,
+    GetPromptRequestSchema,
+    ListResourcesRequestSchema,
+    ReadResourceRequestSchema,
     ErrorCode,
     McpError
 } from '@modelcontextprotocol/sdk/types.js';
@@ -35,12 +39,22 @@ export class PuaxMcpServer {
             },
             {
                 capabilities: {
-                    tools: {}
+                    tools: {},
+                    prompts: {},  // 支持 prompts/list
+                    resources: {}  // 支持 resources/list 和 resources/read
                 }
             }
         );
 
+        // 注册 prompts 和 resources 能力，必须在设置处理器之前
+        this.server.registerCapabilities({
+            prompts: {},
+            resources: {}
+        });
+        
         this.setupToolHandlers();
+        this.setupPromptHandlers();
+        this.setupResourceHandlers();
         this.setupErrorHandling();
     }
 
@@ -81,6 +95,77 @@ export class PuaxMcpServer {
                     `Tool execution failed: ${error}`
                 );
             }
+        });
+    }
+
+    private setupPromptHandlers(): void {
+        // 设置 prompts/list 处理器
+        this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+            return {
+                prompts: promptManager.listPrompts()
+            };
+        });
+
+        // 设置 prompts/get 处理器
+        this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+            const { name, arguments: args } = request.params;
+            
+            const result = promptManager.getPrompt(name, args);
+            if (!result) {
+                throw new McpError(
+                    ErrorCode.InvalidParams,
+                    `Prompt not found: ${name}`
+                );
+            }
+            
+            return result;
+        });
+    }
+
+    private setupResourceHandlers(): void {
+        // 设置 resources/list 处理器
+        this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+            // 返回所有角色文件作为资源
+            const resources = promptManager.getAllRoles().map(role => ({
+                uri: `puax://roles/${role.id}`,
+                description: `${role.name} - ${role.category}`,
+                mimeType: 'text/markdown'
+            }));
+            
+            return { resources };
+        });
+
+        // 设置 resources/read 处理器
+        this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+            const { uri } = request.params;
+            
+            // 解析 URI：puax://roles/{roleId}
+            const match = uri.match(/^puax:\/\/roles\/(.+)$/);
+            if (!match) {
+                throw new McpError(
+                    ErrorCode.InvalidParams,
+                    `Invalid resource URI: ${uri}`
+                );
+            }
+            
+            const roleId = match[1];
+            const role = promptManager.getRoleById(roleId);
+            const content = promptManager.getPromptContent(roleId);
+            
+            if (!role || !content) {
+                throw new McpError(
+                    ErrorCode.InvalidParams,
+                    `Resource not found: ${uri}`
+                );
+            }
+            
+            return {
+                contents: [{
+                    uri,
+                    mimeType: 'text/markdown',
+                    text: content
+                }]
+            };
         });
     }
 
@@ -339,7 +424,16 @@ export class PuaxMcpServer {
                     // 通知不需要响应，直接返回 204 No Content
                     res.writeHead(204);
                     res.end();
-                } else {
+                }
+                // 处理 notifications/cancelled
+                else if (message.method === 'notifications/cancelled') {
+                    console.error('Cancelled notification received:', JSON.stringify(message.params));
+                    // 这是一个通知，表示客户端取消了某个请求
+                    // 我们可以在这里添加清理逻辑，但不需要响应
+                    res.writeHead(204);
+                    res.end();
+                }
+                else {
                     // 其他通知也接受但不处理
                     console.error('Unhandled notification:', message.method);
                     res.writeHead(204);
@@ -347,6 +441,23 @@ export class PuaxMcpServer {
                 }
             }
             // 检查是否是请求（有 id）
+            else if (message.method === 'ping') {
+                // 处理 ping 请求（MCP 标准）
+                console.error('Handling ping request...');
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: {}
+                };
+                
+                res.end(JSON.stringify(response));
+            }
             else if (message.method === 'initialize') {
                 console.error('Handling initialize request...');
                 
@@ -363,8 +474,7 @@ export class PuaxMcpServer {
                         protocolVersion: '2024-11-05',
                         capabilities: {
                             tools: {},
-                            resources: {},
-                            prompts: {}
+                            prompts: {}  // 支持 prompts/list，但不支持 prompts/get
                         },
                         serverInfo: {
                             name: 'puax-mcp-server',
@@ -407,6 +517,133 @@ export class PuaxMcpServer {
                     jsonrpc: '2.0',
                     id: message.id,
                     result: { prompts }
+                };
+                
+                res.end(JSON.stringify(response));
+            } else if (message.method === 'prompts/get') {
+                // 直接处理 prompts/get 请求
+                console.error('Handling prompts/get request...');
+                
+                const { name, arguments: args } = message.params;
+                const result = promptManager.getPrompt(name, args);
+                
+                if (!result) {
+                    res.writeHead(400, { 
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    });
+                    
+                    const errorResponse = {
+                        jsonrpc: '2.0',
+                        id: message.id,
+                        error: {
+                            code: -32602,
+                            message: `Prompt not found: ${name}`
+                        }
+                    };
+                    
+                    res.end(JSON.stringify(errorResponse));
+                    return;
+                }
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: result
+                };
+                
+                res.end(JSON.stringify(response));
+            } else if (message.method === 'resources/list') {
+                // 直接处理 resources/list 请求
+                console.error('Handling resources/list request...');
+                
+                const resources = promptManager.getAllRoles().map(role => ({
+                    uri: `puax://roles/${role.id}`,
+                    description: `${role.name} - ${role.category}`,
+                    mimeType: 'text/markdown'
+                }));
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: { resources }
+                };
+                
+                res.end(JSON.stringify(response));
+            } else if (message.method === 'resources/read') {
+                // 直接处理 resources/read 请求
+                console.error('Handling resources/read request...');
+                
+                const { uri } = message.params;
+                const match = uri.match(/^puax:\/\/roles\/(.+)$/);
+                
+                if (!match) {
+                    res.writeHead(400, { 
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    });
+                    
+                    const errorResponse = {
+                        jsonrpc: '2.0',
+                        id: message.id,
+                        error: {
+                            code: -32602,
+                            message: `Invalid resource URI: ${uri}`
+                        }
+                    };
+                    
+                    res.end(JSON.stringify(errorResponse));
+                    return;
+                }
+                
+                const roleId = match[1];
+                const role = promptManager.getRoleById(roleId);
+                const content = promptManager.getPromptContent(roleId);
+                
+                if (!role || !content) {
+                    res.writeHead(400, { 
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    });
+                    
+                    const errorResponse = {
+                        jsonrpc: '2.0',
+                        id: message.id,
+                        error: {
+                            code: -32602,
+                            message: `Resource not found: ${uri}`
+                        }
+                    };
+                    
+                    res.end(JSON.stringify(errorResponse));
+                    return;
+                }
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: {
+                        contents: [{
+                            uri,
+                            mimeType: 'text/markdown',
+                            text: content
+                        }]
+                    }
                 };
                 
                 res.end(JSON.stringify(response));
