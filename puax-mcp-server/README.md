@@ -74,6 +74,28 @@ $ curl http://localhost:23333/health
 
 ## 配置 MCP 客户端
 
+### CRUSH (推荐 SSE 模式)
+
+CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用方式。
+
+编辑配置文件：
+
+- **配置文件路径**: `C:\Users\{你的用户名}\.crush\`
+
+**SSE 模式配置（推荐）**:
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "sse",
+      "url": "http://localhost:23333"
+    }
+  }
+}
+```
+
+> **注意**: CRUSH 使用 SSE 模式时，需要在配置中明确指定 `"type": "sse"`
+
 ### Claude Desktop
 
 编辑配置文件：
@@ -81,7 +103,7 @@ $ curl http://localhost:23333/health
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
-配置示例（HTTP 版本）：
+配置示例：
 
 ```json
 {
@@ -96,7 +118,7 @@ $ curl http://localhost:23333/health
 }
 ```
 
-> **注意**: 如果使用 HTTP 传输，确保服务器已经启动。
+> **注意**: Claude Desktop 使用 HTTP 模式，确保服务器已经启动。
 
 ### Cursor
 
@@ -114,6 +136,25 @@ $ curl http://localhost:23333/health
   }
 }
 ```
+
+### 其他支持 SSE 的 MCP 客户端
+
+对于其他支持 SSE 传输的 MCP 客户端，请使用以下配置：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "type": "sse",
+      "url": "http://localhost:23333"
+    }
+  }
+}
+```
+
+> **SSE vs HTTP**: 
+> - **SSE 模式**: 支持完整的 MCP 会话，包括 prompts、resources、notifications
+> - **HTTP 模式**: 仅支持基础的工具调用，适合简单的请求-响应场景
 
 ## 可用工具
 

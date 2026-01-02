@@ -182,6 +182,20 @@ export class PromptManager {
     const categories = new Set(this.roles.map(role => role.category));
     return Array.from(categories).sort();
   }
+
+  public listPrompts(): any[] {
+    return this.roles.map(role => ({
+      name: role.id,
+      description: `${role.name} - ${role.description}`,
+      arguments: [
+        {
+          name: 'task',
+          description: '可选，具体任务描述，会替换模板中的占位符',
+          required: false
+        }
+      ]
+    }));
+  }
 }
 
 export const promptManager = new PromptManager();

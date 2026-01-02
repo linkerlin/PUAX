@@ -10,6 +10,7 @@ import { Tools } from './tools.js';
 import { promptManager } from './prompts/index.js';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
+import { Readable } from 'stream';
 
 export class PuaxMcpServer {
     private server: Server;
@@ -17,13 +18,17 @@ export class PuaxMcpServer {
     private httpServer: any;
 
     constructor() {
-        this.server = new Server({
-            name: 'puax-mcp-server',
-            version: '1.0.0',
-            capabilities: {
-                tools: {}
+        this.server = new Server(
+            {
+                name: 'puax-mcp-server',
+                version: '1.0.0'
+            },
+            {
+                capabilities: {
+                    tools: {}
+                }
             }
-        });
+        );
 
         this.setupToolHandlers();
         this.setupErrorHandling();
@@ -253,8 +258,13 @@ export class PuaxMcpServer {
             const url = new URL(req.url || '/', `http://${req.headers.host}`);
             const pathname = url.pathname;
             
+            // 处理直接 JSON-RPC over HTTP 请求 (POST /)
+            // 这是大多数 MCP 客户端使用的标准模式
+            if (req.method === 'POST' && pathname === '/') {
+                await this.handleDirectHTTPRequest(req, res);
+            }
             // 处理 SSE 连接请求 (GET /)
-            if (req.method === 'GET' && pathname === '/') {
+            else if (req.method === 'GET' && pathname === '/') {
                 await this.handleSSEConnection(req, res);
             }
             // 处理消息 POST 请求 (POST /message?sessionId=xxx)
@@ -295,6 +305,145 @@ export class PuaxMcpServer {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Internal Server Error');
         }
+    }
+    
+    private async handleDirectHTTPRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        try {
+            // 读取请求体
+            const body = await this.readRequestBody(req);
+            const message = JSON.parse(body);
+            
+            console.error('Received HTTP JSON-RPC message:', message.method, 'id:', message.id);
+            console.log('Message:', message, 'Has ID:', message.id !== undefined);
+            console.log('message.id type:', typeof message.id);
+            console.log('message.id value:', message.id);
+            
+            // 检查是否是通知（没有 id）
+            if (message.id === undefined || message.id === null) {
+                // 这是一个通知，不需要响应
+                console.error('Handling notification:', message.method);
+                
+                // 处理 notifications/initialized
+                if (message.method === 'notifications/initialized') {
+                    console.error('Client initialized notification received');
+                    // 通知不需要响应，直接返回 204 No Content
+                    res.writeHead(204);
+                    res.end();
+                } else {
+                    // 其他通知也接受但不处理
+                    console.error('Unhandled notification:', message.method);
+                    res.writeHead(204);
+                    res.end();
+                }
+            }
+            // 检查是否是请求（有 id）
+            else if (message.method === 'initialize') {
+                console.error('Handling initialize request...');
+                
+                // 发送初始化响应
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: {
+                        protocolVersion: '2024-11-05',
+                        capabilities: {
+                            tools: {},
+                            resources: {},
+                            prompts: {}
+                        },
+                        serverInfo: {
+                            name: 'puax-mcp-server',
+                            version: '1.1.1'
+                        }
+                    }
+                };
+                
+                res.end(JSON.stringify(response));
+            } else if (message.method === 'tools/list') {
+                // 直接处理 tools/list 请求
+                console.error('Handling tools/list request...');
+                
+                const tools = Tools;
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: { tools }
+                };
+                
+                res.end(JSON.stringify(response));
+            } else if (message.method === 'prompts/list') {
+                // 直接处理 prompts/list 请求
+                console.error('Handling prompts/list request...');
+                
+                const prompts = promptManager.listPrompts();
+                
+                res.writeHead(200, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const response = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    result: { prompts }
+                };
+                
+                res.end(JSON.stringify(response));
+            } else {
+                // 其他请求，返回错误
+                console.error('Unsupported method:', message.method);
+                res.writeHead(400, { 
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                });
+                
+                const errorResponse = {
+                    jsonrpc: '2.0',
+                    id: message.id,
+                    error: {
+                        code: -32601,
+                        message: 'Method not found. Use SSE mode for full tool support.'
+                    }
+                };
+                
+                res.end(JSON.stringify(errorResponse));
+            }
+        } catch (error) {
+            console.error('Direct HTTP request error:', error);
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({
+                jsonrpc: '2.0',
+                id: null,
+                error: {
+                    code: -32700,
+                    message: 'Parse error'
+                }
+            }));
+        }
+    }
+    
+    private readRequestBody(req: IncomingMessage): Promise<string> {
+        return new Promise((resolve, reject) => {
+            let body = '';
+            req.on('data', chunk => {
+                body += chunk.toString();
+            });
+            req.on('end', () => {
+                resolve(body);
+            });
+            req.on('error', reject);
+        });
     }
     
     private async handleSSEConnection(req: IncomingMessage, res: ServerResponse): Promise<void> {
