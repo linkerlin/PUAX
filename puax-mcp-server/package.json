@@ -1,10 +1,7 @@
 {
-  "name": "@puax/mcp-server",
+  "name": "puax-mcp-server",
   "version": "1.0.0",
-  "publishConfig": {
-    "access": "public"
-  },
-  "description": "PUAX MCP Server - AI角色选择、切换和激活服务器",
+  "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（HTTP Streamable-HTTP版本）",
   "main": "build/index.js",
   "type": "commonjs",
   "bin": {
@@ -16,14 +13,25 @@
     "start": "node build/index.js",
     "dev": "ts-node src/index.ts",
     "watch": "tsc --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:unit": "jest test/unit",
+    "test:http": "jest test/http",
+    "test:sse": "jest test/sse",
+    "test:tools": "jest test/tools",
+    "test:integration": "jest test/integration",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:verbose": "jest --verbose"
   },
   "keywords": [
     "puax",
     "mcp",
     "ai",
     "prompt",
-    "agent"
+    "agent",
+    "http",
+    "sse",
+    "streamable-http"
   ],
   "author": "PUAX Team",
   "license": "MIT",
@@ -32,7 +40,11 @@
     "glob": "^10.3.10"
   },
   "devDependencies": {
+    "@jest/test-sequencer": "^29.7.0",
+    "@types/jest": "^29.5.14",
     "@types/node": "^20.10.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

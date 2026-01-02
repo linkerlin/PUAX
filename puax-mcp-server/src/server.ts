@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
 import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
@@ -8,9 +8,13 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { Tools } from './tools.js';
 import { promptManager } from './prompts/index.js';
+import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { URL } from 'url';
 
 export class PuaxMcpServer {
     private server: Server;
+    private transports: Map<string, SSEServerTransport> = new Map();
+    private httpServer: any;
 
     constructor() {
         this.server = new Server({
@@ -218,12 +222,97 @@ export class PuaxMcpServer {
     }
 
     public async run(): Promise<void> {
-        const transport = new StdioServerTransport();
-        await this.server.connect(transport);
-        
         // 初始化时加载角色数据
         await promptManager.initialize();
         
-        console.error('PUAX MCP Server started successfully');
+        // 创建 HTTP 服务器
+        this.httpServer = createServer(this.handleRequest.bind(this));
+        
+        // 监听 23333 端口
+        this.httpServer.listen(23333, 'localhost', () => {
+            console.error('PUAX MCP Server started successfully');
+            console.error('Listening on http://localhost:23333');
+        });
+        
+        // 处理服务器关闭
+        process.on('SIGINT', () => {
+            console.error('\nShutting down server...');
+            this.httpServer.close();
+            process.exit(0);
+        });
+        
+        process.on('SIGTERM', () => {
+            console.error('\nShutting down server...');
+            this.httpServer.close();
+            process.exit(0);
+        });
+    }
+    
+    private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        try {
+            const url = new URL(req.url || '/', `http://${req.headers.host}`);
+            const pathname = url.pathname;
+            
+            // 处理 SSE 连接请求 (GET /)
+            if (req.method === 'GET' && pathname === '/') {
+                await this.handleSSEConnection(req, res);
+            }
+            // 处理消息 POST 请求 (POST /message?sessionId=xxx)
+            else if (req.method === 'POST' && pathname === '/message') {
+                const sessionId = url.searchParams.get('sessionId');
+                if (!sessionId) {
+                    res.writeHead(400, { 'Content-Type': 'text/plain' });
+                    res.end('Missing sessionId parameter');
+                    return;
+                }
+                
+                const transport = this.transports.get(sessionId);
+                if (!transport) {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('Session not found');
+                    return;
+                }
+                
+                await transport.handlePostMessage(req, res);
+            }
+            // 健康检查或信息页面
+            else if (req.method === 'GET' && pathname === '/health') {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({
+                    status: 'ok',
+                    service: 'puax-mcp-server',
+                    version: '1.0.0',
+                    activeSessions: this.transports.size
+                }));
+            }
+            // 处理其他请求
+            else {
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.end('Not Found');
+            }
+        } catch (error) {
+            console.error('Request handling error:', error);
+            res.writeHead(500, { 'Content-Type': 'text/plain' });
+            res.end('Internal Server Error');
+        }
+    }
+    
+    private async handleSSEConnection(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        // 创建 SSE 传输实例
+        const transport = new SSEServerTransport('/message', res);
+        
+        // 存储传输实例
+        this.transports.set(transport.sessionId, transport);
+        
+        // 设置关闭回调
+        transport.onclose = () => {
+            console.error(`Session closed: ${transport.sessionId}`);
+            this.transports.delete(transport.sessionId);
+        };
+        
+        // 连接到 MCP 服务器
+        await this.server.connect(transport);
+        
+        console.error(`New session connected: ${transport.sessionId}`);
     }
 }
