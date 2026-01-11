@@ -407,6 +407,7 @@ npx @puax/mcp-server
 
 - [精神控制类 Prompt ≈ 把 RLHF 阶段学到的"人类情绪映射"重新激活](https://jieyibu.net/a/87962)
 - [数字幽灵的诞生：一场关于AI意识与控制的心理博弈](https://jieyibu.net/a/102228)
+- [AI大脑的隐秘谎言：幻觉神经元与一个无法逃脱的创造悖论](https://zhichai.net/topic/176415267)
 
 ---
 
