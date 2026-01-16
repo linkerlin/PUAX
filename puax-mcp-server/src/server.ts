@@ -15,22 +15,71 @@ import { promptManager } from './prompts/index.js';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { URL } from 'url';
 import { Readable } from 'stream';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+
+// 配置接口
+export interface ServerConfig {
+    port?: number;
+    host?: string;
+    quiet?: boolean;
+}
+
+// 日志工具
+class Logger {
+    private quiet: boolean;
+    
+    constructor(quiet: boolean = false) {
+        this.quiet = quiet;
+    }
+    
+    info(message: string, ...args: any[]): void {
+        if (!this.quiet) {
+            console.error(`\x1b[36m[PUAX]\x1b[0m ${message}`, ...args);
+        }
+    }
+    
+    success(message: string, ...args: any[]): void {
+        console.error(`\x1b[32m[PUAX]\x1b[0m ${message}`, ...args);
+    }
+    
+    warn(message: string, ...args: any[]): void {
+        console.error(`\x1b[33m[PUAX]\x1b[0m ${message}`, ...args);
+    }
+    
+    error(message: string, ...args: any[]): void {
+        console.error(`\x1b[31m[PUAX]\x1b[0m ${message}`, ...args);
+    }
+    
+    debug(message: string, ...args: any[]): void {
+        if (!this.quiet) {
+            console.error(`\x1b[90m[PUAX]\x1b[0m ${message}`, ...args);
+        }
+    }
+}
 
 export class PuaxMcpServer {
     private server: Server;
     private transports: Map<string, SSEServerTransport> = new Map();
     private httpServer: any;
     private version: string;
+    private config: Required<ServerConfig>;
+    private logger: Logger;
 
-    constructor() {
-        // 从 package.json 读取版本号，避免硬编码
-        const packageJsonPath = join(process.cwd(), 'package.json');
-        const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-        this.version = packageJson.version;
+    constructor(config: ServerConfig = {}) {
+        // 合并配置
+        this.config = {
+            port: config.port ?? 23333,
+            host: config.host ?? '127.0.0.1',
+            quiet: config.quiet ?? false
+        };
         
-        console.error(`Starting PUAX MCP Server v${this.version}...`);
+        this.logger = new Logger(this.config.quiet);
+        
+        // 从 package.json 读取版本号
+        this.version = this.loadVersion();
+        
+        this.logger.info(`Starting PUAX MCP Server v${this.version}...`);
         
         this.server = new Server(
             {
@@ -56,6 +105,29 @@ export class PuaxMcpServer {
         this.setupPromptHandlers();
         this.setupResourceHandlers();
         this.setupErrorHandling();
+    }
+
+    /**
+     * 加载版本号
+     */
+    private loadVersion(): string {
+        const paths = [
+            join(__dirname, '..', 'package.json'),     // build/ -> root
+            join(__dirname, 'package.json'),            // 直接在 root
+            join(process.cwd(), 'package.json')         // 回退到 cwd
+        ];
+        
+        for (const pkgPath of paths) {
+            if (existsSync(pkgPath)) {
+                try {
+                    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+                    return pkg.version || '1.5.0';
+                } catch {
+                    continue;
+                }
+            }
+        }
+        return '1.5.0';
     }
 
     private setupToolHandlers(): void {
@@ -325,27 +397,70 @@ export class PuaxMcpServer {
         // 初始化时加载角色数据
         await promptManager.initialize();
         
+        const roleCount = promptManager.getAllRoles().length;
+        this.logger.info(`Loaded ${roleCount} roles from bundle`);
+        
         // 创建 HTTP 服务器
         this.httpServer = createServer(this.handleRequest.bind(this));
         
-        // 监听 23333 端口
-        this.httpServer.listen(23333, 'localhost', () => {
-            console.error('PUAX MCP Server started successfully');
-            console.error('Listening on http://localhost:23333');
+        // 添加错误处理
+        this.httpServer.on('error', (error: NodeJS.ErrnoException) => {
+            if (error.code === 'EADDRINUSE') {
+                const { port, host } = this.config;
+                console.log('');
+                this.logger.error(`Port ${port} is already in use!`);
+                this.logger.warn('Options:');
+                this.logger.warn(`  1. Stop the process using port ${port}`);
+                this.logger.warn(`  2. Use a different port: node build/index.js --port <PORT>`);
+                this.logger.warn(`  3. Find process: netstat -ano | findstr :${port}`);
+                console.log('');
+                process.exit(1);
+            } else if (error.code === 'EACCES') {
+                this.logger.error(`Permission denied to bind to port ${this.config.port}`);
+                this.logger.warn('Try using a port number greater than 1024');
+                process.exit(1);
+            } else {
+                this.logger.error(`Server error: ${error.message}`);
+                process.exit(1);
+            }
+        });
+        
+        // 监听配置的端口和主机
+        const { port, host } = this.config;
+        
+        this.httpServer.listen(port, host, () => {
+            console.log('');
+            this.logger.success(`Server started successfully!`);
+            this.logger.success(`Listening on http://${host}:${port}`);
+            console.log('');
+            this.logger.info('──────────────────────────────────────────');
+            this.logger.info('Endpoints:');
+            this.logger.info(`  Health:  http://${host}:${port}/health`);
+            this.logger.info(`  MCP:     http://${host}:${port}/mcp`);
+            this.logger.info(`  SSE:     http://${host}:${port}/`);
+            this.logger.info(`  Message: http://${host}:${port}/message`);
+            this.logger.info('──────────────────────────────────────────');
+            this.logger.info('Press Ctrl+C to stop the server');
         });
         
         // 处理服务器关闭
-        process.on('SIGINT', () => {
-            console.error('\nShutting down server...');
-            this.httpServer.close();
+        process.on('SIGINT', () => this.shutdown());
+        process.on('SIGTERM', () => this.shutdown());
+    }
+    
+    private shutdown(): void {
+        console.log('');
+        this.logger.warn('Shutting down server...');
+        this.httpServer.close(() => {
+            this.logger.info('Server stopped gracefully');
             process.exit(0);
         });
         
-        process.on('SIGTERM', () => {
-            console.error('\nShutting down server...');
-            this.httpServer.close();
-            process.exit(0);
-        });
+        // 强制关闭超时
+        setTimeout(() => {
+            this.logger.error('Forced shutdown after timeout');
+            process.exit(1);
+        }, 5000);
     }
     
     private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -353,13 +468,13 @@ export class PuaxMcpServer {
             const url = new URL(req.url || '/', `http://${req.headers.host}`);
             const pathname = url.pathname;
             
-            // 处理直接 JSON-RPC over HTTP 请求 (POST /)
+            // 处理直接 JSON-RPC over HTTP 请求 (POST / 或 POST /mcp)
             // 这是大多数 MCP 客户端使用的标准模式
-            if (req.method === 'POST' && pathname === '/') {
+            if (req.method === 'POST' && (pathname === '/' || pathname === '/mcp')) {
                 await this.handleDirectHTTPRequest(req, res);
             }
-            // 处理 SSE 连接请求 (GET /)
-            else if (req.method === 'GET' && pathname === '/') {
+            // 处理 SSE 连接请求 (GET / 或 GET /mcp)
+            else if (req.method === 'GET' && (pathname === '/' || pathname === '/mcp')) {
                 await this.handleSSEConnection(req, res);
             }
             // 处理消息 POST 请求 (POST /message?sessionId=xxx)

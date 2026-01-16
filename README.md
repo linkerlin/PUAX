@@ -351,29 +351,46 @@ def fibonacci(n):
 
 PUAX 项目现在提供 MCP (Model Context Protocol) 服务器，让 AI Agent 能够动态选择、切换和激活角色。
 
-### 安装与运行
+### 快速开始
 
 ```bash
-# 全局安装
-npm install -g @puax/mcp-server
-
-# 直接运行
-puax-mcp-server
-
-# 或使用 npx
-npx @puax/mcp-server
+# 克隆并启动
+git clone https://github.com/linkerlin/PUAX.git
+cd PUAX/puax-mcp-server
+npm install && npm run serve
 ```
+
+服务器将在 `http://127.0.0.1:23333` 启动。
 
 ### 在 MCP 客户端中配置
 
-#### Claude Desktop
+#### Claude Desktop / Qoder
+
+编辑配置文件：
+- **Windows**: `%APPDATA%/Claude/claude_desktop_config.json` 或 `%APPDATA%/Qoder/mcp.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+推荐配置（使用 HTTP streamable 模式）：
 
 ```json
 {
   "mcpServers": {
     "puax": {
-      "command": "npx",
-      "args": ["@puax/mcp-server"]
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:23333/mcp"
+    }
+  }
+}
+```
+
+或使用根路径（向后兼容）：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:23333"
     }
   }
 }
@@ -381,7 +398,32 @@ npx @puax/mcp-server
 
 #### Cursor
 
-在设置中添加 MCP 服务器配置，与 Claude Desktop 格式相同。
+在设置中添加 MCP 服务器配置：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "url": "http://127.0.0.1:23333/mcp"
+    }
+  }
+}
+```
+
+#### CRUSH (SSE 模式)
+
+编辑 `C:\Users\{你的用户名}\.crush\mcp.json`：
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "sse",
+      "url": "http://127.0.0.1:23333/mcp"
+    }
+  }
+}
+```
 
 ### 可用工具
 
@@ -389,6 +431,33 @@ npx @puax/mcp-server
 2. **get_role** - 获取指定角色的 Prompt 内容
 3. **search_roles** - 按关键词搜索角色
 4. **activate_role** - 激活角色并生成 System Prompt
+
+### 命令行选项
+
+```bash
+# 使用默认配置启动 (127.0.0.1:23333)
+node build/index.js
+
+# 指定端口
+node build/index.js --port 8080
+
+# 允许外部访问
+node build/index.js --host 0.0.0.0
+
+# 静默模式
+node build/index.js --quiet
+
+# 查看帮助
+node build/index.js --help
+```
+
+### HTTP 端点
+
+- `GET /mcp` - MCP SSE 连接端点（推荐）
+- `POST /mcp` - MCP JSON-RPC 请求端点（推荐）
+- `GET /` - SSE 连接端点（向后兼容）
+- `POST /` - JSON-RPC 请求端点（向后兼容）
+- `GET /health` - 健康检查端点
 
 ### 使用示例
 

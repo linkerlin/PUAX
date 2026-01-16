@@ -14,26 +14,57 @@ PUAX MCP Server 是一个基于 Model Context Protocol (MCP) 的服务器，为 
 
 ## 快速开始
 
-### 从源码构建（推荐）
+### 一键启动（推荐）
 
 ```bash
+# 克隆并启动
 git clone https://github.com/linkerlin/PUAX.git
 cd PUAX/puax-mcp-server
-npm install
-npm run build
-npm start
+npm install && npm run serve
 ```
 
-服务器启动后将监听 `http://localhost:23333`
+### 命令行选项
 
-### 测试服务器
+```bash
+# 查看帮助
+node build/index.js --help
+
+# 使用默认配置启动 (127.0.0.1:23333)
+npm start
+
+# 指定端口启动
+node build/index.js --port 8080
+
+# 允许外部访问
+node build/index.js --host 0.0.0.0
+
+# 使用环境变量
+PORT=8080 npm start
+```
+
+### 启动脚本
+
+```bash
+# Windows (PowerShell)
+.\start.ps1 -Port 8080
+
+# Windows (CMD)
+start-server.bat
+
+# Linux/macOS
+./start.sh --port 8080
+```
+
+### 验证服务器
 
 ```bash
 # 健康检查
-curl http://localhost:23333/health
+curl http://127.0.0.1:23333/health
 
-# SSE 连接测试
-curl http://localhost:23333/
+# 预期输出: {"status":"ok","service":"puax-mcp-server","version":"1.6.0",...}
+
+# MCP 端点测试
+curl http://127.0.0.1:23333/mcp
 ```
 
 ## 传输方式
@@ -48,7 +79,19 @@ curl http://localhost:23333/
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://127.0.0.1:23333/mcp"
+    }
+  }
+}
+```
+
+或使用根路径（向后兼容）：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "url": "http://127.0.0.1:23333"
     }
   }
 }
@@ -56,7 +99,10 @@ curl http://localhost:23333/
 
 #### HTTP 端点
 
-- `GET /` - SSE 连接端点
+- `GET /mcp` - MCP SSE 连接端点（推荐）
+- `POST /mcp` - MCP JSON-RPC 请求端点（推荐）
+- `GET /` - SSE 连接端点（向后兼容）
+- `POST /` - JSON-RPC 请求端点（向后兼容）
 - `POST /message?sessionId=xxx` - 消息发送端点
 - `GET /health` - 健康检查端点
 
@@ -88,7 +134,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
   "mcp": {
     "puax": {
       "type": "sse",
-      "url": "http://localhost:23333"
+      "url": "http://127.0.0.1:23333/mcp"
     }
   }
 }
@@ -109,7 +155,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333",
+      "url": "http://127.0.0.1:23333/mcp",
       "env": {
         "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
       }
@@ -128,7 +174,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333",
+      "url": "http://127.0.0.1:23333/mcp",
       "env": {
         "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
       }
@@ -146,7 +192,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
   "mcpServers": {
     "puax": {
       "type": "sse",
-      "url": "http://localhost:23333"
+      "url": "http://127.0.0.1:23333/mcp"
     }
   }
 }
@@ -379,14 +425,33 @@ pm2 logs puax-mcp-server
 
 ### 端口被占用
 
-```bash
-# Windows
-netstat -ano | findstr :23333
-taskkill /PID <pid> /F
+如果遇到 `EADDRINUSE` 错误：
 
-# Linux/Mac
+```bash
+# 查找占用端口的进程
+# Windows (PowerShell)
+Get-NetTCPConnection -LocalPort 23333 | Select-Object OwningProcess
+Get-Process -Id <PID>
+
+# Windows (CMD)
+netstat -ano | findstr :23333
+tasklist /FI "PID eq <PID>"
+
+# Linux/macOS
 lsof -i :23333
-kill -9 <pid>
+ps aux | grep <PID>
+
+# 关闭进程
+# Windows
+Stop-Process -Id <PID> -Force
+# 或
+taskkill /PID <PID> /F
+
+# Linux/macOS
+kill -9 <PID>
+
+# 或者使用不同端口
+node build/index.js --port 8080
 ```
 
 ### 无法连接
@@ -420,6 +485,18 @@ MIT License
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 
 ## 版本历史
+
+### v1.6.0 (Latest)
+- ✅ 添加命令行参数支持 (`--port`, `--host`, `--quiet`, `--help`, `--version`)
+- ✅ 添加环境变量支持 (`PORT`, `HOST`, `PUAX_PORT`, `PUAX_HOST`)
+- ✅ 优化启动日志，美化输出
+- ✅ 修复版本号读取问题，支持 npx 运行
+- ✅ 添加跨平台启动脚本 (`start.ps1`, `start.sh`, `start-server.bat`)
+- ✅ 优雅关闭处理
+
+### v1.5.0
+- ✅ 内置 Prompt 模式，无需外部文件
+- ✅ 添加 `puax` 短命令别名
 
 ### v1.1.0 (2026-01-02)
 - ✅ 新增 HTTP streamable-http (SSE) 传输方式

@@ -1,18 +1,21 @@
 {
   "name": "puax-mcp-server",
-  "version": "1.4.1",
+  "version": "1.6.0",
   "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（HTTP Streamable-HTTP版本）",
   "main": "build/index.js",
   "type": "commonjs",
   "bin": {
-    "puax-mcp-server": "build/index.js"
+    "puax-mcp-server": "./build/index.js",
+    "puax": "./build/index.js"
   },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "start": "node build/index.js",
+    "start:port": "node build/index.js --port",
     "dev": "ts-node src/index.ts",
     "watch": "tsc --watch",
+    "serve": "npm run build && npm start",
     "test": "jest",
     "test:unit": "jest test/unit",
     "test:http": "jest test/http",
@@ -21,7 +24,8 @@
     "test:integration": "jest test/integration",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
-    "test:verbose": "jest --verbose"
+    "test:verbose": "jest --verbose",
+    "postinstall": "echo \"Run 'npx puax-mcp-server' to start the server\""
   },
   "keywords": [
     "puax",
