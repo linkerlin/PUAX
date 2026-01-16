@@ -48,7 +48,7 @@
 ```
 Starting PUAX MCP Server v1.3.1...
 PUAX MCP Server started successfully
-Listening on http://localhost:23333
+Listening on http://localhost:2333
 ```
 
 ### 修改文件

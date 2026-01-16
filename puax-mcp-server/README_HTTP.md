@@ -2,7 +2,7 @@
 
 ## 简介
 
-PUAX MCP Server 现已支持 HTTP streamable-http (SSE) 传输方式！监听 **23333** 端口，提供 AI 角色选择、切换和激活功能。
+PUAX MCP Server 现已支持 HTTP streamable-http (SSE) 传输方式！监听 **2333** 端口，提供 AI 角色选择、切换和激活功能。
 
 ## 快速开始
 
@@ -30,14 +30,14 @@ npm start
 node build/index.js
 ```
 
-服务器启动后，将监听 `http://localhost:23333`
+服务器启动后，将监听 `http://localhost:2333`
 
 ## 测试服务器
 
 ### 健康检查
 
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 预期输出：
@@ -53,7 +53,7 @@ curl http://localhost:23333/health
 ### SSE 连接测试
 
 ```bash
-curl http://localhost:23333/
+curl http://localhost:2333/
 ```
 
 ## MCP 客户端配置
@@ -66,7 +66,7 @@ curl http://localhost:23333/
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -80,7 +80,7 @@ curl http://localhost:23333/
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -91,7 +91,7 @@ curl http://localhost:23333/
 使用 MCP Inspector 工具进行测试：
 
 ```bash
-npx @modelcontextprotocol/inspector http://localhost:23333
+npx @modelcontextprotocol/inspector http://localhost:2333
 ```
 
 ## API 端点
@@ -238,17 +238,17 @@ npm run build
 
 ### 端口被占用
 
-如果端口 23333 被占用，您需要：
+如果端口 2333 被占用，您需要：
 
 **Windows:**
 ```powershell
-netstat -ano | findstr :23333
+netstat -ano | findstr :2333
 taskkill /PID <pid> /F
 ```
 
 **Linux/Mac:**
 ```bash
-lsof -i :23333
+lsof -i :2333
 kill -9 <pid>
 ```
 
@@ -270,7 +270,7 @@ npm run build
 
 验证服务器是否运行：
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 查看服务器日志：

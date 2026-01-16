@@ -83,7 +83,7 @@ class TestServer {
     /**
      * 等待服务器响应
      */
-    async waitForServer(url = 'http://localhost:23333/health', timeout = 5000) {
+    async waitForServer(url = 'http://localhost:2333/health', timeout = 5000) {
         return new Promise((resolve, reject) => {
             const checkServer = () => {
                 http.get(url, (res) => {

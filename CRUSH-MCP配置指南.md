@@ -14,7 +14,7 @@ Crush 的配置目录：`C:\Users\linke\.crush\`
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -26,16 +26,16 @@ Crush 的配置目录：`C:\Users\linke\.crush\`
 
 ```bash
 # Windows PowerShell
-$env:CRUSH_MCP_SERVER_PUAX="http://localhost:23333"
+$env:CRUSH_MCP_SERVER_PUAX="http://localhost:2333"
 
 # 或使用 setx 永久设置
-setx CRUSH_MCP_SERVER_PUAX "http://localhost:23333"
+setx CRUSH_MCP_SERVER_PUAX "http://localhost:2333"
 ```
 
 ### 方法 3：命令行参数（如果支持）
 
 ```bash
-crush --mcp-server puax=http://localhost:23333
+crush --mcp-server puax=http://localhost:2333
 ```
 
 ## 配置验证
@@ -51,7 +51,7 @@ npm start
 
 ```bash
 # 健康检查
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 ## 快速配置步骤
@@ -67,7 +67,7 @@ cat > $env:USERPROFILE\.crush\config.json << 'EOF'
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -90,7 +90,7 @@ cd C:/GitHub/PUAX/puax-mcp-server && npm start
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -107,7 +107,7 @@ Crush 可能支持的配置格式：
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -117,13 +117,13 @@ Crush 可能支持的配置格式：
 ```yaml
 mcpServers:
   puax:
-    url: http://localhost:23333
+    url: http://localhost:2333
 ```
 
 ### TOML 格式
 ```toml
 [mcpServers.puax]
-url = "http://localhost:23333"
+url = "http://localhost:2333"
 ```
 
 ## 自动配置工具
@@ -141,7 +141,7 @@ if not exist %CONFIG_DIR% mkdir %CONFIG_DIR%
 echo { > %CONFIG_FILE%
 echo   "mcpServers": { >> %CONFIG_FILE%
 echo     "puax": { >> %CONFIG_FILE%
-echo       "url": "http://localhost:23333" >> %CONFIG_FILE%
+echo       "url": "http://localhost:2333" >> %CONFIG_FILE%
 echo     } >> %CONFIG_FILE%
 echo   } >> %CONFIG_FILE%
 echo } >> %CONFIG_FILE%
@@ -165,7 +165,7 @@ if (!(Test-Path $crushDir)) {
 @{
     mcpServers = @{
         puax = @{
-            url = "http://localhost:23333"
+            url = "http://localhost:2333"
         }
     }
 } | ConvertTo-Json -Depth 3 | Out-File -FilePath $configPath -Encoding utf8
@@ -190,10 +190,10 @@ Get-Content $configPath
 
 ```bash
 # 测试 MCP 服务器
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 
 # 测试 SSE 连接
-curl http://localhost:23333/
+curl http://localhost:2333/
 ```
 
 ### 日志检查
@@ -206,7 +206,7 @@ curl http://localhost:23333/
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333",
+      "url": "http://localhost:2333",
       "description": "PUAX AI角色管理系统"
     }
   },

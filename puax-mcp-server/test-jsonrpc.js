@@ -15,7 +15,7 @@ function sendJsonRpcRequest(method, params, id) {
 
         const options = {
             hostname: 'localhost',
-            port: 23333,
+            port: 2333,
             path: '/',
             method: 'POST',
             headers: {

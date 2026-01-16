@@ -155,11 +155,11 @@ node verify-tests.js   # 验证测试配置
 **解决**: 
 ```bash
 # Windows
-netstat -ano | findstr :23333
+netstat -ano | findstr :2333
 taskkill /PID <pid> /F
 
 # Linux/Mac
-lsof -i :23333
+lsof -i :2333
 kill -9 <pid>
 ```
 
@@ -177,7 +177,7 @@ node run-with-server.js check
 npm start
 
 # 3. 测试健康端点
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 
 # 4. 运行测试
 node run-with-server.js
@@ -222,7 +222,7 @@ npx jest test/unit/server.test.js
   run: npm start &
   
 - name: Wait for server
-  run: npx wait-on http://localhost:23333/health
+  run: npx wait-on http://localhost:2333/health
   
 - name: Run tests
   run: npm test

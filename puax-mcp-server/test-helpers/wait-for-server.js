@@ -4,7 +4,7 @@
 
 const http = require('http');
 
-function waitForServer(url = 'http://localhost:23333/health', timeout = 10000) {
+function waitForServer(url = 'http://localhost:2333/health', timeout = 10000) {
     return new Promise((resolve, reject) => {
         const startTime = Date.now();
         
