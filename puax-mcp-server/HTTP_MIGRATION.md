@@ -2,7 +2,7 @@
 
 ## 概述
 
-已将 puax-mcp-server 从 stdio 传输方式改造为 HTTP streamable-http (SSE) 传输方式，监听 **23333** 端口。
+已将 puax-mcp-server 从 stdio 传输方式改造为 HTTP streamable-http (SSE) 传输方式，监听 **2333** 端口。
 
 ## 主要变更
 
@@ -11,7 +11,7 @@
 - **新**: 使用 `SSEServerTransport` (Server-Sent Events over HTTP)
 
 ### 2. 服务器架构
-- **HTTP Server**: 监听 `localhost:23333`
+- **HTTP Server**: 监听 `localhost:2333`
 - **端点**:
   - `GET /` - SSE 连接端点
   - `POST /message?sessionId=xxx` - 客户端消息端点
@@ -42,14 +42,14 @@ node build/index.js
 服务器启动后，将输出：
 ```
 PUAX MCP Server started successfully
-Listening on http://localhost:23333
+Listening on http://localhost:2333
 ```
 
 ### 测试服务器
 
 #### 健康检查
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 返回：
@@ -64,7 +64,7 @@ curl http://localhost:23333/health
 
 #### SSE 连接测试
 ```bash
-curl http://localhost:23333/
+curl http://localhost:2333/
 ```
 
 这将建立一个 SSE 连接，并返回端点信息：
@@ -82,7 +82,7 @@ data: /message?sessionId=<session-id>
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -91,7 +91,7 @@ data: /message?sessionId=<session-id>
 或使用 MCP Inspector 进行测试：
 
 ```bash
-npx @modelcontextprotocol/inspector http://localhost:23333
+npx @modelcontextprotocol/inspector http://localhost:2333
 ```
 
 ## 技术细节
@@ -140,7 +140,7 @@ npx @modelcontextprotocol/inspector http://localhost:23333
 ## 注意事项
 
 1. **安全性**: 当前监听 localhost，如需远程访问，请配置防火墙和认证
-2. **端口占用**: 确保 23333 端口未被占用
+2. **端口占用**: 确保 2333 端口未被占用
 3. **会话清理**: 断开连接的会话会自动清理
 4. **日志输出**: 所有日志输出到 stderr，不影响客户端通信
 
@@ -155,19 +155,19 @@ npx @modelcontextprotocol/inspector http://localhost:23333
 ### 端口被占用
 ```bash
 # Windows
-netstat -ano | findstr :23333
+netstat -ano | findstr :2333
 taskkill /PID <pid> /F
 
 # Linux/Mac
-lsof -i :23333
+lsof -i :2333
 kill -9 <pid>
 ```
 
 ### 无法连接
 - 检查服务器是否启动
 - 检查防火墙设置
-- 验证 URL: `http://localhost:23333`
-- 查看健康检查: `http://localhost:23333/health`
+- 验证 URL: `http://localhost:2333`
+- 查看健康检查: `http://localhost:2333/health`
 
 ### SSE 连接中断
 - 检查网络连接

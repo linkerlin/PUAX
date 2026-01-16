@@ -55,8 +55,8 @@ echo [清理] 正在停止服务器...
 REM 杀死所有 node.exe 进程（只杀死当前启动的）
 taskkill /FI "WINDOWTITLE eq PUAX-MCP-Server*" /F >nul 2>&1
 
-REM 额外检查：杀死监听 23333 端口的进程
-for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":23333" 2^>nul') do (
+REM 额外检查：杀死监听 2333 端口的进程
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr ":2333" 2^>nul') do (
     taskkill /PID %%a /F >nul 2>&1
 )
 

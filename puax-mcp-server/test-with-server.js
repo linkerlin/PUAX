@@ -66,7 +66,7 @@ class TestRunner {
             setTimeout(async () => {
                 try {
                     log(colors.cyan, '等待服务器准备就绪...');
-                    await waitForServer('http://localhost:23333/health', timeout - 2000);
+                    await waitForServer('http://localhost:2333/health', timeout - 2000);
                     log(colors.green, '✅ 服务器启动成功！');
                     resolve();
                 } catch (error) {
@@ -83,7 +83,7 @@ class TestRunner {
     /**
      * 等待服务器响应
      */
-    async waitForServerReady(url = 'http://localhost:23333/health', timeout = 10000) {
+    async waitForServerReady(url = 'http://localhost:2333/health', timeout = 10000) {
         return new Promise((resolve, reject) => {
             const startTime = Date.now();
             let attempt = 0;

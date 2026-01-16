@@ -22,7 +22,7 @@ function log(color, ...args) {
     console.log(`${color}${args.join(' ')}${colors.reset}`);
 }
 
-function waitForServer(url = 'http://localhost:23333/health', timeout = 10000) {
+function waitForServer(url = 'http://localhost:2333/health', timeout = 10000) {
     return new Promise((resolve, reject) => {
         const startTime = Date.now();
         let attempt = 0;

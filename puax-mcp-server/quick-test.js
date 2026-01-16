@@ -9,14 +9,14 @@ const http = require('http');
 const TESTS = {
     health: {
         name: '健康检查',
-        url: 'http://localhost:23333/health',
+        url: 'http://localhost:2333/health',
         method: 'GET',
         expectedStatus: 200,
         timeout: 5000
     },
     sse: {
         name: 'SSE 连接',
-        url: 'http://localhost:23333/',
+        url: 'http://localhost:2333/',
         method: 'GET',
         expectedStatus: 200,
         timeout: 5000
@@ -84,7 +84,7 @@ async function main() {
     console.log('═══════════════════════════════════════');
     console.log('  PUAX MCP Server 快速测试');
     console.log('═══════════════════════════════════════');
-    console.log('测试服务器: http://localhost:23333');
+    console.log('测试服务器: http://localhost:2333');
     console.log('═══════════════════════════════════════');
 
     const results = {
@@ -115,8 +115,8 @@ async function main() {
     if (results.failed === 0) {
         console.log('\n🎉 所有测试通过！服务器工作正常。');
         console.log('\n💡 您可以使用以下方式连接服务器:');
-        console.log('   - MCP 客户端: http://localhost:23333');
-        console.log('   - MCP Inspector: npx @modelcontextprotocol/inspector http://localhost:23333');
+        console.log('   - MCP 客户端: http://localhost:2333');
+        console.log('   - MCP Inspector: npx @modelcontextprotocol/inspector http://localhost:2333');
         process.exit(0);
     } else {
         console.log('\n⚠️  部分测试失败，请检查服务器是否正在运行。');

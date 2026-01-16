@@ -7,7 +7,7 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
 # 定义配置参数
-$MCP_SERVER_URL = "http://localhost:23333"
+$MCP_SERVER_URL = "http://localhost:2333"
 $MCP_SERVER_NAME = "puax"
 
 # 获取用户主目录

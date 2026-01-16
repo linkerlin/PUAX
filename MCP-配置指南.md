@@ -2,7 +2,7 @@
 
 ## 概述
 
-PUAX 支持通过 **HTTP SSE** 方式运行的 MCP 服务器，监听 **23333** 端口。
+PUAX 支持通过 **HTTP SSE** 方式运行的 MCP 服务器，监听 **2333** 端口。
 
 ## 配置文件列表
 
@@ -27,12 +27,12 @@ npm run build
 npm start
 ```
 
-服务器启动后将在 `http://localhost:23333` 监听
+服务器启动后将在 `http://localhost:2333` 监听
 
 ### 2. 验证服务器状态
 
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 预期输出：
@@ -57,7 +57,7 @@ curl http://localhost:23333/health
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -72,7 +72,7 @@ curl http://localhost:23333/health
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -85,7 +85,7 @@ curl http://localhost:23333/health
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -94,7 +94,7 @@ curl http://localhost:23333/health
 ## 服务器参数
 
 ### 连接信息
-- **端口**：23333
+- **端口**：2333
 - **协议**：HTTP SSE (Server-Sent Events)
 - **传输方式**：streamable-http
 
@@ -122,11 +122,11 @@ curl http://localhost:23333/health
 
 ### 端口被占用
 
-如果 23333 端口被占用，找到占用进程并终止：
+如果 2333 端口被占用，找到占用进程并终止：
 
 ```powershell
 # Windows
-netstat -ano | findstr :23333
+netstat -ano | findstr :2333
 taskkill /PID <pid> /F
 ```
 
@@ -146,7 +146,7 @@ npm run build
 
 ```bash
 # 验证服务器运行状态
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 
 # 查看服务器日志
 cd puax-mcp-server && node build/index.js

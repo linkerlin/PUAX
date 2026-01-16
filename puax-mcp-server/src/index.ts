@@ -115,7 +115,7 @@ PUAX MCP Server v${version}
   node build/index.js [选项]
 
 选项:
-  -p, --port <端口>    指定监听端口 (默认: 23333)
+  -p, --port <端口>    指定监听端口 (默认: 2333)
   -H, --host <主机>    指定监听主机 (默认: 127.0.0.1)
   -q, --quiet          静默模式，减少日志输出
   -v, --version        显示版本号
@@ -133,9 +133,9 @@ PUAX MCP Server v${version}
   PORT=8080 puax-mcp-server            # 通过环境变量设置端口
 
 MCP 端点:
-  http://127.0.0.1:23333/mcp           # MCP 标准端点
-  http://127.0.0.1:23333/              # 根路径（也支持）
-  http://127.0.0.1:23333/health        # 健康检查
+  http://127.0.0.1:2333/mcp           # MCP 标准端点
+  http://127.0.0.1:2333/              # 根路径（也支持）
+  http://127.0.0.1:2333/health        # 健康检查
 
 更多信息: https://github.com/linkerlin/PUAX
 `);
@@ -169,7 +169,7 @@ async function main(): Promise<void> {
     // 合并配置: 默认值 < 环境变量 < 命令行参数
     const envConfig = getEnvConfig();
     const config: ServerConfig = {
-        port: cliConfig.port ?? envConfig.port ?? 23333,
+        port: cliConfig.port ?? envConfig.port ?? 2333,
         host: cliConfig.host ?? envConfig.host ?? '127.0.0.1',
         quiet: cliConfig.quiet ?? envConfig.quiet ?? false
     };

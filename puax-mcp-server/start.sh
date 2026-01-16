@@ -5,7 +5,7 @@
 set -e
 
 # 默认值
-PORT=23333
+PORT=2333
 HOST="127.0.0.1"
 QUIET=false
 
@@ -33,7 +33,7 @@ PUAX MCP Server 启动脚本
   ./start.sh [选项]
 
 选项:
-  -p, --port <端口>    指定监听端口 (默认: 23333)
+  -p, --port <端口>    指定监听端口 (默认: 2333)
   -H, --host <主机>    指定监听主机 (默认: 127.0.0.1)
   -q, --quiet          静默模式，减少日志输出
   -h, --help           显示此帮助信息
@@ -65,7 +65,7 @@ fi
 
 # 构建参数
 ARGS=""
-if [ "$PORT" != "23333" ]; then
+if [ "$PORT" != "2333" ]; then
     ARGS="$ARGS --port $PORT"
 fi
 if [ "$HOST" != "127.0.0.1" ]; then

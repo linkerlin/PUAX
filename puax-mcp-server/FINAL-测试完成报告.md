@@ -186,7 +186,7 @@ npm test
   run: npm start &
 
 - name: Wait for server
-  run: npx wait-on http://localhost:23333/health
+  run: npx wait-on http://localhost:2333/health
 
 - name: Run tests
   run: npm test
@@ -210,7 +210,7 @@ Time:        15.234 s
 
 ```
 # 1. 检查服务器是否运行
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 
 # 2. 如果没有运行，启动服务器
 npm start

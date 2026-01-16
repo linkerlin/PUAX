@@ -3,7 +3,7 @@
 # 用法: .\start.ps1 [-Port 8080] [-HostName "0.0.0.0"] [-Quiet]
 
 param(
-    [int]$Port = 23333,
+    [int]$Port = 2333,
     [string]$HostName = "127.0.0.1",
     [switch]$Quiet,
     [switch]$Help
@@ -21,7 +21,7 @@ PUAX MCP Server 启动脚本
   .\start.ps1 [-Port <端口>] [-HostName <主机>] [-Quiet]
 
 参数:
-  -Port <端口>        指定监听端口 (默认: 23333)
+  -Port <端口>        指定监听端口 (默认: 2333)
   -HostName <主机>    指定监听主机 (默认: 127.0.0.1)
   -Quiet              静默模式，减少日志输出
   -Help               显示此帮助信息
@@ -69,7 +69,7 @@ if (-not (Test-Path "build/index.js")) {
 
 # 构建参数
 $args = @()
-if ($Port -ne 23333) {
+if ($Port -ne 2333) {
     $args += "--port"
     $args += $Port.ToString()
 }

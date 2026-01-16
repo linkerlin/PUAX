@@ -12,7 +12,7 @@ node build/index.js
 你应该看到：
 ```
 PUAX MCP Server started successfully
-Listening on http://localhost:23333
+Listening on http://localhost:2333
 ```
 
 ## 测试步骤
@@ -22,7 +22,7 @@ Listening on http://localhost:23333
 打开 **另一个** 终端窗口（保持服务器运行）：
 
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 预期输出：
@@ -33,7 +33,7 @@ curl http://localhost:23333/health
 ### 2. SSE 连接测试
 
 ```bash
-curl http://localhost:23333/
+curl http://localhost:2333/
 ```
 
 预期输出类似：
@@ -50,7 +50,7 @@ data: /message?sessionId=550e8400-e29b-41d4-a716-446655440000
 安装并运行 MCP Inspector：
 
 ```bash
-npx @modelcontextprotocol/inspector http://localhost:23333
+npx @modelcontextprotocol/inspector http://localhost:2333
 ```
 
 浏览器将自动打开 Inspector 界面。
@@ -111,20 +111,20 @@ npx @modelcontextprotocol/inspector http://localhost:23333
 
 ```bash
 # 终端 1
-curl http://localhost:23333/
+curl http://localhost:2333/
 
 # 终端 2
-curl http://localhost:23333/
+curl http://localhost:2333/
 
 # 终端 3
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 健康检查应显示 `activeSessions` 数量增加。
 
 ## 常见问题
 
-### Q: 端口 23333 被占用
+### Q: 端口 2333 被占用
 
 **A**: 停止占用该端口的进程或修改代码中的端口号。
 
@@ -132,14 +132,14 @@ curl http://localhost:23333/health
 
 **A**: 
 1. 确认服务器正在运行
-2. 检查是否监听了 localhost:23333
+2. 检查是否监听了 localhost:2333
 3. 验证防火墙设置
 
 ### Q: MCP Inspector 无法连接
 
 **A**:
 1. 确认服务器运行正常
-2. 在浏览器中尝试访问 http://localhost:23333/health
+2. 在浏览器中尝试访问 http://localhost:2333/health
 3. 检查 MCP Inspector 的版本
 
 ### Q: 工具调用失败

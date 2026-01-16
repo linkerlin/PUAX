@@ -12,7 +12,7 @@
 |-----|--------|--------|
 | 传输协议 | `StdioServerTransport` | `SSEServerTransport` |
 | 通信方式 | 标准输入输出 | HTTP + Server-Sent Events |
-| 监听地址 | 无（进程通信） | `http://localhost:23333` |
+| 监听地址 | 无（进程通信） | `http://localhost:2333` |
 | 并发支持 | 单客户端 | ✅ 多客户端支持 |
 | 远程访问 | ❌ 仅限本地 | ✅ 支持网络访问 |
 
@@ -43,7 +43,7 @@ private httpServer: any;
 
 **改造 `run()` 方法:**
 - 移除 `StdioServerTransport`
-- 创建 HTTP 服务器监听 23333 端口
+- 创建 HTTP 服务器监听 2333 端口
 - 添加信号处理 (SIGINT, SIGTERM)
 
 **新增方法:**
@@ -85,7 +85,7 @@ npm start
 输出:
 ```
 PUAX MCP Server started successfully
-Listening on http://localhost:23333
+Listening on http://localhost:2333
 ```
 
 ### 配置 MCP 客户端
@@ -94,7 +94,7 @@ Listening on http://localhost:23333
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:23333"
+      "url": "http://localhost:2333"
     }
   }
 }
@@ -104,19 +104,19 @@ Listening on http://localhost:23333
 
 ```bash
 # 健康检查
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 
 # SSE 连接
-curl http://localhost:23333/
+curl http://localhost:2333/
 
 # MCP Inspector
-npx @modelcontextprotocol/inspector http://localhost:23333
+npx @modelcontextprotocol/inspector http://localhost:2333
 ```
 
 ## 测试结果
 
 ✅ 服务器启动成功  
-✅ 监听 23333 端口  
+✅ 监听 2333 端口  
 ✅ 健康检查端点正常  
 ✅ SSE 连接正常工作  
 ✅ 会话管理正常  
@@ -159,8 +159,8 @@ npx @modelcontextprotocol/inspector http://localhost:23333
 ## 注意事项
 
 1. **安全性**: 如需远程访问，请添加认证机制
-2. **端口配置**: 如需更改端口，修改 `server.ts` 中的 23333
-3. **防火墙**: 确保防火墙允许访问 23333 端口
+2. **端口配置**: 如需更改端口，修改 `server.ts` 中的 2333
+3. **防火墙**: 确保防火墙允许访问 2333 端口
 4. **进程管理**: 建议使用 pm2 等工具管理服务器进程
 
 ## 后续建议

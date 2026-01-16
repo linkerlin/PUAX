@@ -9,7 +9,7 @@ const { URL } = require('url');
 // 检查服务器是否在运行
 function checkServerRunning() {
     return new Promise((resolve) => {
-        const req = http.get('http://localhost:23333/health', (res) => {
+        const req = http.get('http://localhost:2333/health', (res) => {
             res.resume();
             resolve({ running: res.statusCode === 200, status: res.statusCode });
         });
@@ -22,7 +22,7 @@ function checkServerRunning() {
 }
 
 describe('HTTP 端点测试', () => {
-    const BASE_URL = 'http://localhost:23333';
+    const BASE_URL = 'http://localhost:2333';
     let serverRunning = false;
 
     beforeAll(async () => {

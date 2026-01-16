@@ -69,7 +69,7 @@ export class PuaxMcpServer {
     constructor(config: ServerConfig = {}) {
         // 合并配置
         this.config = {
-            port: config.port ?? 23333,
+            port: config.port ?? 2333,
             host: config.host ?? '127.0.0.1',
             quiet: config.quiet ?? false
         };

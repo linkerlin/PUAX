@@ -2,7 +2,7 @@
 
 PUAX MCP Server 是一个基于 Model Context Protocol (MCP) 的服务器，为 AI Agent 提供 PUAX 项目中角色的选择、切换和激活功能。
 
-> **重要更新**: 现已支持 HTTP streamable-http (SSE) 传输方式！监听 **23333** 端口，提供更好的并发性和远程访问能力。
+> **重要更新**: 现已支持 HTTP streamable-http (SSE) 传输方式！监听 **2333** 端口，提供更好的并发性和远程访问能力。
 
 ## 功能特性
 
@@ -29,7 +29,7 @@ npm install && npm run serve
 # 查看帮助
 node build/index.js --help
 
-# 使用默认配置启动 (127.0.0.1:23333)
+# 使用默认配置启动 (127.0.0.1:2333)
 npm start
 
 # 指定端口启动
@@ -61,12 +61,12 @@ start-server.bat
 
 ```bash
 # 健康检查
-curl http://127.0.0.1:23333/health
+curl http://127.0.0.1:2333/health
 
 # 预期输出: {"status":"ok","service":"puax-mcp-server","version":"1.6.0",...}
 
 # MCP 端点测试
-curl http://127.0.0.1:23333/mcp
+curl http://127.0.0.1:2333/mcp
 ```
 
 ## 传输方式
@@ -81,7 +81,7 @@ curl http://127.0.0.1:23333/mcp
 {
   "mcpServers": {
     "puax": {
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -93,7 +93,7 @@ curl http://127.0.0.1:23333/mcp
 {
   "mcpServers": {
     "puax": {
-      "url": "http://127.0.0.1:23333"
+      "url": "http://127.0.0.1:2333"
     }
   }
 }
@@ -111,7 +111,7 @@ curl http://127.0.0.1:23333/mcp
 #### 健康检查示例
 
 ```bash
-$ curl http://localhost:23333/health
+$ curl http://localhost:2333/health
 
 {"status":"ok","service":"puax-mcp-server","version":"1.0.0","activeSessions":0}
 ```
@@ -136,7 +136,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
   "mcp": {
     "puax": {
       "type": "sse",
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -157,7 +157,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
 {
   "mcpServers": {
     "puax": {
-      "url": "http://127.0.0.1:23333/mcp",
+      "url": "http://127.0.0.1:2333/mcp",
       "env": {
         "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
       }
@@ -176,7 +176,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
 {
   "mcpServers": {
     "puax": {
-      "url": "http://127.0.0.1:23333/mcp",
+      "url": "http://127.0.0.1:2333/mcp",
       "env": {
         "PUAX_PROJECT_PATH": "/path/to/your/PUAX/project"
       }
@@ -194,7 +194,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
   "mcpServers": {
     "puax": {
       "type": "sse",
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -282,7 +282,7 @@ CRUSH 支持 SSE (Server-Sent Events) 模式，这是本服务器推荐的使用
 ### 使用 MCP Inspector 测试
 
 ```bash
-npx @modelcontextprotocol/inspector http://localhost:23333
+npx @modelcontextprotocol/inspector http://localhost:2333
 ```
 
 浏览器将自动打开 Inspector 界面，你可以：
@@ -356,7 +356,7 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
-EXPOSE 23333
+EXPOSE 2333
 CMD ["node", "build/index.js"]
 ```
 
@@ -368,7 +368,7 @@ server {
     server_name your-domain.com;
 
     location / {
-        proxy_pass http://localhost:23333;
+        proxy_pass http://localhost:2333;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -398,12 +398,12 @@ server {
 
 **A**: 使用健康检查端点：
 ```bash
-curl http://localhost:23333/health
+curl http://localhost:2333/health
 ```
 
 ### Q: 如何更改监听端口？
 
-**A**: 修改 `src/server.ts` 中的端口配置（默认为 23333）。
+**A**: 修改 `src/server.ts` 中的端口配置（默认为 2333）。
 
 ### Q: 是否支持 HTTPS？
 
@@ -432,15 +432,15 @@ pm2 logs puax-mcp-server
 ```bash
 # 查找占用端口的进程
 # Windows (PowerShell)
-Get-NetTCPConnection -LocalPort 23333 | Select-Object OwningProcess
+Get-NetTCPConnection -LocalPort 2333 | Select-Object OwningProcess
 Get-Process -Id <PID>
 
 # Windows (CMD)
-netstat -ano | findstr :23333
+netstat -ano | findstr :2333
 tasklist /FI "PID eq <PID>"
 
 # Linux/macOS
-lsof -i :23333
+lsof -i :2333
 ps aux | grep <PID>
 
 # 关闭进程
@@ -460,7 +460,7 @@ node build/index.js --port 8080
 
 1. 确认服务器已启动：
    ```bash
-   curl http://localhost:23333/health
+   curl http://localhost:2333/health
    ```
 
 2. 检查防火墙设置
@@ -504,7 +504,7 @@ MIT License
 - ✅ 新增 HTTP streamable-http (SSE) 传输方式
 - ✅ 支持多客户端并发连接
 - ✅ 添加健康检查端点
-- ✅ 监听 23333 端口
+- ✅ 监听 2333 端口
 - ✅ 改进错误处理和日志记录
 
 ### v1.0.0 (Initial)

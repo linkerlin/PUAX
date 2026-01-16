@@ -8,7 +8,7 @@ const http = require('http');
 // 服务器检查
 function checkServer() {
     return new Promise(resolve => {
-        http.get('http://localhost:23333/health', res => {
+        http.get('http://localhost:2333/health', res => {
             res.resume();
             resolve(res.statusCode === 200);
         }).on('error', () => resolve(false));

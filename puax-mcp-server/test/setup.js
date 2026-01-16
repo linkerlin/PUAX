@@ -34,7 +34,7 @@ global.testHelpers = {
     /**
      * 检查服务器是否运行
      */
-    checkServer: async (url = 'http://localhost:23333/health', timeout = 5000) => {
+    checkServer: async (url = 'http://localhost:2333/health', timeout = 5000) => {
         const http = require('http');
         return new Promise((resolve, reject) => {
             const req = http.get(url, (res) => {

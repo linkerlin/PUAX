@@ -360,7 +360,7 @@ cd PUAX/puax-mcp-server
 npm install && npm run serve
 ```
 
-服务器将在 `http://127.0.0.1:23333` 启动。
+服务器将在 `http://127.0.0.1:2333` 启动。
 
 ### 在 MCP 客户端中配置
 
@@ -377,7 +377,7 @@ npm install && npm run serve
   "mcpServers": {
     "puax": {
       "type": "streamable-http",
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -390,7 +390,7 @@ npm install && npm run serve
   "mcpServers": {
     "puax": {
       "type": "streamable-http",
-      "url": "http://127.0.0.1:23333"
+      "url": "http://127.0.0.1:2333"
     }
   }
 }
@@ -404,7 +404,7 @@ npm install && npm run serve
 {
   "mcpServers": {
     "puax": {
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -419,7 +419,7 @@ npm install && npm run serve
   "mcp": {
     "puax": {
       "type": "sse",
-      "url": "http://127.0.0.1:23333/mcp"
+      "url": "http://127.0.0.1:2333/mcp"
     }
   }
 }
@@ -435,7 +435,7 @@ npm install && npm run serve
 ### 命令行选项
 
 ```bash
-# 使用默认配置启动 (127.0.0.1:23333)
+# 使用默认配置启动 (127.0.0.1:2333)
 node build/index.js
 
 # 指定端口

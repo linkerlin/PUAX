@@ -23,7 +23,7 @@ function log(color, ...args) {
 
 function checkServerRunning() {
     return new Promise((resolve) => {
-        const req = http.get('http://localhost:23333/health', (res) => {
+        const req = http.get('http://localhost:2333/health', (res) => {
             res.resume();
             resolve(res.statusCode === 200);
         });
@@ -77,7 +77,7 @@ async function main() {
         log(colors.cyan, '\n💡 请按照以下步骤操作:\n');
         log(colors.blue, '  1. 打开新终端');
         log(colors.blue, '  2. 运行: npm start');
-        log(colors.blue, '  3. 等待服务器启动（显示 "Listening on http://localhost:23333"）');
+        log(colors.blue, '  3. 等待服务器启动（显示 "Listening on http://localhost:2333"）');
         log(colors.blue, '  4. 在本终端运行: npm test\n');
         log(colors.cyan, '或者使用自动测试:\n');
         log(colors.blue, '  node test-with-server.js\n');
