@@ -55,6 +55,8 @@ start-server.bat
 ./start.sh --port 8080
 ```
 
+**注意**: 使用 Ctrl-C 停止服务器时，脚本会自动清理 Node 进程，确保端口被正确释放。
+
 ### 验证服务器
 
 ```bash

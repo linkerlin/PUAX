@@ -83,4 +83,67 @@ if ($Quiet) {
 
 # 启动服务器
 Write-Host "[PUAX] Starting server..." -ForegroundColor Cyan
-node build/index.js @args
+Write-Host "[PUAX] Press Ctrl-C to stop" -ForegroundColor Gray
+Write-Host ""
+
+# 存储 Node 进程 ID
+$NodeProcess = $null
+
+# 设置 Ctrl-C 处理器
+$CleanupHandler = {
+    Write-Host ""
+    Write-Host "[PUAX] Stopping server..." -ForegroundColor Yellow
+    
+    # 杀死所有监听该端口的进程
+    try {
+        $connections = Get-NetTCPConnection -LocalPort $Port -ErrorAction SilentlyContinue
+        if ($connections) {
+            $processIds = $connections | Select-Object -ExpandProperty OwningProcess -Unique
+            foreach ($processId in $processIds) {
+                try {
+                    $proc = Get-Process -Id $processId -ErrorAction SilentlyContinue
+                    if ($proc) {
+                        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+                        Write-Host "[PUAX] Stopped process $processId ($($proc.Name))" -ForegroundColor Yellow
+                    }
+                }
+                catch {
+                    # 忽略错误
+                }
+            }
+            Write-Host "[PUAX] Server stopped successfully" -ForegroundColor Green
+        }
+        else {
+            Write-Host "[PUAX] No process found on port $Port" -ForegroundColor Gray
+        }
+    }
+    catch {
+        Write-Host "[PUAX] Cleanup completed" -ForegroundColor Gray
+    }
+}
+
+# 注册 Ctrl-C 事件处理器
+try {
+    # 注册退出事件
+    Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action $CleanupHandler | Out-Null
+    
+    # 启动 Node 进程（前台运行，这样可以捕获 Ctrl-C）
+    try {
+        node build/index.js @args
+        $exitCode = $LASTEXITCODE
+    }
+    catch {
+        Write-Host "[PUAX] Error: $_" -ForegroundColor Red
+        $exitCode = 1
+    }
+    finally {
+        # 清理
+        & $CleanupHandler
+    }
+    
+    exit $exitCode
+}
+finally {
+    # 清理事件处理器
+    Get-EventSubscriber -SourceIdentifier PowerShell.Exiting -ErrorAction SilentlyContinue | Unregister-Event
+}

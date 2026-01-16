@@ -77,4 +77,61 @@ fi
 
 # 启动服务器
 echo -e "\033[36m[PUAX]\033[0m Starting server..."
-node build/index.js $ARGS
+
+# 存储 Node 进程 PID
+NODE_PID=""
+
+# Ctrl-C 清理函数
+cleanup() {
+    echo ""
+    echo -e "\033[33m[PUAX]\033[0m Stopping server..."
+    
+    # 杀死 Node 进程
+    if [ -n "$NODE_PID" ]; then
+        kill -TERM "$NODE_PID" 2>/dev/null || true
+        
+        # 等待进程结束（最多5秒）
+        for i in {1..50}; do
+            if ! kill -0 "$NODE_PID" 2>/dev/null; then
+                echo -e "\033[32m[PUAX]\033[0m Server stopped successfully"
+                break
+            fi
+            sleep 0.1
+        done
+        
+        # 如果进程还在，强制杀死
+        if kill -0 "$NODE_PID" 2>/dev/null; then
+            kill -9 "$NODE_PID" 2>/dev/null || true
+            echo -e "\033[33m[PUAX]\033[0m Force killed server process"
+        fi
+    fi
+    
+    # 额外检查：杀死所有监听该端口的进程
+    if command -v lsof &> /dev/null; then
+        PIDS=$(lsof -ti :"$PORT" 2>/dev/null || true)
+        if [ -n "$PIDS" ]; then
+            echo -e "\033[33m[PUAX]\033[0m Cleaning up remaining processes on port $PORT"
+            echo "$PIDS" | xargs kill -9 2>/dev/null || true
+        fi
+    fi
+    
+    exit 0
+}
+
+# 注册信号处理器
+trap cleanup SIGINT SIGTERM EXIT
+
+# 启动服务器（在后台）
+node build/index.js $ARGS &
+NODE_PID=$!
+
+# 等待 Node 进程
+wait $NODE_PID
+EXIT_CODE=$?
+
+# 如果进程非正常退出
+if [ $EXIT_CODE -ne 0 ] && [ $EXIT_CODE -ne 130 ]; then
+    echo -e "\033[31m[PUAX]\033[0m Server exited with code $EXIT_CODE"
+fi
+
+exit $EXIT_CODE
