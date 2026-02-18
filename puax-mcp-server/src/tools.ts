@@ -1,85 +1,170 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 
-export interface RoleInfo {
+export interface SkillInfo {
   id: string;
   name: string;
   category: string;
   description: string;
+  tags: string[];
+  author: string;
+  version: string;
   filePath: string;
+  capabilities: string[];
+  howToUse: string;
+  inputFormat: string;
+  outputFormat: string;
+  exampleUsage: string;
+  content: string;
 }
 
-export const ListRolesTool: Tool = {
-  name: "list_roles",
-  description: "列出 PUAX 项目中所有可用的 AI 角色",
+// Backward compatibility alias
+export type RoleInfo = SkillInfo;
+
+/**
+ * List all available SKILLs with optional category filter
+ */
+export const ListSkillsTool: Tool = {
+  name: "list_skills",
+  description: "List all available SKILLs in the PUAX project. Use this to discover what roles/personas are available.",
   inputSchema: {
     type: "object",
     properties: {
       category: {
         type: "string",
-        description: "可选，按类别筛选角色（如：萨满系列、军事化组织等）",
-        enum: ["全部", "萨满系列", "军事化组织", "SillyTavern系列", "主题场景", "自我激励", "特色角色与工具"],
-        default: "全部"
+        description: "Filter SKILLs by category",
+        enum: ["all", "shaman", "military", "sillytavern", "theme", "self-motivation", "special"],
+        default: "all"
+      },
+      includeCapabilities: {
+        type: "boolean",
+        description: "Include capabilities array in response (default: false for brevity)",
+        default: false
       }
     }
   }
 };
 
-export const GetRoleTool: Tool = {
-  name: "get_role",
-  description: "获取指定角色的详细 Prompt 内容",
+/**
+ * Get detailed information about a specific SKILL
+ */
+export const GetSkillTool: Tool = {
+  name: "get_skill",
+  description: "Get detailed information about a specific SKILL, including its full system prompt content.",
   inputSchema: {
     type: "object",
     properties: {
-      roleId: {
+      skillId: {
         type: "string",
-        description: "角色ID（使用 list_roles 获取）"
+        description: "The unique identifier of the SKILL (e.g., 'shaman-musk', 'military-commander')"
       },
-      task: {
+      section: {
         type: "string",
-        description: "可选，具体任务描述，会替换模板中的占位符"
+        description: "Optional: Get only a specific section ('full', 'metadata', 'capabilities', 'systemPrompt')",
+        enum: ["full", "metadata", "capabilities", "systemPrompt"],
+        default: "full"
       }
     },
-    required: ["roleId"]
+    required: ["skillId"]
   }
 };
 
-export const SearchRolesTool: Tool = {
-  name: "search_roles",
-  description: "搜索角色（按名称或描述关键词）",
+/**
+ * Search SKILLs by keyword
+ */
+export const SearchSkillsTool: Tool = {
+  name: "search_skills",
+  description: "Search SKILLs by keyword. Searches in name, description, tags, and capabilities.",
   inputSchema: {
     type: "object",
     properties: {
       keyword: {
         type: "string",
-        description: "搜索关键词"
+        description: "Search keyword (searches name, description, tags, capabilities)"
+      },
+      searchInCapabilities: {
+        type: "boolean",
+        description: "Include capabilities in search (default: true)",
+        default: true
       }
     },
     required: ["keyword"]
   }
 };
 
-export const ActivateRoleTool: Tool = {
-  name: "activate_role",
-  description: "激活角色并返回完整的 System Prompt（包含可选的任务替换）",
+/**
+ * Activate a SKILL with optional task substitution
+ */
+export const ActivateSkillTool: Tool = {
+  name: "activate_skill",
+  description: "Activate a SKILL and get the ready-to-use system prompt. Optionally provide a task to replace {{task}} placeholders.",
   inputSchema: {
     type: "object",
     properties: {
-      roleId: {
+      skillId: {
         type: "string",
-        description: "角色ID"
+        description: "The unique identifier of the SKILL to activate"
       },
       task: {
         type: "string",
-        description: "具体任务描述，替换模板中的占位符"
+        description: "Optional task description to replace {{task}}, {{任务描述}}, {{占位符}} placeholders"
       },
       customParams: {
         type: "object",
-        description: "可选，自定义参数替换",
+        description: "Optional custom parameters for placeholder replacement (key-value pairs)",
         additionalProperties: true
       }
     },
-    required: ["roleId"]
+    required: ["skillId"]
   }
 };
 
-export const Tools = [ListRolesTool, GetRoleTool, SearchRolesTool, ActivateRoleTool];
+/**
+ * Get categories and statistics
+ */
+export const GetCategoriesTool: Tool = {
+  name: "get_categories",
+  description: "Get all available SKILL categories with counts and descriptions.",
+  inputSchema: {
+    type: "object",
+    properties: {}
+  }
+};
+
+// Backward compatibility tools (aliases)
+export const ListRolesTool = {
+  ...ListSkillsTool,
+  name: "list_roles",
+  description: "[Legacy] Use list_skills instead. List all available roles."
+};
+
+export const GetRoleTool = {
+  ...GetSkillTool,
+  name: "get_role",
+  description: "[Legacy] Use get_skill instead. Get role details by ID."
+};
+
+export const SearchRolesTool = {
+  ...SearchSkillsTool,
+  name: "search_roles",
+  description: "[Legacy] Use search_skills instead. Search roles by keyword."
+};
+
+export const ActivateRoleTool = {
+  ...ActivateSkillTool,
+  name: "activate_role",
+  description: "[Legacy] Use activate_skill instead. Activate a role."
+};
+
+export const Tools = [
+  // New SKILL-based tools
+  ListSkillsTool,
+  GetSkillTool,
+  SearchSkillsTool,
+  ActivateSkillTool,
+  GetCategoriesTool,
+  // Legacy aliases for backward compatibility
+  ListRolesTool,
+  GetRoleTool,
+  SearchRolesTool,
+  ActivateRoleTool
+];
