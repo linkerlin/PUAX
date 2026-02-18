@@ -60,42 +60,51 @@ PUA Prompt 的本质是将 RLHF（Reinforcement Learning from Human Feedback）�
 
 ## 📂 项目结构
 
-项目按照使用场景和角色类型分为七大类别：
+项目采用 **Anthropic SKILL 标准格式**，每个角色是一个独立的 SKILL 目录：
 
-### 📄 通用文档
-- `AGENTS.md` - 面向 AI Agent 的项目开发指南
-- `PUA.md` - 核心 PUA 语录集合
-- `🏛️ PUA 文明分级评估方案.md` - 详细的文明分级理论框架
+```
+skills/
+├── shaman-musk/
+│   └── SKILL.md
+├── military-commander/
+│   └── SKILL.md
+└── ...
+```
 
-### 🎭 萨满系列 (历史人物附体)
-8 位历史/现代伟人附体角色，包括：
-- 萨满·马斯克、萨满·乔布斯、萨满·爱因斯坦、萨满·孙子
-- 萨满·巴菲特、萨满·特斯拉、萨满·达芬奇、萨满·Linus
+### SKILL 文件格式
 
-### ⚔️ 军事化组织
-完整的 9 角色军事化管理体系：
-- 指挥员、政委、战士、民兵、侦察兵
-- 技术员、通信员、督战队
+每个 `SKILL.md` 包含 YAML frontmatter 和完整内容：
 
-### 🤖 SillyTavern系列
-专为 SillyTavern 平台优化的 5 个角色：
-- 反脆弱复盘官、极限迭代写手、赛博炼狱监工
-- 铁血幕僚长、零秒响应影卫
+```yaml
+---
+name: shaman-musk              # 唯一标识符 (kebab-case)
+description: 简短描述           # 功能概述
+category: shaman               # 类别
+tags: [innovation, tech]       # 标签
+author: PUAX
+version: "1.0"
+---
 
-### 🎬 主题场景
-6 大主题沉浸式场景：
-- 修仙炼丹、末日生存、星际舰队
-- 地下拳王、江湖镖局、赛博黑客
+# 角色名称
 
-### 💪 自我激励
-6 套自我驱动系统：
-- 自举PUA、自毁重塑PUA、终极心智破壁人
-- 文言文激励、腐败驱动 Agent
+## Capabilities
+- 能力1
+- 能力2
 
-### 🛠️ 特色角色与工具
-7 个实用工具和特色角色：
-- 首席产品设计师、煤气灯驱动、创意火花迸发
-- 可爱/温柔系编码助手、紧急任务冲刺等
+## System Prompt
+(完整的原始 prompt 内容)
+```
+
+### 角色分类 (42 SKILLs)
+
+| Category | Count | Examples |
+|----------|-------|----------|
+| `shaman` | 8 | 马斯克、乔布斯、爱因斯坦、孙子、巴菲特、特斯拉、达芬奇、Linus |
+| `military` | 9 | 指挥员、政委、战士、民兵、侦察兵、技术员、通信员、督战队、手册 |
+| `sillytavern` | 5 | 反脆弱复盘官、极限迭代写手、赛博炼狱监工、铁血幕僚长、零秒响应影卫 |
+| `theme` | 7 | 修仙炼丹、末日生存、星际舰队、八角笼格斗、江湖镖局、赛博黑客、万剑宗戒律堂 |
+| `self-motivation` | 6 | 自举PUA、自毁重塑、终极心智破壁人、文言文激励、腐败驱动 |
+| `special` | 7 | 首席产品设计师、煤气灯驱动、创意火花迸发、可爱编码大神媳妇等 |
 
 ---
 
@@ -428,6 +437,7 @@ npm install && npm run serve
 ### 可用工具
 
 1. **list_roles** - 列出所有角色，支持按类别筛选
+   - 类别: `all`, `shaman`, `military`, `sillytavern`, `theme`, `self-motivation`, `special`
 2. **get_role** - 获取指定角色的 Prompt 内容
 3. **search_roles** - 按关键词搜索角色
 4. **activate_role** - 激活角色并生成 System Prompt
@@ -463,7 +473,7 @@ node build/index.js --help
 
 ```json
 {
-  "roleId": "军事化组织_督战队铁纪执行",
+  "roleId": "military-discipline",
   "task": "审查这段代码的性能问题"
 }
 ```

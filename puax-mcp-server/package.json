@@ -9,7 +9,8 @@
     "puax": "./build/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run generate-bundle && tsc",
+    "generate-bundle": "node src/prompts/generate-bundle.js",
     "prepublishOnly": "npm run build",
     "start": "node build/index.js",
     "start:port": "node build/index.js --port",

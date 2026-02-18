@@ -144,6 +144,18 @@ export class PuaxMcpServer {
                 const { name, arguments: args } = request.params;
 
                 switch (name) {
+                    // New SKILL tools
+                    case 'list_skills':
+                        return await this.handleListSkills(args);
+                    case 'get_skill':
+                        return await this.handleGetSkill(args);
+                    case 'search_skills':
+                        return await this.handleSearchSkills(args);
+                    case 'activate_skill':
+                        return await this.handleActivateSkill(args);
+                    case 'get_categories':
+                        return await this.handleGetCategories(args);
+                    // Legacy role tools (aliases)
                     case 'list_roles':
                         return await this.handleListRoles(args);
                     case 'get_role':
@@ -197,40 +209,40 @@ export class PuaxMcpServer {
     private setupResourceHandlers(): void {
         // 设置 resources/list 处理器
         this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
-            // 返回所有角色文件作为资源
-            const resources = promptManager.getAllRoles().map(role => ({
-                uri: `puax://roles/${role.id}`,
-                description: `${role.name} - ${role.category}`,
+            // 返回所有技能文件作为资源
+            const resources = promptManager.getAllSkills().map(skill => ({
+                uri: `puax://skills/${skill.id}`,
+                description: `${skill.name} - ${skill.category}`,
                 mimeType: 'text/markdown'
             }));
-            
+
             return { resources };
         });
 
         // 设置 resources/read 处理器
         this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
             const { uri } = request.params;
-            
-            // 解析 URI：puax://roles/{roleId}
-            const match = uri.match(/^puax:\/\/roles\/(.+)$/);
+
+            // 解析 URI：puax://skills/{skillId}
+            const match = uri.match(/^puax:\/\/skills\/(.+)$/);
             if (!match) {
                 throw new McpError(
                     ErrorCode.InvalidParams,
                     `Invalid resource URI: ${uri}`
                 );
             }
-            
-            const roleId = match[1];
-            const role = promptManager.getRoleById(roleId);
-            const content = promptManager.getPromptContent(roleId);
-            
-            if (!role || !content) {
+
+            const skillId = match[1];
+            const skill = promptManager.getSkillById(skillId);
+            const content = promptManager.getPromptContent(skillId);
+
+            if (!skill || !content) {
                 throw new McpError(
                     ErrorCode.InvalidParams,
                     `Resource not found: ${uri}`
                 );
             }
-            
+
             return {
                 contents: [{
                     uri,
@@ -247,28 +259,139 @@ export class PuaxMcpServer {
         };
     }
 
-    private async handleListRoles(args: any): Promise<any> {
-        const category = args?.category || '全部';
-        
-        // 如果还没加载角色，先加载
-        if (promptManager.getAllRoles().length === 0) {
+    private async handleListSkills(args: any): Promise<any> {
+        const category = args?.category || 'all';
+        const includeCapabilities = args?.includeCapabilities || false;
+
+        // 如果还没加载技能，先加载
+        if (promptManager.getAllSkills().length === 0) {
             await promptManager.initialize();
         }
 
-        const roles = promptManager.getRolesByCategory(category);
-        
+        const skills = promptManager.getSkillsByCategory(category);
+
         return {
             content: [
                 {
                     type: 'text',
                     text: JSON.stringify({
-                        total: roles.length,
+                        total: skills.length,
                         category: category,
-                        roles: roles.map(role => ({
-                            id: role.id,
-                            name: role.name,
-                            category: role.category,
-                            description: role.description
+                        skills: skills.map(skill => {
+                            const base = {
+                                id: skill.id,
+                                name: skill.name,
+                                category: skill.category,
+                                description: skill.description
+                            };
+                            if (includeCapabilities) {
+                                return { ...base, capabilities: skill.capabilities, tags: skill.tags };
+                            }
+                            return base;
+                        })
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    private async handleGetSkill(args: any): Promise<any> {
+        const { skillId, task, section } = args;
+
+        if (!skillId) {
+            throw new McpError(
+                ErrorCode.InvalidParams,
+                'skillId is required'
+            );
+        }
+
+        const skill = promptManager.getSkillById(skillId);
+        if (!skill) {
+            throw new McpError(
+                ErrorCode.InvalidParams,
+                `Skill not found: ${skillId}`
+            );
+        }
+
+        // 如果指定了 section，返回对应部分的数据
+        if (section && section !== 'full') {
+            const sectionData = promptManager.getSkillBySection(skillId, section);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            skill: sectionData
+                        }, null, 2)
+                    }
+                ]
+            };
+        }
+
+        // 返回完整数据
+        const bundledSkill = promptManager.getBundledSkill(skillId);
+        let content = promptManager.getPromptContent(skillId) || '内容不可用';
+
+        // 如果有任务，替换占位符
+        if (task) {
+            content = content.replace(/{{任务描述}}/g, task);
+            content = content.replace(/{{占位符}}/g, task);
+            content = content.replace(/{{task}}/gi, task);
+        }
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        skill: {
+                            id: skill.id,
+                            name: skill.name,
+                            category: skill.category,
+                            description: skill.description,
+                            tags: skill.tags,
+                            author: skill.author,
+                            version: skill.version,
+                            capabilities: skill.capabilities,
+                            howToUse: bundledSkill?.howToUse,
+                            inputFormat: bundledSkill?.inputFormat,
+                            outputFormat: bundledSkill?.outputFormat,
+                            exampleUsage: bundledSkill?.exampleUsage,
+                            filePath: skill.filePath
+                        },
+                        content: content
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    private async handleSearchSkills(args: any): Promise<any> {
+        const { keyword } = args;
+
+        if (!keyword) {
+            throw new McpError(
+                ErrorCode.InvalidParams,
+                'keyword is required'
+            );
+        }
+
+        const skills = promptManager.searchSkills(keyword);
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        keyword: keyword,
+                        total: skills.length,
+                        skills: skills.map(skill => ({
+                            id: skill.id,
+                            name: skill.name,
+                            category: skill.category,
+                            description: skill.description,
+                            capabilities: skill.capabilities,
+                            tags: skill.tags
                         }))
                     }, null, 2)
                 }
@@ -276,9 +399,103 @@ export class PuaxMcpServer {
         };
     }
 
+    private async handleActivateSkill(args: any): Promise<any> {
+        const { skillId, task, customParams } = args;
+
+        if (!skillId) {
+            throw new McpError(
+                ErrorCode.InvalidParams,
+                'skillId is required'
+            );
+        }
+
+        const result = promptManager.activateSkill(skillId, task, customParams);
+
+        if (!result) {
+            throw new McpError(
+                ErrorCode.InvalidParams,
+                `Failed to activate skill: ${skillId}`
+            );
+        }
+
+        const skill = promptManager.getSkillById(skillId);
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        success: true,
+                        skill: {
+                            id: skill?.id,
+                            name: skill?.name,
+                            category: skill?.category,
+                            capabilities: skill?.capabilities
+                        },
+                        systemPrompt: result,
+                        note: task ? 'Prompt 中的任务占位符已替换' : '使用原始 Prompt'
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    private async handleGetCategories(args: any): Promise<any> {
+        const categories = promptManager.getCategoriesWithInfo();
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        total: categories.length,
+                        categories: categories
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
+    // Legacy handlers - now delegate to SKILL handlers
+    private async handleListRoles(args: any): Promise<any> {
+        const category = args?.category || 'all';
+        const includeCapabilities = args?.includeCapabilities || false;
+
+        // 如果还没加载角色，先加载
+        if (promptManager.getAllRoles().length === 0) {
+            await promptManager.initialize();
+        }
+
+        const roles = promptManager.getRolesByCategory(category);
+
+        return {
+            content: [
+                {
+                    type: 'text',
+                    text: JSON.stringify({
+                        total: roles.length,
+                        category: category,
+                        roles: roles.map(role => {
+                            const base = {
+                                id: role.id,
+                                name: role.name,
+                                category: role.category,
+                                description: role.description
+                            };
+                            if (includeCapabilities) {
+                                return { ...base, capabilities: role.capabilities, tags: role.tags };
+                            }
+                            return base;
+                        })
+                    }, null, 2)
+                }
+            ]
+        };
+    }
+
     private async handleGetRole(args: any): Promise<any> {
-        const { roleId, task } = args;
-        
+        const { roleId, task, section } = args;
+
         if (!roleId) {
             throw new McpError(
                 ErrorCode.InvalidParams,
@@ -292,6 +509,21 @@ export class PuaxMcpServer {
                 ErrorCode.InvalidParams,
                 `Role not found: ${roleId}`
             );
+        }
+
+        // 如果指定了 section，返回对应部分的数据
+        if (section && section !== 'full') {
+            const sectionData = promptManager.getSkillBySection(roleId, section);
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            role: sectionData
+                        }, null, 2)
+                    }
+                ]
+            };
         }
 
         let content = promptManager.getPromptContent(roleId) || '内容不可用';
@@ -313,6 +545,8 @@ export class PuaxMcpServer {
                             name: role.name,
                             category: role.category,
                             description: role.description,
+                            capabilities: role.capabilities,
+                            tags: role.tags,
                             filePath: role.filePath
                         },
                         content: content
@@ -324,7 +558,7 @@ export class PuaxMcpServer {
 
     private async handleSearchRoles(args: any): Promise<any> {
         const { keyword } = args;
-        
+
         if (!keyword) {
             throw new McpError(
                 ErrorCode.InvalidParams,
@@ -333,7 +567,7 @@ export class PuaxMcpServer {
         }
 
         const roles = promptManager.searchRoles(keyword);
-        
+
         return {
             content: [
                 {
@@ -345,7 +579,9 @@ export class PuaxMcpServer {
                             id: role.id,
                             name: role.name,
                             category: role.category,
-                            description: role.description
+                            description: role.description,
+                            capabilities: role.capabilities,
+                            tags: role.tags
                         }))
                     }, null, 2)
                 }
@@ -355,7 +591,7 @@ export class PuaxMcpServer {
 
     private async handleActivateRole(args: any): Promise<any> {
         const { roleId, task, customParams } = args;
-        
+
         if (!roleId) {
             throw new McpError(
                 ErrorCode.InvalidParams,
@@ -364,7 +600,7 @@ export class PuaxMcpServer {
         }
 
         const result = promptManager.activateRole(roleId, task, customParams);
-        
+
         if (!result) {
             throw new McpError(
                 ErrorCode.InvalidParams,
@@ -383,7 +619,8 @@ export class PuaxMcpServer {
                         role: {
                             id: role?.id,
                             name: role?.name,
-                            category: role?.category
+                            category: role?.category,
+                            capabilities: role?.capabilities
                         },
                         systemPrompt: result,
                         note: task ? 'Prompt 中的任务占位符已替换' : '使用原始 Prompt'
@@ -397,8 +634,8 @@ export class PuaxMcpServer {
         // 初始化时加载角色数据
         await promptManager.initialize();
         
-        const roleCount = promptManager.getAllRoles().length;
-        this.logger.info(`Loaded ${roleCount} roles from bundle`);
+        const skillCount = promptManager.getAllSkills().length;
+        this.logger.info(`Loaded ${skillCount} SKILLs from bundle`);
         
         // 创建 HTTP 服务器
         this.httpServer = createServer(this.handleRequest.bind(this));
@@ -676,10 +913,10 @@ export class PuaxMcpServer {
             } else if (message.method === 'resources/list') {
                 // 直接处理 resources/list 请求
                 console.error('Handling resources/list request...');
-                
-                const resources = promptManager.getAllRoles().map(role => ({
-                    uri: `puax://roles/${role.id}`,
-                    description: `${role.name} - ${role.category}`,
+
+                const resources = promptManager.getAllSkills().map(skill => ({
+                    uri: `puax://skills/${skill.id}`,
+                    description: `${skill.name} - ${skill.category}`,
                     mimeType: 'text/markdown'
                 }));
                 
@@ -700,7 +937,7 @@ export class PuaxMcpServer {
                 console.error('Handling resources/read request...');
                 
                 const { uri } = message.params;
-                const match = uri.match(/^puax:\/\/roles\/(.+)$/);
+                const match = uri.match(/^puax:\/\/skills\/(.+)$/);
                 
                 if (!match) {
                     res.writeHead(400, { 
@@ -721,11 +958,11 @@ export class PuaxMcpServer {
                     return;
                 }
                 
-                const roleId = match[1];
-                const role = promptManager.getRoleById(roleId);
-                const content = promptManager.getPromptContent(roleId);
-                
-                if (!role || !content) {
+                const skillId = match[1];
+                const skill = promptManager.getSkillById(skillId);
+                const content = promptManager.getPromptContent(skillId);
+
+                if (!skill || !content) {
                     res.writeHead(400, { 
                         'Content-Type': 'application/json',
                         'Cache-Control': 'no-cache'
