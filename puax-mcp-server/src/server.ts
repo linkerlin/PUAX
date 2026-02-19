@@ -1,5 +1,5 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
@@ -60,7 +60,7 @@ class Logger {
 
 export class PuaxMcpServer {
     private server: Server;
-    private transports: Map<string, SSEServerTransport> = new Map();
+    private transports: Map<string, StreamableHTTPServerTransport> = new Map();
     private httpServer: any;
     private version: string;
     private config: Required<ServerConfig>;
@@ -705,34 +705,51 @@ export class PuaxMcpServer {
             const url = new URL(req.url || '/', `http://${req.headers.host}`);
             const pathname = url.pathname;
             
-            // 处理直接 JSON-RPC over HTTP 请求 (POST / 或 POST /mcp)
-            // 这是大多数 MCP 客户端使用的标准模式
+            // 处理 streamable-http 请求
             if (req.method === 'POST' && (pathname === '/' || pathname === '/mcp')) {
-                await this.handleDirectHTTPRequest(req, res);
-            }
-            // 处理 SSE 连接请求 (GET / 或 GET /mcp)
-            else if (req.method === 'GET' && (pathname === '/' || pathname === '/mcp')) {
-                await this.handleSSEConnection(req, res);
-            }
-            // 处理消息 POST 请求 (POST /message?sessionId=xxx)
-            else if (req.method === 'POST' && pathname === '/message') {
-                const sessionId = url.searchParams.get('sessionId');
-                if (!sessionId) {
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Missing sessionId parameter');
-                    return;
-                }
+                // 获取或创建传输实例
+                const sessionId = req.headers['mcp-session-id'] as string | undefined;
                 
-                const transport = this.transports.get(sessionId);
+                let transport = sessionId ? this.transports.get(sessionId) : undefined;
+                
                 if (!transport) {
-                    res.writeHead(404, { 'Content-Type': 'text/plain' });
-                    res.end('Session not found');
-                    return;
+                    // 创建新的传输实例
+                    const transportOptions: any = {
+                        sessionIdGenerator: () => crypto.randomUUID(),
+                        onsessioninitialized: (sid: string) => {
+                            // Session 初始化完成后存储 transport
+                            this.transports.set(sid, transport!);
+                            console.error(`Session initialized and stored: ${sid}`);
+                        }
+                    };
+                    
+                    transport = new StreamableHTTPServerTransport(transportOptions);
+                    
+                    transport.onclose = () => {
+                        console.error(`Session closed: ${transport?.sessionId}`);
+                        if (transport?.sessionId) {
+                            this.transports.delete(transport.sessionId);
+                        }
+                    };
+                    
+                    await this.server.connect(transport);
                 }
                 
-                await transport.handlePostMessage(req, res);
+                await transport.handleRequest(req, res);
             }
-            // 健康检查或信息页面
+            // 处理 GET 请求 (SSE/streamable)
+            else if (req.method === 'GET' && (pathname === '/' || pathname === '/mcp')) {
+                const sessionId = req.headers['mcp-session-id'] as string | undefined;
+                const transport = sessionId ? this.transports.get(sessionId) : undefined;
+                
+                if (transport) {
+                    await transport.handleRequest(req, res);
+                } else {
+                    res.writeHead(400, { 'Content-Type': 'text/plain' });
+                    res.end('Missing session ID for GET request');
+                }
+            }
+            // 健康检查
             else if (req.method === 'GET' && pathname === '/health') {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
@@ -752,315 +769,5 @@ export class PuaxMcpServer {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Internal Server Error');
         }
-    }
-    
-    private async handleDirectHTTPRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        try {
-            // 读取请求体
-            const body = await this.readRequestBody(req);
-            const message = JSON.parse(body);
-            
-            console.error('Received HTTP JSON-RPC message:', message.method, 'id:', message.id);
-            console.log('Message:', message, 'Has ID:', message.id !== undefined);
-            console.log('message.id type:', typeof message.id);
-            console.log('message.id value:', message.id);
-            
-            // 检查是否是通知（没有 id）
-            if (message.id === undefined || message.id === null) {
-                // 这是一个通知，不需要响应
-                console.error('Handling notification:', message.method);
-                
-                // 处理 notifications/initialized
-                if (message.method === 'notifications/initialized') {
-                    console.error('Client initialized notification received');
-                    // 通知不需要响应，直接返回 204 No Content
-                    res.writeHead(204);
-                    res.end();
-                }
-                // 处理 notifications/cancelled
-                else if (message.method === 'notifications/cancelled') {
-                    console.error('Cancelled notification received:', JSON.stringify(message.params));
-                    // 这是一个通知，表示客户端取消了某个请求
-                    // 我们可以在这里添加清理逻辑，但不需要响应
-                    res.writeHead(204);
-                    res.end();
-                }
-                else {
-                    // 其他通知也接受但不处理
-                    console.error('Unhandled notification:', message.method);
-                    res.writeHead(204);
-                    res.end();
-                }
-            }
-            // 检查是否是请求（有 id）
-            else if (message.method === 'ping') {
-                // 处理 ping 请求（MCP 标准）
-                console.error('Handling ping request...');
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: {}
-                };
-                
-                res.end(JSON.stringify(response));
-            }
-            else if (message.method === 'initialize') {
-                console.error('Handling initialize request...');
-                
-                // 发送初始化响应
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: {
-                        protocolVersion: '2024-11-05',
-                        capabilities: {
-                            tools: {},
-                            prompts: {}  // 支持 prompts/list，但不支持 prompts/get
-                        },
-                        serverInfo: {
-                            name: 'puax-mcp-server',
-                            version: this.version
-                        }
-                    }
-                };
-                
-                res.end(JSON.stringify(response));
-            } else if (message.method === 'tools/list') {
-                // 直接处理 tools/list 请求
-                console.error('Handling tools/list request...');
-                
-                const tools = Tools;
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: { tools }
-                };
-                
-                res.end(JSON.stringify(response));
-            } else if (message.method === 'prompts/list') {
-                // 直接处理 prompts/list 请求
-                console.error('Handling prompts/list request...');
-                
-                const prompts = promptManager.listPrompts();
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: { prompts }
-                };
-                
-                res.end(JSON.stringify(response));
-            } else if (message.method === 'prompts/get') {
-                // 直接处理 prompts/get 请求
-                console.error('Handling prompts/get request...');
-                
-                const { name, arguments: args } = message.params;
-                const result = promptManager.getPrompt(name, args);
-                
-                if (!result) {
-                    res.writeHead(400, { 
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    });
-                    
-                    const errorResponse = {
-                        jsonrpc: '2.0',
-                        id: message.id,
-                        error: {
-                            code: -32602,
-                            message: `Prompt not found: ${name}`
-                        }
-                    };
-                    
-                    res.end(JSON.stringify(errorResponse));
-                    return;
-                }
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: result
-                };
-                
-                res.end(JSON.stringify(response));
-            } else if (message.method === 'resources/list') {
-                // 直接处理 resources/list 请求
-                console.error('Handling resources/list request...');
-
-                const resources = promptManager.getAllSkills().map(skill => ({
-                    uri: `puax://skills/${skill.id}`,
-                    description: `${skill.name} - ${skill.category}`,
-                    mimeType: 'text/markdown'
-                }));
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: { resources }
-                };
-                
-                res.end(JSON.stringify(response));
-            } else if (message.method === 'resources/read') {
-                // 直接处理 resources/read 请求
-                console.error('Handling resources/read request...');
-                
-                const { uri } = message.params;
-                const match = uri.match(/^puax:\/\/skills\/(.+)$/);
-                
-                if (!match) {
-                    res.writeHead(400, { 
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    });
-                    
-                    const errorResponse = {
-                        jsonrpc: '2.0',
-                        id: message.id,
-                        error: {
-                            code: -32602,
-                            message: `Invalid resource URI: ${uri}`
-                        }
-                    };
-                    
-                    res.end(JSON.stringify(errorResponse));
-                    return;
-                }
-                
-                const skillId = match[1];
-                const skill = promptManager.getSkillById(skillId);
-                const content = promptManager.getPromptContent(skillId);
-
-                if (!skill || !content) {
-                    res.writeHead(400, { 
-                        'Content-Type': 'application/json',
-                        'Cache-Control': 'no-cache'
-                    });
-                    
-                    const errorResponse = {
-                        jsonrpc: '2.0',
-                        id: message.id,
-                        error: {
-                            code: -32602,
-                            message: `Resource not found: ${uri}`
-                        }
-                    };
-                    
-                    res.end(JSON.stringify(errorResponse));
-                    return;
-                }
-                
-                res.writeHead(200, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const response = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    result: {
-                        contents: [{
-                            uri,
-                            mimeType: 'text/markdown',
-                            text: content
-                        }]
-                    }
-                };
-                
-                res.end(JSON.stringify(response));
-            } else {
-                // 其他请求，返回错误
-                console.error('Unsupported method:', message.method);
-                res.writeHead(400, { 
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
-                });
-                
-                const errorResponse = {
-                    jsonrpc: '2.0',
-                    id: message.id,
-                    error: {
-                        code: -32601,
-                        message: 'Method not found. Use SSE mode for full tool support.'
-                    }
-                };
-                
-                res.end(JSON.stringify(errorResponse));
-            }
-        } catch (error) {
-            console.error('Direct HTTP request error:', error);
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({
-                jsonrpc: '2.0',
-                id: null,
-                error: {
-                    code: -32700,
-                    message: 'Parse error'
-                }
-            }));
-        }
-    }
-    
-    private readRequestBody(req: IncomingMessage): Promise<string> {
-        return new Promise((resolve, reject) => {
-            let body = '';
-            req.on('data', chunk => {
-                body += chunk.toString();
-            });
-            req.on('end', () => {
-                resolve(body);
-            });
-            req.on('error', reject);
-        });
-    }
-    
-    private async handleSSEConnection(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        // 创建 SSE 传输实例
-        const transport = new SSEServerTransport('/message', res);
-        
-        // 存储传输实例
-        this.transports.set(transport.sessionId, transport);
-        
-        // 设置关闭回调
-        transport.onclose = () => {
-            console.error(`Session closed: ${transport.sessionId}`);
-            this.transports.delete(transport.sessionId);
-        };
-        
-        // 连接到 MCP 服务器
-        await this.server.connect(transport);
-        
-        console.error(`New session connected: ${transport.sessionId}`);
     }
 }
