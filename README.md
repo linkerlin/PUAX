@@ -3,6 +3,7 @@ A PUA prompts for AI Agent!
 
 一套用来驯服AI Agent的效果绝佳的PUA Prompt！
 （实时更新中）
+[PUAX官网/教程](https://puax.net/)
 ---
 
 本项目的所有内容都是为了拟人化的驱动AI Agent为人类服务，请勿将本项目用于非AI用途或产生不良的联想！
