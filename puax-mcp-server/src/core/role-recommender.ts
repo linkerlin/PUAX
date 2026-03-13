@@ -468,12 +468,53 @@ export class RoleRecommender {
   }
 
   /**
+   * 构建默认推荐（当没有匹配角色时）
+   */
+  private buildDefaultRecommendation(request: RecommendationRequest): RoleRecommendation {
+    const defaultRoleId = 'military-warrior';
+    return {
+      primary: {
+        role_id: defaultRoleId,
+        role_name: this.getRoleDisplayName(defaultRoleId),
+        category: 'military',
+        confidence_score: 50,
+        match_reasons: ['默认推荐：未找到精确匹配的角色'],
+        estimated_effectiveness: 'medium'
+      },
+      alternatives: [],
+      activation_suggestion: {
+        immediate: false,
+        cooldown_seconds: 30,
+        user_confirmation: true,
+        suggested_prompt_injection: '建议尝试战士角色进行攻坚'
+      },
+      metadata: {
+        identified_failure_mode: this.identifyFailureMode(request.detected_triggers),
+        calculation_breakdown: {
+          trigger_match: 0,
+          task_type_match: 0,
+          failure_mode_match: 0,
+          history_match: 0,
+          user_preference_match: 0
+        },
+        algorithm_version: '1.0.0',
+        cache_hit: false
+      }
+    };
+  }
+
+  /**
    * 构建推荐结果
    */
   private buildRecommendation(
     topRoles: ScoredRole[],
     request: RecommendationRequest
   ): RoleRecommendation {
+    // 确保有推荐结果
+    if (!topRoles || topRoles.length === 0) {
+      return this.buildDefaultRecommendation(request);
+    }
+    
     const primary = topRoles[0];
     const primaryMeta = this.mappings.role_metadata[primary.role_id];
 
