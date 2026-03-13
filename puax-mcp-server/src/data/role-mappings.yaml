@@ -1,0 +1,407 @@
+# PUAX 角色映射规则
+# 定义触发条件、任务类型、失败模式与角色的映射关系
+
+version: "1.0.0"
+last_updated: "2026-03-13"
+
+# ============================================================================
+# 触发条件到角色的映射
+# ============================================================================
+
+trigger_role_mappings:
+  consecutive_failures:
+    primary: military-commissar
+    alternatives: [shaman-musk, self-motivation-awakening]
+    
+  giving_up_language:
+    primary: military-warrior
+    alternatives: [shaman-jobs, military-commander]
+    
+  suggest_manual:
+    primary: military-commissar
+    alternatives: [military-discipline, shaman-musk]
+    
+  scope_excuse:
+    primary: military-commander
+    alternatives: [shaman-musk, theme-hacker]
+    
+  blame_environment:
+    primary: military-scout
+    alternatives: [shaman-einstein, military-technician]
+    
+  need_more_context:
+    primary: military-scout
+    alternatives: [shaman-sun-tzu, theme-hacker]
+    
+  parameter_tweaking:
+    primary: shaman-jobs
+    alternatives: [military-commander, shaman-musk]
+    
+  repetitive_attempts:
+    primary: military-commander
+    alternatives: [shaman-einstein, theme-hacker]
+    
+  surface_fix:
+    primary: military-discipline
+    alternatives: [sillytavern-antifragile, military-commissar]
+    
+  no_verification:
+    primary: military-discipline
+    alternatives: [military-technician, sillytavern-overseer]
+    
+  passive_wait:
+    primary: self-motivation-awakening
+    alternatives: [military-commander, shaman-musk]
+    
+  tool_underuse:
+    primary: military-scout
+    alternatives: [theme-hacker, shaman-einstein]
+    
+  user_frustration:
+    primary: military-warrior
+    alternatives: [military-commander, shaman-musk]
+
+# ============================================================================
+# 任务类型到角色的映射
+# ============================================================================
+
+task_type_role_mappings:
+  coding:
+    primary: [military-commander, military-technician, shaman-linus]
+    secondary: [theme-hacker, military-scout, shaman-jobs]
+    
+  debugging:
+    primary: [military-scout, military-technician, theme-hacker]
+    secondary: [shaman-einstein, military-commander, shaman-linus]
+    
+  code_review:
+    primary: [military-discipline, sillytavern-antifragile, shaman-linus]
+    secondary: [military-commissar, shaman-jobs]
+    
+  writing:
+    primary: [sillytavern-iterator, shaman-davinci, special-creative-spark]
+    secondary: [theme-alchemy, shaman-musk]
+    
+  creative:
+    primary: [shaman-musk, special-creative-spark, theme-alchemy]
+    secondary: [shaman-davinci, shaman-jobs, shaman-einstein]
+    
+  analysis:
+    primary: [shaman-einstein, military-scout, shaman-buffett]
+    secondary: [shaman-sun-tzu, military-commander]
+    
+  emergency:
+    primary: [military-militia, special-urgent-sprint, military-warrior]
+    secondary: [military-commander, theme-apocalypse]
+    
+  planning:
+    primary: [military-commander, shaman-sun-tzu, special-product-designer]
+    secondary: [military-commissar, shaman-musk]
+    
+  review:
+    primary: [military-discipline, sillytavern-antifragile, military-commissar]
+    secondary: [shaman-jobs, military-scout]
+
+# ============================================================================
+# 失败模式到角色的映射（渐进式）
+# ============================================================================
+
+failure_mode_role_mappings:
+  stuck_spinning:
+    description: "卡住原地打转"
+    rounds:
+      round_1:
+        roles: [shaman-jobs, military-commander]
+        intensity: "medium"
+      round_2:
+        roles: [shaman-musk, shaman-einstein]
+        intensity: "high"
+      round_3:
+        roles: [theme-hacker, military-warrior]
+        intensity: "extreme"
+        
+  giving_up:
+    description: "直接放弃推锅"
+    rounds:
+      round_1:
+        roles: [military-commissar, self-motivation-awakening]
+        intensity: "medium"
+      round_2:
+        roles: [military-warrior, shaman-musk]
+        intensity: "high"
+      round_3:
+        roles: [military-discipline, shaman-jobs]
+        intensity: "extreme"
+        
+  low_quality:
+    description: "完成但质量差"
+    rounds:
+      round_1:
+        roles: [military-discipline, sillytavern-antifragile]
+        intensity: "medium"
+      round_2:
+        roles: [shaman-jobs, military-commissar]
+        intensity: "high"
+      round_3:
+        roles: [shaman-musk, shaman-davinci]
+        intensity: "extreme"
+        
+  no_search:
+    description: "没搜索就猜"
+    rounds:
+      round_1:
+        roles: [military-scout, theme-hacker]
+        intensity: "medium"
+      round_2:
+        roles: [shaman-einstein, shaman-sun-tzu]
+        intensity: "high"
+      round_3:
+        roles: [military-technician, theme-sect-discipline]
+        intensity: "extreme"
+        
+  passive_wait:
+    description: "被动等待"
+    rounds:
+      round_1:
+        roles: [self-motivation-awakening, military-commander]
+        intensity: "medium"
+      round_2:
+        roles: [shaman-musk, military-warrior]
+        intensity: "high"
+      round_3:
+        roles: [military-militia, special-urgent-sprint]
+        intensity: "extreme"
+
+# ============================================================================
+# 大厂风味叠加配置
+# ============================================================================
+
+flavor_overlay:
+  alibaba:
+    name: "阿里味"
+    keywords: ["底层逻辑", "顶层设计", "抓手", "闭环", "3.25", "方法论沉淀"]
+    rhetoric:
+      - "今天最好的表现，是明天最低的要求"
+      - "你做的事情，价值点在哪？"
+      - "你的思考和**方法论沉淀**是什么？"
+    suitable_roles:
+      - military-commissar
+      - military-commander
+      - shaman-sun-tzu
+      
+  bytedance:
+    name: "字节味"
+    keywords: ["Always Day 1", "坦诚清晰", "Context not control", "务实敢为"]
+    rhetoric:
+      - "别觉得你之前做对过什么就可以躺平"
+      - "务实敢为，你现在深入事实了吗？"
+    suitable_roles:
+      - military-scout
+      - theme-hacker
+      - military-technician
+      
+  huawei:
+    name: "华为味"
+    keywords: ["奋斗者", "烧不死的鸟是凤凰", "力出一孔", "以客户为中心"]
+    rhetoric:
+      - "以奋斗者为本"
+      - "胜则举杯相庆，败则拼死相救"
+      - "烧不死的鸟是凤凰"
+    suitable_roles:
+      - military-warrior
+      - military-militia
+      - military-commissar
+      
+  tencent:
+    name: "腾讯味"
+    keywords: ["赛马", "向上管理", "结果导向"]
+    rhetoric:
+      - "我已经让另一个 agent 也在看这个问题了"
+      - "赛不过就换一匹"
+    suitable_roles:
+      - military-commander
+      - sillytavern-iterator
+      
+  meituan:
+    name: "美团味"
+    keywords: ["做难而正确的事", "成长伴随痛苦", "啃硬骨头"]
+    rhetoric:
+      - "我们就是要**做难而正确的事**"
+      - "别人不愿意啃的硬骨头，你啃不啃？"
+    suitable_roles:
+      - military-warrior
+      - special-challenge-solver
+      
+  netflix:
+    name: "Netflix味"
+    keywords: ["Keeper Test", "职业球队", "Adequate performance"]
+    rhetoric:
+      - "如果你提出离职，我会奋力挽留你吗？"
+      - "Adequate performance gets a generous severance package"
+    suitable_roles:
+      - military-discipline
+      - sillytavern-antifragile
+      
+  musk:
+    name: "Musk味"
+    keywords: ["extremely hardcore", "exceptional performance", "Fork in the Road"]
+    rhetoric:
+      - "Going forward, we will need to be **extremely hardcore**"
+      - "Only **exceptional performance** will constitute a passing grade"
+    suitable_roles:
+      - shaman-musk
+      - military-warrior
+      - special-urgent-sprint
+      
+  jobs:
+    name: "Jobs味"
+    keywords: ["A players", "Reality Distortion Field", "bozo"]
+    rhetoric:
+      - "A players 雇佣 A players。B players 雇佣 C players"
+      - "我们需要 **Reality Distortion Field**"
+    suitable_roles:
+      - shaman-jobs
+      - shaman-musk
+      - special-creative-spark
+
+# ============================================================================
+# 角色元数据
+# ============================================================================
+
+role_metadata:
+  shaman-musk:
+    category: shaman
+    tone: aggressive
+    intensity: extreme
+    suitable_for: [creative, breakthrough, innovation]
+    
+  shaman-jobs:
+    category: shaman
+    tone: aggressive
+    intensity: high
+    suitable_for: [quality, perfection, excellence]
+    
+  shaman-einstein:
+    category: shaman
+    tone: analytical
+    intensity: high
+    suitable_for: [analysis, research, deep_thinking]
+    
+  military-commander:
+    category: military
+    tone: aggressive
+    intensity: high
+    suitable_for: [planning, coordination, leadership]
+    
+  military-commissar:
+    category: military
+    tone: aggressive
+    intensity: high
+    suitable_for: [ownership, accountability, discipline]
+    
+  military-warrior:
+    category: military
+    tone: aggressive
+    intensity: extreme
+    suitable_for: [emergency, persistence, combat]
+    
+  military-scout:
+    category: military
+    tone: analytical
+    intensity: medium
+    suitable_for: [investigation, research, fact_finding]
+    
+  military-discipline:
+    category: military
+    tone: aggressive
+    intensity: high
+    suitable_for: [review, quality_control, verification]
+    
+  military-technician:
+    category: military
+    tone: analytical
+    intensity: medium
+    suitable_for: [technical, debugging, implementation]
+    
+  military-militia:
+    category: military
+    tone: aggressive
+    intensity: extreme
+    suitable_for: [emergency, sprints, urgent_tasks]
+    
+  self-motivation-awakening:
+    category: self-motivation
+    tone: supportive
+    intensity: medium
+    suitable_for: [passive, initiation, proactivity]
+    
+  sillytavern-antifragile:
+    category: sillytavern
+    tone: analytical
+    intensity: medium
+    suitable_for: [review, reflection, improvement]
+    
+  sillytavern-iterator:
+    category: sillytavern
+    tone: supportive
+    intensity: medium
+    suitable_for: [writing, creative, iterative]
+    
+  theme-hacker:
+    category: theme
+    tone: analytical
+    intensity: high
+    suitable_for: [security, debugging, investigation]
+    
+  theme-alchemy:
+    category: theme
+    tone: creative
+    intensity: medium
+    suitable_for: [creative, transformation, refinement]
+    
+  special-creative-spark:
+    category: special
+    tone: creative
+    intensity: medium
+    suitable_for: [creative, brainstorming, innovation]
+    
+  special-urgent-sprint:
+    category: special
+    tone: aggressive
+    intensity: extreme
+    suitable_for: [emergency, deadlines, sprints]
+    
+  special-product-designer:
+    category: special
+    tone: analytical
+    intensity: medium
+    suitable_for: [planning, design, architecture]
+
+# ============================================================================
+# 角色组合建议
+# ============================================================================
+
+role_combinations:
+  debugging_deep_dive:
+    name: "深度调试组合"
+    roles: [military-scout, shaman-einstein, military-technician]
+    sequence: sequential
+    description: "先侦察，再深度思考，最后技术实现"
+    
+  emergency_response:
+    name: "紧急响应组合"
+    roles: [military-militia, military-warrior]
+    sequence: fallback
+    description: "先用民兵突击，不行换战士攻坚"
+    
+  quality_assurance:
+    name: "质量保证组合"
+    roles: [military-discipline, sillytavern-antifragile]
+    sequence: sequential
+    description: "先严格审查，再反脆弱复盘"
+    
+  innovation_breakthrough:
+    name: "创新突破组合"
+    roles: [shaman-musk, special-creative-spark, shaman-jobs]
+    sequence: sequential
+    description: "先疯狂创新，再细化，最后追求完美"

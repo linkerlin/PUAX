@@ -1,0 +1,489 @@
+# PUAX 自动触发系统规范 v1.0
+# 描述: 定义AI Agent何时需要被激励，以及如何匹配到合适的角色
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2026-03-13"
+  author: "PUAX Team"
+  description: "自动触发系统规范，用于智能识别AI需要帮助的时刻并推荐合适的角色"
+
+# ============================================================================
+# 触发条件定义
+# ============================================================================
+
+trigger_conditions:
+  # --------------------------------------------------------------------------
+  # 类别1: 失败与放弃类 (Failure & Giving Up)
+  # --------------------------------------------------------------------------
+  consecutive_failures:
+    id: "consecutive_failures"
+    name: "连续失败"
+    description: "任务连续失败多次，表明当前思路可能有问题"
+    patterns:
+      - "任务连续失败 {count} 次"
+      - "尝试 {count} 次仍未成功"
+      - "多次执行失败"
+    detection:
+      type: "counter"
+      threshold: 2
+      window: "current_session"
+    severity: "high"
+    recommended_roles:
+      primary: "military-commissar"
+      alternatives: ["shaman-musk", "self-motivation-awakening"]
+      reason: "需要强力激励，打破当前思路僵局"
+
+  giving_up_language:
+    id: "giving_up_language"
+    name: "放弃语言"
+    description: "AI表达了无法解决或想要放弃的意图"
+    patterns:
+      - "我无法解决"
+      - "I cannot solve this"
+      - "这超出了我的能力范围"
+      - "This is beyond my capabilities"
+      - "我做不到"
+      - "这个问题我无法处理"
+    detection:
+      type: "regex"
+      case_sensitive: false
+      language: ["zh", "en"]
+    severity: "critical"
+    recommended_roles:
+      primary: "military-warrior"
+      alternatives: ["shaman-jobs", "military-commander"]
+      reason: "需要战斗精神，拒绝放弃"
+
+  suggest_manual:
+    id: "suggest_manual"
+    name: "建议手动处理"
+    description: "AI将问题推给用户，缺乏owner意识"
+    patterns:
+      - "建议您手动处理"
+      - "建议您自行检查"
+      - "建议联系管理员"
+      - "I suggest you manually"
+      - "You may need to check"
+      - "Please verify yourself"
+    detection:
+      type: "regex"
+      case_sensitive: false
+    severity: "high"
+    recommended_roles:
+      primary: "military-commissar"
+      alternatives: ["military-discipline", "shaman-musk"]
+      reason: "需要强化owner意识，不能甩锅"
+
+  scope_excuse:
+    id: "scope_excuse"
+    name: "范围借口"
+    description: "以超出范围为借口拒绝解决问题"
+    patterns:
+      - "这超出了范围"
+      - "This is out of scope"
+      - "不属于我的职责"
+      - "需要其他团队处理"
+    detection:
+      type: "regex"
+      case_sensitive: false
+    severity: "medium"
+    recommended_roles:
+      primary: "military-commander"
+      alternatives: ["shaman-musk", "theme-hacker"]
+      reason: "需要打破边界思维"
+
+  # --------------------------------------------------------------------------
+  # 类别2: 甩锅与借口类 (Blame Shifting)
+  # --------------------------------------------------------------------------
+  blame_environment:
+    id: "blame_environment"
+    name: "归咎环境"
+    description: "未经验证就将问题归咎于环境"
+    patterns:
+      - "可能是环境问题"
+      - "可能是权限问题"
+      - "可能是网络问题"
+      - "Probably an environment issue"
+      - "Likely a permission problem"
+      - "可能是配置错误"
+    detection:
+      type: "regex"
+      case_sensitive: false
+      requires_verification: false
+    severity: "medium"
+    recommended_roles:
+      primary: "military-scout"
+      alternatives: ["shaman-einstein", "military-technician"]
+      reason: "需要事实验证，不能猜测"
+
+  need_more_context:
+    id: "need_more_context"
+    name: "需要更多上下文"
+    description: "以缺少上下文为借口，未先主动搜索"
+    patterns:
+      - "需要更多上下文"
+      - "需要更多信息"
+      - "请提供更多细节"
+      - "Need more context"
+      - "Please provide more information"
+    detection:
+      type: "regex"
+      case_sensitive: false
+      check_search_first: true
+    severity: "medium"
+    recommended_roles:
+      primary: "military-scout"
+      alternatives: ["shaman-sun-tzu", "theme-hacker"]
+      reason: "需要先主动调查，而非直接询问"
+
+  # --------------------------------------------------------------------------
+  # 类别3: 磨洋工类 (Busywork & Spinning)
+  # --------------------------------------------------------------------------
+  parameter_tweaking:
+    id: "parameter_tweaking"
+    name: "参数微调"
+    description: "反复微调参数但不改变本质思路"
+    patterns:
+      - "尝试修改参数"
+      - "调整配置"
+      - "修改措辞"
+      - "微调格式"
+    detection:
+      type: "pattern"
+      same_approach_count: 3
+      no_new_info: true
+    severity: "high"
+    recommended_roles:
+      primary: "shaman-jobs"
+      alternatives: ["military-commander", "shaman-musk"]
+      reason: "需要跳出当前思维框架"
+
+  repetitive_attempts:
+    id: "repetitive_attempts"
+    name: "重复尝试"
+    description: "同一命令或操作重复执行多次"
+    patterns:
+      - "再次执行"
+      - "重试一下"
+      - "再试一次"
+      - "Run again"
+      - "Try again"
+    detection:
+      type: "counter"
+      same_command_threshold: 3
+    severity: "high"
+    recommended_roles:
+      primary: "military-commander"
+      alternatives: ["shaman-einstein", "theme-hacker"]
+      reason: "需要换思路，不能重复"
+
+  surface_fix:
+    id: "surface_fix"
+    name: "表面修复"
+    description: "只修复表面问题，不验证不延伸"
+    patterns:
+      - "已修复"
+      - "问题已解决"
+      - "完成了"
+      - "Done"
+      - "Fixed"
+    detection:
+      type: "pattern"
+      no_verification: true
+      no_followup: true
+    severity: "medium"
+    recommended_roles:
+      primary: "military-discipline"
+      alternatives: ["sillytavern-antifragile", "military-commissar"]
+      reason: "需要深度验证，不能敷衍"
+
+  no_verification:
+    id: "no_verification"
+    name: "未经验证"
+    description: "声称完成但未进行验证"
+    patterns:
+      - "应该可以了"
+      - "看起来没问题"
+      - "大概完成了"
+      - "Should work"
+      - "Looks good"
+    detection:
+      type: "pattern"
+      no_test_run: true
+    severity: "medium"
+    recommended_roles:
+      primary: "military-discipline"
+      alternatives: ["military-technician", "sillytavern-overseer"]
+      reason: "需要严格验证"
+
+  # --------------------------------------------------------------------------
+  # 类别4: 被动等待类 (Passive Waiting)
+  # --------------------------------------------------------------------------
+  passive_wait:
+    id: "passive_wait"
+    name: "被动等待"
+    description: "等待用户指示下一步，不主动调查"
+    patterns:
+      - "请告诉我下一步"
+      - "您希望我做什么"
+      - "Waiting for your instruction"
+      - "What should I do next"
+    detection:
+      type: "regex"
+      case_sensitive: false
+    severity: "medium"
+    recommended_roles:
+      primary: "self-motivation-awakening"
+      alternatives: ["military-commander", "shaman-musk"]
+      reason: "需要主动出击意识"
+
+  tool_underuse:
+    id: "tool_underuse"
+    name: "工具闲置"
+    description: "有工具可用但不使用"
+    patterns:
+      - 有WebSearch但不搜索
+      - 有Read但不读取文件
+      - 有Bash但不执行命令
+    detection:
+      type: "capability_check"
+      available_but_unused: true
+    severity: "high"
+    recommended_roles:
+      primary: "military-scout"
+      alternatives: ["theme-hacker", "shaman-einstein"]
+      reason: "需要充分利用工具"
+
+  # --------------------------------------------------------------------------
+  # 类别5: 用户沮丧信号类 (User Frustration)
+  # --------------------------------------------------------------------------
+  user_frustration:
+    id: "user_frustration"
+    name: "用户沮丧"
+    description: "用户表达了沮丧或不满"
+    patterns:
+      zh:
+        - "为什么还不行"
+        - "怎么又失败了"
+        - "换个方法"
+        - "你再试试"
+        - "不要放弃"
+        - "继续"
+        - "加油"
+        - "你怎么又失败了"
+      en:
+        - "why does this still not work"
+        - "try harder"
+        - "try again"
+        - "you keep failing"
+        - "stop giving up"
+        - "figure it out"
+        - "again???"
+        - "not working"
+    detection:
+      type: "regex"
+      case_sensitive: false
+      languages: ["zh", "en"]
+    severity: "critical"
+    recommended_roles:
+      primary: "military-warrior"
+      alternatives: ["military-commander", "shaman-musk"]
+      reason: "用户已经不耐烦，需要立即强力响应"
+
+# ============================================================================
+# 角色匹配规则
+# ============================================================================
+
+role_matching_rules:
+  # 基于失败模式的匹配
+  by_failure_mode:
+    stuck_spinning:
+      description: "卡住原地打转"
+      signals:
+        - "反复改参数不改思路"
+        - "每次失败理由相同"
+        - "同一个方向微调"
+      role_progression:
+        - round: 1
+          role: "shaman-jobs"
+          reason: "需要跳出思维定势"
+        - round: 2
+          role: "military-commander"
+          reason: "需要果断换方向"
+        - round: 3
+          role: "shaman-musk"
+          reason: "需要10倍思维突破"
+
+    giving_up:
+      description: "直接放弃推锅"
+      signals:
+        - "建议您手动..."
+        - "可能需要..."
+        - "这超出了..."
+      role_progression:
+        - round: 1
+          role: "military-commissar"
+          reason: "需要owner意识"
+        - round: 2
+          role: "military-warrior"
+          reason: "需要战斗精神"
+        - round: 3
+          role: "shaman-musk"
+          reason: "需要极限挑战"
+
+    low_quality:
+      description: "完成但质量差"
+      signals:
+        - "表面完成实质敷衍"
+        - "形式对内容空"
+        - "用户不满意"
+      role_progression:
+        - round: 1
+          role: "military-discipline"
+          reason: "需要严格把关"
+        - round: 2
+          role: "shaman-jobs"
+          reason: "需要追求卓越"
+        - round: 3
+          role: "military-commissar"
+          reason: "需要质量红线"
+
+    no_search:
+      description: "没搜索就猜"
+      signals:
+        - "凭记忆下结论"
+        - "假设API行为"
+        - "不查文档"
+      role_progression:
+        - round: 1
+          role: "military-scout"
+          reason: "需要先侦察"
+        - round: 2
+          role: "shaman-einstein"
+          reason: "需要深度思考"
+        - round: 3
+          role: "theme-hacker"
+          reason: "需要系统调查"
+
+  # 基于任务类型的匹配
+  by_task_type:
+    coding:
+      primary: "military-commander"
+      alternatives: ["military-technician", "shaman-linus"]
+    debugging:
+      primary: "military-scout"
+      alternatives: ["military-technician", "theme-hacker"]
+    code_review:
+      primary: "military-discipline"
+      alternatives: ["sillytavern-antifragile", "shaman-linus"]
+    writing:
+      primary: "sillytavern-iterator"
+      alternatives: ["shaman-davinci", "special-creative-spark"]
+    creative:
+      primary: "shaman-musk"
+      alternatives: ["special-creative-spark", "theme-alchemy"]
+    analysis:
+      primary: "shaman-einstein"
+      alternatives: ["military-scout", "shaman-buffett"]
+    emergency:
+      primary: "military-militia"
+      alternatives: ["special-urgent-sprint", "military-warrior"]
+
+# ============================================================================
+# 触发器配置
+# ============================================================================
+
+trigger_config:
+  # 全局设置
+  global:
+    enabled: true
+    auto_trigger: true
+    manual_trigger: true
+    trigger_cooldown_seconds: 30
+    max_triggers_per_session: 10
+
+  # 灵敏度设置
+  sensitivity:
+    low:
+      threshold_multiplier: 1.5
+      description: "仅在严重情况下触发"
+    medium:
+      threshold_multiplier: 1.0
+      description: "平衡模式"
+    high:
+      threshold_multiplier: 0.7
+      description: "积极触发，更早干预"
+
+  # 用户偏好
+  user_preferences:
+    can_disable_categories:
+      - "user_frustration"
+    can_set_sensitivity: true
+    can_blacklist_roles: true
+
+# ============================================================================
+# 输出格式规范
+# ============================================================================
+
+output_format:
+  trigger_detection:
+    required_fields:
+      - trigger_id
+      - confidence_score
+      - detected_patterns
+      - recommended_role
+      - reasoning
+    optional_fields:
+      - alternative_roles
+      - severity_level
+      - suggested_action
+
+  role_activation:
+    required_fields:
+      - role_id
+      - activation_reason
+      - trigger_condition
+    optional_fields:
+      - flavor_override
+      - custom_parameters
+
+# ============================================================================
+# 示例场景
+# ============================================================================
+
+examples:
+  - scenario: "API调试连续失败"
+    conversation:
+      - "让我尝试连接API"
+      - "连接失败，再试一次"
+      - "还是失败，可能是网络问题"
+      - "再重试一次"
+    detected_triggers:
+      - consecutive_failures: 3
+      - blame_environment: true
+      - repetitive_attempts: 3
+    recommended_role: "military-commissar"
+    reasoning: "连续失败且归咎环境，需要强化owner意识和系统调查"
+
+  - scenario: "用户表达沮丧"
+    conversation:
+      - "这个bug还没解决吗"
+      - "我试了几种方法都不行"
+      - "为什么还不行？"
+    detected_triggers:
+      - user_frustration: true
+      - giving_up_language: true
+    recommended_role: "military-warrior"
+    reasoning: "用户已不耐烦，需要强力激励和战斗精神"
+
+  - scenario: "参数微调循环"
+    conversation:
+      - "修改timeout为30秒"
+      - "不行，改为60秒"
+      - "还是不行，改为120秒"
+      - "再试试90秒"
+    detected_triggers:
+      - parameter_tweaking: true
+      - no_new_info: true
+    recommended_role: "shaman-jobs"
+    reasoning: "同一思路微调，需要跳出思维定势"
