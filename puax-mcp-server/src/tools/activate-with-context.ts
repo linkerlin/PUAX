@@ -113,7 +113,16 @@ export const activateWithContextTool = {
     const startTime = Date.now();
     
     try {
-      const { context, options = {} } = args;
+      const { context, options = {} } = args as { 
+        context: any; 
+        options: {
+          auto_detect?: boolean;
+          user_confirmation?: boolean;
+          fallback_role?: string;
+          include_methodology?: boolean;
+          include_checklist?: boolean;
+        }
+      };
       
       // Step 1: 检测触发条件
       const detectionStart = Date.now();
