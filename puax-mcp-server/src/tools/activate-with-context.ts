@@ -5,9 +5,9 @@
  */
 
 import { z } from 'zod';
-import { TriggerDetector } from '../core/trigger-detector.js';
-import { RoleRecommender } from '../core/role-recommender.js';
-import { methodologyEngine } from '../core/methodology-engine.js';
+import { TriggerDetector } from '../core/trigger-detector';
+import { RoleRecommender } from '../core/role-recommender';
+import { methodologyEngine } from '../core/methodology-engine';
 
 // ============================================================================
 // 输入输出Schema定义

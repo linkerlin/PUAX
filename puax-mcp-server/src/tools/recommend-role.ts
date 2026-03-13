@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { RoleRecommender } from '../core/role-recommender.js';
+import { RoleRecommender } from '../core/role-recommender';
 
 // ============================================================================
 // 输入输出Schema定义
