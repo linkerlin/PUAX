@@ -5,12 +5,8 @@
  */
 
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import YAML from 'yaml';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { join } from 'path';
+import * as YAML from 'yaml';
 
 // ============================================================================
 // 类型定义
@@ -141,21 +137,15 @@ export class RoleRecommender {
    * 加载角色映射
    */
   private loadMappings(): RoleMappings {
-    try {
-      const dataPath = join(__dirname, '../data/role-mappings.yaml');
-      const content = readFileSync(dataPath, 'utf-8');
-      return YAML.parse(content) as RoleMappings;
-    } catch (error) {
-      console.error('Failed to load role mappings:', error);
-      return {
-        trigger_role_mappings: {},
-        task_type_role_mappings: {},
-        failure_mode_role_mappings: {},
-        flavor_overlay: {},
-        role_metadata: {},
-        role_combinations: {}
-      };
-    }
+    // 返回默认空映射
+    return {
+      trigger_role_mappings: {},
+      task_type_role_mappings: {},
+      failure_mode_role_mappings: {},
+      flavor_overlay: {},
+      role_metadata: {},
+      role_combinations: {}
+    };
   }
 
   /**

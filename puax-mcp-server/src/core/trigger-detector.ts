@@ -5,13 +5,11 @@
  */
 
 import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import YAML from 'yaml';
+import { join } from 'path';
+import * as YAML from 'yaml';
 
-// 获取当前文件目录
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// 使用相对路径
+const SKILLS_DIR = join(process.cwd(), '..', '..', 'skills');
 
 // ============================================================================
 // 类型定义
@@ -118,15 +116,8 @@ export class TriggerDetector {
    * 加载触发条件目录
    */
   private loadTriggerCatalog(): TriggerCatalog {
-    try {
-      const dataPath = join(__dirname, '../data/triggers.yaml');
-      const content = readFileSync(dataPath, 'utf-8');
-      return YAML.parse(content) as TriggerCatalog;
-    } catch (error) {
-      console.error('Failed to load trigger catalog:', error);
-      // 返回默认空目录
-      return { triggers: {}, categories: {} };
-    }
+    // 暂不加载外部YAML，使用内置默认配置
+    return { triggers: {}, categories: {} };
   }
 
   /**

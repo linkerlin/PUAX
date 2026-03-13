@@ -134,7 +134,11 @@ function scanSkills() {
   
   for (const categoryDir of categories) {
     const skillDir = path.join(SKILLS_DIR, categoryDir);
-    const skillFile = path.join(skillDir, 'SKILL.md');
+    // 优先使用SKILL.v2.md，如果不存在则使用SKILL.md
+    const v2File = path.join(skillDir, 'SKILL.v2.md');
+    const v1File = path.join(skillDir, 'SKILL.md');
+    
+    const skillFile = fs.existsSync(v2File) ? v2File : v1File;
     
     if (fs.existsSync(skillFile)) {
       const content = fs.readFileSync(skillFile, 'utf-8');
@@ -145,6 +149,10 @@ function scanSkills() {
         const body = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
         const sections = parseSections(body);
         
+        // 根据使用的文件版本设置filePath
+        const isV2 = skillFile === v2File;
+        const version = isV2 ? (frontmatter.version || '2.0') : (frontmatter.version || '1.0');
+        
         skills.push({
           // Metadata from frontmatter
           id: frontmatter.name || categoryDir,
@@ -153,8 +161,8 @@ function scanSkills() {
           description: frontmatter.description || '',
           tags: frontmatter.tags || [],
           author: frontmatter.author || 'PUAX',
-          version: frontmatter.version || '1.0',
-          filePath: `skills/${categoryDir}/SKILL.md`,
+          version: version,
+          filePath: isV2 ? `skills/${categoryDir}/SKILL.v2.md` : `skills/${categoryDir}/SKILL.md`,
           
           // Parsed sections
           capabilities: sections.capabilities,

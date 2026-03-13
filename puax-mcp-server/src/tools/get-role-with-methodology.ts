@@ -121,13 +121,20 @@ export const getRoleWithMethodologyTool = {
 
   handler: async (args: z.infer<typeof GetRoleWithMethodologyInputSchema>) => {
     try {
-      const { role_id, options = {} } = args;
+      const { role_id, options = {} } = args as {
+        role_id: string;
+        options: {
+          include_methodology?: boolean;
+          include_checklist?: boolean;
+          include_flavor?: string;
+        }
+      };
       
       // 加载System Prompt
       const systemPrompt = loadRoleSystemPrompt(role_id);
       
       // 获取角色元数据
-      const metadata = roleRecommender.getRoleMetadata(roleId);
+      const metadata = roleRecommender.getRoleMetadata(role_id);
       
       // 获取方法论
       let methodology = options.include_methodology !== false

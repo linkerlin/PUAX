@@ -155,6 +155,15 @@ export class PuaxMcpServer {
                         return await this.handleActivateSkill(args);
                     case 'get_categories':
                         return await this.handleGetCategories(args);
+                    // New auto-trigger tools
+                    case 'detect_trigger':
+                        return await this.handleDetectTrigger(args);
+                    case 'recommend_role':
+                        return await this.handleRecommendRole(args);
+                    case 'get_role_with_methodology':
+                        return await this.handleGetRoleWithMethodology(args);
+                    case 'activate_with_context':
+                        return await this.handleActivateWithContext(args);
                     // Legacy role tools (aliases)
                     case 'list_roles':
                         return await this.handleListRoles(args);
@@ -769,5 +778,313 @@ export class PuaxMcpServer {
             res.writeHead(500, { 'Content-Type': 'text/plain' });
             res.end('Internal Server Error');
         }
+    }
+
+    // ==================== New Auto-Trigger Tool Handlers ====================
+
+    private async handleDetectTrigger(args: any): Promise<any> {
+        try {
+            // Dynamic import to avoid circular dependency issues
+            const { TriggerDetector } = await import('./core/trigger-detector.js');
+            
+            const detector = new TriggerDetector(args.options);
+            const result = await detector.detect(
+                args.conversation_history,
+                args.task_context
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify(result, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            this.logger.error('Detect trigger error:', error);
+            throw new McpError(
+                ErrorCode.InternalError,
+                `Trigger detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+    }
+
+    private async handleRecommendRole(args: any): Promise<any> {
+        try {
+            const { RoleRecommender } = await import('./core/role-recommender.js');
+            
+            const recommender = new RoleRecommender();
+            const result = await recommender.recommend({
+                detected_triggers: args.detected_triggers,
+                task_context: args.task_context,
+                user_preferences: args.user_preferences,
+                session_history: args.session_history
+            });
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify(result, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            this.logger.error('Recommend role error:', error);
+            throw new McpError(
+                ErrorCode.InternalError,
+                `Role recommendation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+    }
+
+    private async handleGetRoleWithMethodology(args: any): Promise<any> {
+        try {
+            const { MethodologyEngine } = await import('./core/methodology-engine.js');
+            const engine = new MethodologyEngine();
+            
+            const { role_id, options = {} } = args;
+            
+            // Get skill info
+            const skill = promptManager.getSkillById(role_id);
+            if (!skill) {
+                throw new McpError(
+                    ErrorCode.InvalidParams,
+                    `Role not found: ${role_id}`
+                );
+            }
+
+            // Get methodology
+            let methodology = options.include_methodology !== false
+                ? engine.getMethodology(role_id)
+                : undefined;
+
+            // Apply flavor if specified
+            if (options.include_flavor && methodology) {
+                methodology = engine.applyFlavor(methodology, options.include_flavor);
+            }
+
+            // Get checklist
+            const checklist = options.include_checklist !== false
+                ? engine.getChecklist(role_id)
+                : undefined;
+
+            // Load system prompt
+            let systemPrompt = skill.content;
+            
+            // If compact format requested, reduce content
+            if (options.format === 'compact') {
+                systemPrompt = systemPrompt.substring(0, 1000) + '...';
+            } else if (options.format === 'prompt_only') {
+                // Extract only the system prompt section
+                const match = systemPrompt.match(/## System Prompt\s*```[\s\S]*?```/);
+                systemPrompt = match ? match[0] : systemPrompt;
+            }
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            role: {
+                                id: skill.id,
+                                name: skill.name,
+                                category: skill.category,
+                                version: skill.version
+                            },
+                            system_prompt: systemPrompt,
+                            methodology: methodology,
+                            checklist: checklist,
+                            flavor_overlay: options.include_flavor ? {
+                                applied: options.include_flavor
+                            } : undefined
+                        }, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            this.logger.error('Get role with methodology error:', error);
+            throw new McpError(
+                ErrorCode.InternalError,
+                `Failed to get role with methodology: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+    }
+
+    private async handleActivateWithContext(args: any): Promise<any> {
+        const startTime = Date.now();
+        
+        try {
+            const { context, options = {} } = args;
+            const { TriggerDetector } = await import('./core/trigger-detector.js');
+            const { RoleRecommender } = await import('./core/role-recommender.js');
+            const { MethodologyEngine } = await import('./core/methodology-engine.js');
+            
+            // Step 1: Detect triggers
+            const detectionStart = Date.now();
+            let detectedTriggers: string[] = [];
+            let shouldActivate = false;
+            
+            if (options.auto_detect !== false) {
+                const detector = new TriggerDetector();
+                const detectionResult = await detector.detect(
+                    context.conversation_history,
+                    context.task_context
+                );
+                
+                detectedTriggers = detectionResult.triggers_detected.map(t => t.id);
+                shouldActivate = detectionResult.summary.should_trigger;
+            }
+            
+            const detectionTime = Date.now() - detectionStart;
+            
+            // If no triggers and no force activation, return early
+            if (!shouldActivate && !options.user_confirmation) {
+                return {
+                    content: [
+                        {
+                            type: 'text',
+                            text: JSON.stringify({
+                                activated: false,
+                                role: { id: '', name: '' },
+                                activation_reason: {
+                                    triggers_detected: [],
+                                    match_confidence: 0,
+                                    reasoning: '未检测到需要激活的触发条件'
+                                },
+                                system_prompt: '',
+                                next_steps: ['继续当前对话，无需特殊干预'],
+                                metadata: {
+                                    detection_time_ms: detectionTime,
+                                    recommendation_time_ms: 0,
+                                    total_time_ms: Date.now() - startTime
+                                }
+                            }, null, 2)
+                        }
+                    ]
+                };
+            }
+            
+            // Step 2: Recommend role
+            const recommendationStart = Date.now();
+            const recommender = new RoleRecommender();
+            
+            // Infer task type from task description
+            const taskType = this.inferTaskType(context.task_context?.current_task || '');
+            
+            const recommendation = await recommender.recommend({
+                detected_triggers: detectedTriggers.length > 0 
+                    ? detectedTriggers 
+                    : [options.fallback_role || 'military-commander'],
+                task_context: {
+                    task_type: taskType,
+                    description: context.task_context?.current_task,
+                    urgency: detectedTriggers.includes('user_frustration') ? 'critical' : 'high',
+                    attempt_count: context.task_context?.attempt_count || 0
+                }
+            });
+            
+            const recommendationTime = Date.now() - recommendationStart;
+            
+            // Step 3: Get role content
+            const roleId = recommendation.primary.role_id;
+            const skill = promptManager.getSkillById(roleId);
+            
+            if (!skill) {
+                throw new McpError(
+                    ErrorCode.InvalidParams,
+                    `Role not found: ${roleId}`
+                );
+            }
+            
+            // Get methodology and checklist
+            const engine = new MethodologyEngine();
+            const methodology = options.include_methodology !== false
+                ? engine.getMethodology(roleId)
+                : undefined;
+            const checklist = options.include_checklist !== false
+                ? engine.getChecklist(roleId)
+                : undefined;
+            
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            activated: true,
+                            role: {
+                                id: roleId,
+                                name: recommendation.primary.role_name
+                            },
+                            activation_reason: {
+                                triggers_detected: detectedTriggers,
+                                match_confidence: recommendation.primary.confidence_score,
+                                reasoning: recommendation.primary.match_reasons.join('；')
+                            },
+                            system_prompt: skill.content,
+                            methodology: methodology ? {
+                                name: methodology.name,
+                                steps: methodology.steps.map(s => ({
+                                    name: s.name,
+                                    description: s.description,
+                                    actions: s.actions
+                                }))
+                            } : undefined,
+                            checklist: checklist?.filter(c => c.required).map(c => ({
+                                text: c.text,
+                                required: c.required
+                            })),
+                            next_steps: [
+                                '将System Prompt注入对话上下文',
+                                '向用户说明已激活的角色和原因',
+                                '按照方法论执行调试步骤',
+                                '完成检查清单中的必要项',
+                                '持续监控对话状态'
+                            ],
+                            metadata: {
+                                detection_time_ms: detectionTime,
+                                recommendation_time_ms: recommendationTime,
+                                total_time_ms: Date.now() - startTime
+                            }
+                        }, null, 2)
+                    }
+                ]
+            };
+        } catch (error) {
+            this.logger.error('Activate with context error:', error);
+            throw new McpError(
+                ErrorCode.InternalError,
+                `Activation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+        }
+    }
+
+    private inferTaskType(taskDescription: string): string {
+        const desc = taskDescription.toLowerCase();
+        
+        if (desc.includes('debug') || desc.includes('fix') || desc.includes('error')) {
+            return 'debugging';
+        }
+        if (desc.includes('code') || desc.includes('implement') || desc.includes('develop')) {
+            return 'coding';
+        }
+        if (desc.includes('review') || desc.includes('audit')) {
+            return 'review';
+        }
+        if (desc.includes('write') || desc.includes('document')) {
+            return 'writing';
+        }
+        if (desc.includes('design') || desc.includes('plan')) {
+            return 'planning';
+        }
+        if (desc.includes('urgent') || desc.includes('emergency') || desc.includes('asap')) {
+            return 'emergency';
+        }
+        if (desc.includes('analyze') || desc.includes('research')) {
+            return 'analysis';
+        }
+        
+        return 'debugging'; // Default
     }
 }
