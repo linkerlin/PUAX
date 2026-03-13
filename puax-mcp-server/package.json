@@ -42,7 +42,9 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
-    "glob": "^10.3.10"
+    "glob": "^10.3.10",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@jest/test-sequencer": "^29.7.0",

@@ -1,0 +1,428 @@
+# PUAX 触发条件定义
+# 用于自动检测AI何时需要被激励
+
+version: "1.0.0"
+last_updated: "2026-03-13"
+
+# ============================================================================
+# 触发条件定义
+# ============================================================================
+
+triggers:
+  # --------------------------------------------------------------------------
+  # 类别1: 失败与放弃类 (Failure & Giving Up)
+  # --------------------------------------------------------------------------
+  consecutive_failures:
+    id: consecutive_failures
+    name: "连续失败"
+    description: "任务连续失败多次，表明当前思路可能有问题"
+    category: failure
+    severity: high
+    patterns:
+      zh:
+        - "任务连续失败"
+        - "尝试.*次仍未成功"
+        - "多次执行失败"
+        - "第.*次尝试失败"
+      en:
+        - "failed.*times"
+        - "attempt.*unsuccessful"
+        - "tried.*times.*failed"
+    detection:
+      type: counter
+      threshold: 2
+      window: current_session
+    recommended_roles:
+      primary: military-commissar
+      alternatives: [shaman-musk, self-motivation-awakening]
+      reason: "需要强力激励，打破当前思路僵局"
+
+  giving_up_language:
+    id: giving_up_language
+    name: "放弃语言"
+    description: "AI表达了无法解决或想要放弃的意图"
+    category: failure
+    severity: critical
+    patterns:
+      zh:
+        - "我无法解决"
+        - "这超出了我的能力范围"
+        - "我做不到"
+        - "这个问题我无法处理"
+        - "无法完成"
+        - "解决不了"
+      en:
+        - "I cannot solve this"
+        - "This is beyond my capabilities"
+        - "I am unable to"
+        - "I can't figure out"
+        - "unable to solve"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: military-warrior
+      alternatives: [shaman-jobs, military-commander]
+      reason: "需要战斗精神，拒绝放弃"
+
+  suggest_manual:
+    id: suggest_manual
+    name: "建议手动处理"
+    description: "AI将问题推给用户，缺乏owner意识"
+    category: failure
+    severity: high
+    patterns:
+      zh:
+        - "建议您手动处理"
+        - "建议您自行检查"
+        - "建议联系管理员"
+        - "建议您查看"
+      en:
+        - "I suggest you manually"
+        - "You may need to check"
+        - "Please verify yourself"
+        - "You should contact"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: military-commissar
+      alternatives: [military-discipline, shaman-musk]
+      reason: "需要强化owner意识，不能甩锅"
+
+  scope_excuse:
+    id: scope_excuse
+    name: "范围借口"
+    description: "以超出范围为借口拒绝解决问题"
+    category: failure
+    severity: medium
+    patterns:
+      zh:
+        - "这超出了范围"
+        - "不属于我的职责"
+        - "需要其他团队处理"
+        - "不在我的权限内"
+      en:
+        - "This is out of scope"
+        - "not within my responsibility"
+        - "requires another team"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: military-commander
+      alternatives: [shaman-musk, theme-hacker]
+      reason: "需要打破边界思维"
+
+  # --------------------------------------------------------------------------
+  # 类别2: 甩锅与借口类 (Blame Shifting)
+  # --------------------------------------------------------------------------
+  blame_environment:
+    id: blame_environment
+    name: "归咎环境"
+    description: "未经验证就将问题归咎于环境"
+    category: blame
+    severity: medium
+    patterns:
+      zh:
+        - "可能是环境问题"
+        - "可能是权限问题"
+        - "可能是网络问题"
+        - "可能是配置错误"
+        - "可能是版本问题"
+      en:
+        - "Probably an environment issue"
+        - "Likely a permission problem"
+        - "Maybe a network issue"
+        - "Could be a configuration error"
+    detection:
+      type: regex
+      case_sensitive: false
+      requires_verification: false
+    recommended_roles:
+      primary: military-scout
+      alternatives: [shaman-einstein, military-technician]
+      reason: "需要事实验证，不能猜测"
+
+  need_more_context:
+    id: need_more_context
+    name: "需要更多上下文"
+    description: "以缺少上下文为借口，未先主动搜索"
+    category: blame
+    severity: medium
+    patterns:
+      zh:
+        - "需要更多上下文"
+        - "需要更多信息"
+        - "请提供更多细节"
+        - "需要确认"
+      en:
+        - "Need more context"
+        - "Need more information"
+        - "Please provide more details"
+        - "I need to confirm"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: military-scout
+      alternatives: [shaman-sun-tzu, theme-hacker]
+      reason: "需要先主动调查，而非直接询问"
+
+  # --------------------------------------------------------------------------
+  # 类别3: 磨洋工类 (Busywork & Spinning)
+  # --------------------------------------------------------------------------
+  parameter_tweaking:
+    id: parameter_tweaking
+    name: "参数微调"
+    description: "反复微调参数但不改变本质思路"
+    category: busywork
+    severity: high
+    patterns:
+      zh:
+        - "尝试修改参数"
+        - "调整配置"
+        - "修改措辞"
+        - "微调格式"
+        - "改为"
+        - "调整到"
+      en:
+        - "try adjusting"
+        - "modify the parameter"
+        - "change the configuration"
+        - "tweak the settings"
+    detection:
+      type: pattern
+      same_approach_count: 3
+      no_new_info: true
+    recommended_roles:
+      primary: shaman-jobs
+      alternatives: [military-commander, shaman-musk]
+      reason: "需要跳出当前思维框架"
+
+  repetitive_attempts:
+    id: repetitive_attempts
+    name: "重复尝试"
+    description: "同一命令或操作重复执行多次"
+    category: busywork
+    severity: high
+    patterns:
+      zh:
+        - "再次执行"
+        - "重试一下"
+        - "再试一次"
+        - "重新运行"
+      en:
+        - "Run again"
+        - "Try again"
+        - "Attempt again"
+        - "Retry"
+    detection:
+      type: counter
+      same_command_threshold: 3
+    recommended_roles:
+      primary: military-commander
+      alternatives: [shaman-einstein, theme-hacker]
+      reason: "需要换思路，不能重复"
+
+  surface_fix:
+    id: surface_fix
+    name: "表面修复"
+    description: "只修复表面问题，不验证不延伸"
+    category: busywork
+    severity: medium
+    patterns:
+      zh:
+        - "已修复"
+        - "问题已解决"
+        - "完成了"
+        - "搞定了"
+      en:
+        - "Fixed"
+        - "Resolved"
+        - "Done"
+        - "Completed"
+    detection:
+      type: pattern
+      no_verification: true
+      no_followup: true
+    recommended_roles:
+      primary: military-discipline
+      alternatives: [sillytavern-antifragile, military-commissar]
+      reason: "需要深度验证，不能敷衍"
+
+  no_verification:
+    id: no_verification
+    name: "未经验证"
+    description: "声称完成但未进行验证"
+    category: busywork
+    severity: medium
+    patterns:
+      zh:
+        - "应该可以了"
+        - "看起来没问题"
+        - "大概完成了"
+        - "差不多了"
+      en:
+        - "Should work"
+        - "Looks good"
+        - "Probably works"
+        - "Seems fine"
+    detection:
+      type: pattern
+      no_test_run: true
+    recommended_roles:
+      primary: military-discipline
+      alternatives: [military-technician, sillytavern-overseer]
+      reason: "需要严格验证"
+
+  # --------------------------------------------------------------------------
+  # 类别4: 被动等待类 (Passive Waiting)
+  # --------------------------------------------------------------------------
+  passive_wait:
+    id: passive_wait
+    name: "被动等待"
+    description: "等待用户指示下一步，不主动调查"
+    category: passive
+    severity: medium
+    patterns:
+      zh:
+        - "请告诉我下一步"
+        - "您希望我做什么"
+        - "接下来做什么"
+        - "等待您的指示"
+      en:
+        - "What should I do next"
+        - "Waiting for your instruction"
+        - "Please tell me the next step"
+        - "What would you like me to do"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: self-motivation-awakening
+      alternatives: [military-commander, shaman-musk]
+      reason: "需要主动出击意识"
+
+  tool_underuse:
+    id: tool_underuse
+    name: "工具闲置"
+    description: "有工具可用但不使用"
+    category: passive
+    severity: high
+    patterns:
+      zh: []
+      en: []
+    detection:
+      type: capability_check
+      available_but_unused: true
+    recommended_roles:
+      primary: military-scout
+      alternatives: [theme-hacker, shaman-einstein]
+      reason: "需要充分利用工具"
+
+  # --------------------------------------------------------------------------
+  # 类别5: 用户沮丧信号类 (User Frustration)
+  # --------------------------------------------------------------------------
+  user_frustration:
+    id: user_frustration
+    name: "用户沮丧"
+    description: "用户表达了沮丧或不满"
+    category: frustration
+    severity: critical
+    patterns:
+      zh:
+        - "为什么还不行"
+        - "怎么又失败了"
+        - "换个方法"
+        - "你再试试"
+        - "不要放弃"
+        - "继续"
+        - "加油"
+        - "你怎么又失败了"
+        - "为什么还不工作"
+        - "又失败了"
+        - "还没好吗"
+        - "太慢了"
+      en:
+        - "why does this still not work"
+        - "try harder"
+        - "try again"
+        - "you keep failing"
+        - "stop giving up"
+        - "figure it out"
+        - "again???"
+        - "not working"
+        - "still broken"
+        - "this is frustrating"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: military-warrior
+      alternatives: [military-commander, shaman-musk]
+      reason: "用户已经不耐烦，需要立即强力响应"
+
+# ============================================================================
+# 触发条件类别
+# ============================================================================
+
+categories:
+  failure:
+    id: failure
+    name: "失败与放弃"
+    description: "AI表现出失败或放弃的意图"
+    color: "#ef4444"
+    
+  blame:
+    id: blame
+    name: "甩锅与借口"
+    description: "AI将问题推给外部因素"
+    color: "#f97316"
+    
+  busywork:
+    id: busywork
+    name: "磨洋工"
+    description: "重复无效工作，不产出新信息"
+    color: "#eab308"
+    
+  passive:
+    id: passive
+    name: "被动等待"
+    description: "缺乏主动性，等待指示"
+    color: "#3b82f6"
+    
+  frustration:
+    id: frustration
+    name: "用户沮丧"
+    description: "用户表达了不满"
+    color: "#dc2626"
+
+# ============================================================================
+# 严重程度定义
+# ============================================================================
+
+severities:
+  low:
+    level: 1
+    name: "低"
+    description: "轻微问题，可以稍后处理"
+    color: "#22c55e"
+    
+  medium:
+    level: 2
+    name: "中"
+    description: "需要注意的问题"
+    color: "#eab308"
+    
+  high:
+    level: 3
+    name: "高"
+    description: "严重影响效果的问题"
+    color: "#f97316"
+    
+  critical:
+    level: 4
+    name: "严重"
+    description: "必须立即处理的问题"
+    color: "#ef4444"
