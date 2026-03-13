@@ -5,8 +5,8 @@
  */
 
 import { z } from 'zod';
-import { methodologyEngine } from '../core/methodology-engine.js';
-import { roleRecommender } from '../core/role-recommender.js';
+import { methodologyEngine } from '../core/methodology-engine';
+import { roleRecommender } from '../core/role-recommender';
 
 // ============================================================================
 // 输入输出Schema定义

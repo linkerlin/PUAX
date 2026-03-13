@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { TriggerDetector } from '../core/trigger-detector.js';
+import { TriggerDetector } from '../core/trigger-detector';
 
 // ============================================================================
 // 输入输出Schema定义
