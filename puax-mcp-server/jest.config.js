@@ -36,7 +36,8 @@ module.exports = {
     
     // 测试文件匹配模式
     testMatch: [
-        '**/test/**/*.test.js'
+        '**/test/**/*.test.js',
+        '**/test/**/*.test.ts'
     ],
     
     // 测试前的准备
