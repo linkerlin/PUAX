@@ -78,36 +78,40 @@ function parseSections(body) {
     sectionMap[sectionName] = sectionBody.trim();
   }
   
-  // Extract capabilities
-  if (sectionMap['capabilities']) {
-    const capMatch = sectionMap['capabilities'].match(/^- .+$/gm);
+  // Extract capabilities (支持英文和中文)
+  const capSection = sectionMap['capabilities'] || sectionMap['核心能力'];
+  if (capSection) {
+    // 匹配列表项：- xxx 或 1. **xxx**: xxx
+    const capMatch = capSection.match(/(^- .+$|^\d+\. \*\*.+\*\*: .+$)/gm);
     if (capMatch) {
-      sections.capabilities = capMatch.map(line => line.replace(/^-\s*/, '').trim());
+      sections.capabilities = capMatch.map(line => 
+        line.replace(/^-\s*/, '')
+            .replace(/^\d+\. \*\*(.+?)\*\*:\s*/, '$1: ')
+            .trim()
+      );
     }
   }
   
-  // Extract how to use
-  if (sectionMap['how to use']) {
-    sections.howToUse = sectionMap['how to use'];
-  }
+  // Extract how to use (支持英文和中文)
+  sections.howToUse = sectionMap['how to use'] || sectionMap['如何使用'] || sectionMap['使用方法'] || '';
   
   // Extract input format
-  if (sectionMap['input format']) {
-    sections.inputFormat = sectionMap['input format'];
-  }
+  sections.inputFormat = sectionMap['input format'] || sectionMap['输入格式'] || '';
   
   // Extract output format
-  if (sectionMap['output format']) {
-    sections.outputFormat = sectionMap['output format'];
-  }
+  sections.outputFormat = sectionMap['output format'] || sectionMap['输出格式'] || '';
   
   // Extract example usage
-  if (sectionMap['example usage']) {
-    sections.exampleUsage = sectionMap['example usage'];
-  }
+  sections.exampleUsage = sectionMap['example usage'] || sectionMap['使用示例'] || '';
   
-  // System prompt is the entire body (for backward compatibility)
-  sections.systemPrompt = body.trim();
+  // Extract system prompt from markdown code block
+  const systemPromptMatch = body.match(/## System Prompt\s*\n\s*```[\s\S]*?\n([\s\S]*?)\n```/);
+  if (systemPromptMatch) {
+    sections.systemPrompt = systemPromptMatch[1].trim();
+  } else {
+    // Fallback: use entire body
+    sections.systemPrompt = body.trim();
+  }
   
   return sections;
 }
