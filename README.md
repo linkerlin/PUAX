@@ -28,6 +28,11 @@ PUAX 是一个专为 AI Agent 设计的激励系统，通过：
 
 ## ✨ 核心特性
 
+### 📦 零安装使用
+支持两种运行方式：
+- **npx 一键使用** - 无需安装，`npx puax-mcp-server --stdio` 直接运行
+- **HTTP 模式** - 传统服务器模式，支持多客户端共享
+
 ### 🤖 自动触发检测
 检测 14 种需要干预的场景：
 - 连续失败 - 多次尝试无果
@@ -84,7 +89,65 @@ PUAX 是一个专为 AI Agent 设计的激励系统，通过：
 
 ## 🚀 快速开始
 
-### 1. 安装
+### 方式 1：使用 npx（最简单，推荐）
+
+无需克隆仓库，直接使用 npx 从 NPM 获取最新版本：
+
+```bash
+# HTTP 模式
+npx puax-mcp-server
+
+# STDIO 模式（推荐用于 MCP 客户端）
+npx puax-mcp-server --stdio
+```
+
+#### 配置 MCP 客户端（STDIO 模式）
+
+**Claude Desktop** (`%APPDATA%/Claude/claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+**Cursor** (`~/.cursor/mcp_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+**CRUSH** (`~/.crush/config.json`):
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+> ✨ **特点**：使用 `npx` 自动获取 **NPM 最新版本**，每次启动都是最新版！
+
+---
+
+### 方式 2：本地安装（开发者/自定义）
 
 ```bash
 # 克隆仓库
@@ -96,29 +159,84 @@ npm install
 
 # 生成角色Bundle
 npm run generate-bundle
-```
 
-### 2. 启动服务器
-
-```bash
+# 启动服务器
 npm start
 ```
 
 服务器将在 `http://localhost:3000` 启动。
 
-### 3. 配置 MCP 客户端
-
-在 Cursor/Cline 中配置：
+#### 配置 MCP 客户端（HTTP 模式）
 
 ```json
 {
   "mcpServers": {
     "puax": {
+      "type": "sse",
       "url": "http://localhost:3000/mcp"
     }
   }
 }
 ```
+
+---
+
+## 📦 npx 使用说明
+
+### 为什么选择 npx？
+
+```bash
+# 一行命令即可使用，无需克隆仓库
+npx puax-mcp-server --stdio
+```
+
+**优势**：
+- ✅ **始终最新** - 每次启动自动获取 NPM 最新版本
+- ✅ **零配置** - 无需管理路径或环境变量
+- ✅ **自动更新** - 有新版本时自动下载
+- ✅ **干净** - 不留下系统残留文件
+
+### 支持的客户端
+
+所有主流 MCP 客户端都支持通过 `npx` 运行：
+
+| 客户端 | 配置方式 | 传输模式 |
+|--------|----------|----------|
+| Claude Desktop | `npx puax-mcp-server --stdio` | STDIO |
+| Cursor | `npx puax-mcp-server --stdio` | STDIO |
+| CRUSH | `npx puax-mcp-server --stdio` | STDIO |
+| Windsurf | `npx puax-mcp-server --stdio` | STDIO |
+| VS Code + Cline | `npx puax-mcp-server --stdio` | STDIO |
+
+### 命令行参数
+
+```bash
+# 查看帮助
+npx puax-mcp-server --help
+
+# HTTP 模式（指定端口）
+npx puax-mcp-server --port 8080
+
+# STDIO 模式（用于 MCP 客户端）
+npx puax-mcp-server --stdio
+
+# 静默模式
+npx puax-mcp-server --stdio --quiet
+```
+
+### 首次使用
+
+首次运行时会自动下载包：
+
+```bash
+$ npx puax-mcp-server --version
+Need to install the following packages:
+  puax-mcp-server@1.6.0
+Ok to proceed? (y) y
+puax-mcp-server v1.6.0
+```
+
+输入 `y` 确认后，后续使用无需再次确认。
 
 ### 4. 使用示例
 
@@ -153,6 +271,7 @@ User: 为什么还不行？这都第三次了
 
 | 文档 | 说明 |
 |------|------|
+| [MCP Server 配置](puax-mcp-server/README.md) | npx 配置指南、STDIO/HTTP 模式详解 |
 | [API文档](docs/API.md) | MCP工具完整API参考 |
 | [使用指南](docs/USER-GUIDE.md) | 详细使用说明 |
 | [贡献指南](community/CONTRIBUTING.md) | 如何贡献角色 |
