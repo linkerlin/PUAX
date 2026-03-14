@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-03-14
+
+### Added
+- ✨ **全新 2.0 版本发布** - 重大更新
+- 🚀 优化 STDIO 传输模式，更稳定可靠
+- 📝 完善文档和配置指南
+
 ## [1.6.0] - 2026-03-14
 
 ### Added

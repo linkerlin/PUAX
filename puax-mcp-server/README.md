@@ -2,7 +2,7 @@
 
 > 🚀 为 AI Agent 提供**角色选择、切换和激活**功能的专业 MCP 服务器
 
-**版本**: 1.6.0 | **传输**: HTTP (SSE) / STDIO | **端口**: 2333 (HTTP模式)  
+**版本**: 2.0.0 | **传输**: HTTP (SSE) / STDIO | **端口**: 2333 (HTTP模式)  
 **内置角色**: 42个精选SKILL | **角色分类**: 6大系列
 
 ---
@@ -203,9 +203,9 @@ npx puax-mcp-server --stdio
 ```bash
 $ npx puax-mcp-server --version
 Need to install the following packages:
-  puax-mcp-server@1.6.0
+  puax-mcp-server@2.0.0
 Ok to proceed? (y) y
-puax-mcp-server v1.6.0
+puax-mcp-server v2.0.0
 ```
 
 输入 `y` 确认下载，后续使用无需再次确认。
@@ -220,7 +220,7 @@ puax-mcp-server v1.6.0
 4. 在 Claude 日志中可以看到下载进度：
    ```
    Need to install the following packages:
-     puax-mcp-server@1.6.0
+     puax-mcp-server@2.0.0
    ```
 5. 下载完成后，PUAX 工具即可使用
 
@@ -418,7 +418,7 @@ npm start -- --stdio
 curl http://127.0.0.1:2333/health
 
 # 预期输出
-{"status":"ok","service":"puax-mcp-server","version":"1.6.0"}
+{"status":"ok","service":"puax-mcp-server","version":"2.0.0"}
 ```
 
 ### 第 3 步：配置你的 AI 客户端
