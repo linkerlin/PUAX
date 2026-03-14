@@ -29,9 +29,9 @@ npm login
 
 ```bash
 # 选择适当的版本号更新
-npm version patch   # 修复 bug：1.6.0 -> 1.6.1
-npm version minor   # 新功能：1.6.0 -> 1.7.0
-npm version major   # 不兼容变更：1.6.0 -> 2.0.0
+npm version patch   # 修复 bug：2.0.0 -> 2.0.1
+npm version minor   # 新功能：2.0.0 -> 2.1.0
+npm version major   # 不兼容变更：2.0.0 -> 3.0.0
 ```
 
 ## 🚀 发布步骤
@@ -127,7 +127,7 @@ npm install -g puax-mcp-server@beta
 
 ```bash
 # 撤销特定版本（72小时内有效）
-npm unpublish puax-mcp-server@1.6.1
+npm unpublish puax-mcp-server@2.0.1
 
 # 撤销整个包（谨慎使用！）
 npm unpublish puax-mcp-server --force
@@ -159,9 +159,9 @@ npm unpublish puax-mcp-server --force
 - **PATCH**（修订号）：向下兼容的问题修复
 
 示例：
-- `1.6.0` -> `1.6.1`：修复 bug
-- `1.6.1` -> `1.7.0`：新增功能（如新的传输模式）
-- `1.7.0` -> `2.0.0`：不兼容的 API 变更
+- `2.0.0` -> `2.0.1`：修复 bug
+- `2.0.1` -> `2.1.0`：新增功能（如新的传输模式）
+- `2.1.0` -> `3.0.0`：不兼容的 API 变更
 
 ## 🔄 CI/CD 自动发布（可选）
 

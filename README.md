@@ -231,9 +231,9 @@ npx puax-mcp-server --stdio --quiet
 ```bash
 $ npx puax-mcp-server --version
 Need to install the following packages:
-  puax-mcp-server@1.6.0
+  puax-mcp-server@2.0.0
 Ok to proceed? (y) y
-puax-mcp-server v1.6.0
+puax-mcp-server v2.0.0
 ```
 
 输入 `y` 确认后，后续使用无需再次确认。
