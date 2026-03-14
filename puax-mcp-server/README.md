@@ -7,18 +7,68 @@
 
 ---
 
-## 🚀 5秒快速配置
+## 🚀 5秒快速配置（使用最新版）
 
-选择你的客户端，复制配置即可：
+复制下方对应客户端的配置，粘贴到 MCP 配置文件中即可：
 
-| 客户端 | 推荐模式 | 配置 |
-|--------|----------|------|
-| **Claude Desktop** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
-| **CRUSH** | STDIO | `{"mcp":{"puax":{"type":"stdio","command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
-| **Cursor** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
-| **Windsurf** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
+### Claude Desktop
 
-💡 **提示**：STDIO 模式无需后台运行服务，最适合本地客户端！
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件：`%APPDATA%/Claude/claude_desktop_config.json`
+
+### CRUSH
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件：`~/.crush/config.json`
+
+### Cursor
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件：`~/.cursor/mcp_config.json`
+
+### Windsurf
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件：`~/.windsurf/mcp_config.json`
+
+✨ **特点**：使用 `npx` 自动获取 **NPM 最新版本**，无需手动更新！
 
 ---
 
@@ -39,7 +89,9 @@ npx puax-mcp-server
 npx puax-mcp-server --stdio
 ```
 
-### MCP 客户端配置示例
+### MCP 客户端配置示例（npx stdio）
+
+所有配置均使用 **npx + STDIO 模式**，自动获取 NPM 最新版本：
 
 #### Claude Desktop
 
@@ -47,23 +99,22 @@ npx puax-mcp-server --stdio
    - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-2. 添加配置：
+2. 添加 npx stdio 配置：
 
 ```json
 {
   "mcpServers": {
     "puax": {
       "command": "npx",
-      "args": [
-        "puax-mcp-server",
-        "--stdio"
-      ]
+      "args": ["puax-mcp-server", "--stdio"]
     }
   }
 }
 ```
 
-3. 重启 Claude Desktop，即可使用 PUAX 的所有 SKILL
+3. 保存配置并重启 Claude Desktop
+
+4. 首次使用时，Claude 会提示下载包，输入 `y` 确认即可
 
 #### CRUSH
 
@@ -75,10 +126,7 @@ npx puax-mcp-server --stdio
     "puax": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "puax-mcp-server",
-        "--stdio"
-      ]
+      "args": ["puax-mcp-server", "--stdio"]
     }
   }
 }
@@ -95,12 +143,24 @@ npx puax-mcp-server --stdio
   "mcpServers": {
     "puax": {
       "command": "npx",
-      "args": [
-        "puax-mcp-server",
-        "--stdio"
-      ],
+      "args": ["puax-mcp-server", "--stdio"],
       "disabled": false,
       "autoApprove": []
+    }
+  }
+}
+```
+
+#### Windsurf
+
+配置文件：`~/.windsurf/mcp_config.json`
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
     }
   }
 }
@@ -122,14 +182,23 @@ npx puax-mcp-server --stdio
 ```
 
 **特点**：
+- ✅ **始终最新**：每次启动自动获取 NPM 最新版本
 - ✅ **无需安装**：首次使用自动下载，后续复用缓存
-- ✅ **自动更新**：每次使用都是最新版本
+- ✅ **自动更新**：有新版本时自动下载，无需手动操作
 - ✅ **零配置**：无需管理路径或环境变量
-- ✅ **干净卸载**：无残留文件
+- ✅ **干净卸载**：不留下任何系统残留文件
+
+**为什么使用最新版本？**
+- 🐛 自动获取 Bug 修复
+- ✨ 自动获取新功能（新 SKILL、新工具）
+- 🔒 自动获取安全更新
+- 🚀 无需手动升级，始终保持在最佳状态
 
 ### 首次使用说明
 
-首次运行 `npx puax-mcp-server` 时，NPM 会自动下载包到缓存：
+#### 1. 命令行首次运行
+
+首次执行 `npx puax-mcp-server` 时，NPM 会自动从仓库下载最新包：
 
 ```bash
 $ npx puax-mcp-server --version
@@ -141,9 +210,33 @@ puax-mcp-server v1.6.0
 
 输入 `y` 确认下载，后续使用无需再次确认。
 
-### 锁定版本（可选）
+#### 2. MCP 客户端首次配置
 
-如需使用特定版本，可在包名后指定版本号：
+以 Claude Desktop 为例：
+
+1. 添加配置后重启 Claude Desktop
+2. 在 Claude 设置中查看 MCP 服务器状态
+3. 首次连接时，Claude 会自动触发 `npx` 下载
+4. 在 Claude 日志中可以看到下载进度：
+   ```
+   Need to install the following packages:
+     puax-mcp-server@1.6.0
+   ```
+5. 下载完成后，PUAX 工具即可使用
+
+#### 3. 验证配置是否成功
+
+在 Claude 对话中输入：
+
+```
+请使用 list_skills 工具查看所有可用角色
+```
+
+如果 Claude 能正确调用工具并返回角色列表，说明配置成功！
+
+### 使用最新版本（推荐）
+
+默认情况下，`npx` 会自动使用 NPM 上的最新版本，无需指定版本号：
 
 ```json
 {
@@ -151,7 +244,7 @@ puax-mcp-server v1.6.0
     "puax": {
       "command": "npx",
       "args": [
-        "puax-mcp-server@1.6.0",
+        "puax-mcp-server",
         "--stdio"
       ]
     }
@@ -159,41 +252,72 @@ puax-mcp-server v1.6.0
 }
 ```
 
-### 离线使用
+**自动更新机制**：
+- 每次启动 MCP 客户端时，`npx` 会检查是否有新版本
+- 有新版本时自动下载并运行最新版
+- 无需手动更新，始终享受最新功能和修复
 
-如需离线使用，可先全局安装：
+### 强制刷新缓存（可选）
+
+如果遇到问题或想确保使用最新版本，可以清理 npx 缓存：
+
+```bash
+# 清理 npx 缓存
+npx clear-npx-cache
+
+# 或强制重新安装
+npx --ignore-existing puax-mcp-server --stdio
+```
+
+### 离线使用（可选）
+
+> ⚠️ **注意**：离线使用将**无法自动获取最新版本**，建议仅在无网络环境下使用。
+
+如需离线使用，先全局安装到本地：
 
 ```bash
 # 安装到全局
 npm install -g puax-mcp-server
 
-# 之后无需网络即可使用
+# 验证安装
+puax-mcp-server --version
+
+# 离线使用
 puax-mcp-server --stdio
 ```
 
-配置改为：
+配置改为使用本地命令：
 
 ```json
 {
   "mcpServers": {
     "puax": {
       "command": "puax-mcp-server",
-      "args": [
-        "--stdio"
-      ]
+      "args": ["--stdio"]
     }
   }
 }
+```
+
+**手动更新**：
+
+```bash
+# 检查当前版本
+puax-mcp-server --version
+
+# 手动更新到最新版
+npm update -g puax-mcp-server
 ```
 
 ---
 
 ## 📖 目录
 
-1. [5秒快速配置](#5秒快速配置)
+1. [5秒快速配置（使用最新版）](#5秒快速配置使用最新版)
 2. [npx 一键使用（推荐）](#npx-一键使用推荐)
    - [命令行直接使用](#命令行直接使用)
-   - [MCP 客户端配置示例](#mcp-客户端配置示例)
+   - [MCP 客户端配置示例（npx stdio）](#mcp-客户端配置示例npx-stdio)
+   - [使用最新版本](#使用最新版本推荐)
    - [npx 工作原理](#npx-工作原理)
    - [首次使用说明](#首次使用说明)
 3. [PUAX 是什么？](#puax-是什么)
