@@ -1,7 +1,7 @@
 {
   "name": "puax-mcp-server",
   "version": "1.6.0",
-  "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（HTTP Streamable-HTTP版本）",
+  "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（支持 HTTP/SSE 和 STDIO 模式）",
   "main": "build/index.js",
   "type": "commonjs",
   "bin": {
@@ -22,6 +22,7 @@
     "test:http": "jest test/http",
     "test:sse": "jest test/sse",
     "test:tools": "jest test/tools",
+    "test:stdio": "jest test/stdio",
     "test:integration": "jest test/integration",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
@@ -36,7 +37,8 @@
     "agent",
     "http",
     "sse",
-    "streamable-http"
+    "streamable-http",
+    "stdio"
   ],
   "author": "PUAX Team",
   "license": "MIT",
