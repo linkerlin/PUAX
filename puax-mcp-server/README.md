@@ -22,22 +22,193 @@
 
 ---
 
+## 📦 npx 一键使用（推荐）
+
+**无需安装、无需克隆仓库**，直接使用 `npx` 从 NPM 获取最新版本：
+
+### 命令行直接使用
+
+```bash
+# 查看版本
+npx puax-mcp-server --version
+
+# HTTP 模式运行（临时）
+npx puax-mcp-server
+
+# STDIO 模式运行（用于 MCP 客户端）
+npx puax-mcp-server --stdio
+```
+
+### MCP 客户端配置示例
+
+#### Claude Desktop
+
+1. 打开配置文件：
+   - Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+   - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+2. 添加配置：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": [
+        "puax-mcp-server",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+3. 重启 Claude Desktop，即可使用 PUAX 的所有 SKILL
+
+#### CRUSH
+
+配置文件：`C:\Users\{用户名}\.crush\config.json`
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "puax-mcp-server",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+#### Cursor
+
+配置文件：
+- Windows: `%APPDATA%/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+- macOS: `~/Library/Application Support/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": [
+        "puax-mcp-server",
+        "--stdio"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+### npx 工作原理
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
+│  MCP 客户端  │────▶│  npx 命令    │────▶│  NPM Registry   │
+│ (Claude等)   │     │ (临时下载)    │     │ (获取最新版本)   │
+└─────────────┘     └──────────────┘     └─────────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  运行服务    │
+                     │  (STDIO模式) │
+                     └──────────────┘
+```
+
+**特点**：
+- ✅ **无需安装**：首次使用自动下载，后续复用缓存
+- ✅ **自动更新**：每次使用都是最新版本
+- ✅ **零配置**：无需管理路径或环境变量
+- ✅ **干净卸载**：无残留文件
+
+### 首次使用说明
+
+首次运行 `npx puax-mcp-server` 时，NPM 会自动下载包到缓存：
+
+```bash
+$ npx puax-mcp-server --version
+Need to install the following packages:
+  puax-mcp-server@1.6.0
+Ok to proceed? (y) y
+puax-mcp-server v1.6.0
+```
+
+输入 `y` 确认下载，后续使用无需再次确认。
+
+### 锁定版本（可选）
+
+如需使用特定版本，可在包名后指定版本号：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": [
+        "puax-mcp-server@1.6.0",
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+### 离线使用
+
+如需离线使用，可先全局安装：
+
+```bash
+# 安装到全局
+npm install -g puax-mcp-server
+
+# 之后无需网络即可使用
+puax-mcp-server --stdio
+```
+
+配置改为：
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "puax-mcp-server",
+      "args": [
+        "--stdio"
+      ]
+    }
+  }
+}
+```
+
+---
+
 ## 📖 目录
 
 1. [5秒快速配置](#5秒快速配置)
-2. [PUAX 是什么？](#puax-是什么)
-3. [快速开始（3步上手）](#快速开始3步上手)
-4. [SKILL 系统详解](#skill-系统详解)
-5. [客户端配置指南](#客户端配置指南)
+2. [npx 一键使用（推荐）](#npx-一键使用推荐)
+   - [命令行直接使用](#命令行直接使用)
+   - [MCP 客户端配置示例](#mcp-客户端配置示例)
+   - [npx 工作原理](#npx-工作原理)
+   - [首次使用说明](#首次使用说明)
+3. [PUAX 是什么？](#puax-是什么)
+4. [快速开始（3步上手）](#快速开始3步上手)
+5. [SKILL 系统详解](#skill-系统详解)
+6. [客户端配置指南](#客户端配置指南)
    - [HTTP 模式配置](#http-模式配置)
    - [STDIO 模式配置](#stdio-模式配置)
    - [更多客户端配置](#更多-mcp-客户端配置)
    - [配置验证](#配置验证)
    - [故障排除](#故障排除)
    - [配置模板速查](#配置模板速查)
-6. [工具使用示例](#工具使用示例)
-7. [部署与运维](#部署与运维)
-8. [常见问题](#常见问题)
+7. [工具使用示例](#工具使用示例)
+8. [部署与运维](#部署与运维)
+9. [常见问题](#常见问题)
 
 ---
 
@@ -69,6 +240,8 @@ PUAX 内置了 **42 个精心设计的 SKILL（角色）**，涵盖：
 ## 快速开始（3步上手）
 
 ### 第 1 步：安装并启动服务器
+
+> 💡 **新手提示**：详细了解 npx 使用方法，请参阅 [npx 一键使用](#npx-一键使用推荐) 章节
 
 **方式 1：使用 npx（最简单，推荐新手）**
 
