@@ -1,5 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
@@ -18,11 +19,15 @@ import { Readable } from 'stream';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 
+// 传输模式类型
+export type TransportMode = 'http' | 'stdio';
+
 // 配置接口
 export interface ServerConfig {
     port?: number;
     host?: string;
     quiet?: boolean;
+    transport?: TransportMode;
 }
 
 // 日志工具
@@ -62,6 +67,7 @@ export class PuaxMcpServer {
     private server: Server;
     private transports: Map<string, StreamableHTTPServerTransport> = new Map();
     private httpServer: any;
+    private stdioTransport: StdioServerTransport | null = null;
     private version: string;
     private config: Required<ServerConfig>;
     private logger: Logger;
@@ -71,7 +77,8 @@ export class PuaxMcpServer {
         this.config = {
             port: config.port ?? 2333,
             host: config.host ?? '127.0.0.1',
-            quiet: config.quiet ?? false
+            quiet: config.quiet ?? false,
+            transport: config.transport ?? 'http'
         };
         
         this.logger = new Logger(this.config.quiet);
@@ -646,6 +653,18 @@ export class PuaxMcpServer {
         const skillCount = promptManager.getAllSkills().length;
         this.logger.info(`Loaded ${skillCount} SKILLs from bundle`);
         
+        // 根据传输模式启动服务器
+        if (this.config.transport === 'stdio') {
+            await this.runStdioMode();
+        } else {
+            await this.runHttpMode();
+        }
+    }
+
+    /**
+     * 运行 HTTP 模式（支持 SSE/Streamable HTTP）
+     */
+    private async runHttpMode(): Promise<void> {
         // 创建 HTTP 服务器
         this.httpServer = createServer(this.handleRequest.bind(this));
         
@@ -677,6 +696,7 @@ export class PuaxMcpServer {
         this.httpServer.listen(port, host, () => {
             console.log('');
             this.logger.success(`Server started successfully!`);
+            this.logger.success(`Mode: HTTP (Streamable HTTP / SSE)`);
             this.logger.success(`Listening on http://${host}:${port}`);
             console.log('');
             this.logger.info('──────────────────────────────────────────');
@@ -693,18 +713,70 @@ export class PuaxMcpServer {
         process.on('SIGINT', () => this.shutdown());
         process.on('SIGTERM', () => this.shutdown());
     }
+
+    /**
+     * 运行 STDIO 模式
+     */
+    private async runStdioMode(): Promise<void> {
+        this.stdioTransport = new StdioServerTransport();
+        
+        // 连接服务器到 stdio 传输
+        await this.server.connect(this.stdioTransport);
+        
+        if (!this.config.quiet) {
+            // 注意：stdio 模式下不能输出到 stdout，因为这会干扰 MCP 协议
+            // 所以使用 stderr 输出日志
+            console.error('');
+            console.error('\x1b[32m[PUAX]\x1b[0m Server started successfully!');
+            console.error('\x1b[36m[PUAX]\x1b[0m Mode: STDIO');
+            console.error('\x1b[36m[PUAX]\x1b[0m Server is running and waiting for MCP messages...');
+        }
+        
+        // 处理关闭信号
+        process.on('SIGINT', () => this.shutdownStdio());
+        process.on('SIGTERM', () => this.shutdownStdio());
+        
+        // 处理 stdin 关闭（客户端断开连接）
+        process.stdin.on('end', () => {
+            this.shutdownStdio();
+        });
+    }
     
     private shutdown(): void {
         console.log('');
         this.logger.warn('Shutting down server...');
-        this.httpServer.close(() => {
-            this.logger.info('Server stopped gracefully');
-            process.exit(0);
-        });
+        if (this.httpServer) {
+            this.httpServer.close(() => {
+                this.logger.info('Server stopped gracefully');
+                process.exit(0);
+            });
+        }
         
         // 强制关闭超时
         setTimeout(() => {
             this.logger.error('Forced shutdown after timeout');
+            process.exit(1);
+        }, 5000);
+    }
+
+    private shutdownStdio(): void {
+        if (!this.config.quiet) {
+            console.error('\x1b[33m[PUAX]\x1b[0m Shutting down stdio server...');
+        }
+        
+        if (this.stdioTransport) {
+            this.stdioTransport.close().then(() => {
+                process.exit(0);
+            }).catch(() => {
+                process.exit(1);
+            });
+        } else {
+            process.exit(0);
+        }
+        
+        // 强制关闭超时
+        setTimeout(() => {
+            console.error('\x1b[31m[PUAX]\x1b[0m Forced shutdown after timeout');
             process.exit(1);
         }, 5000);
     }

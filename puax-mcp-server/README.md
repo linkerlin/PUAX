@@ -2,7 +2,7 @@
 
 > 🚀 为 AI Agent 提供**角色选择、切换和激活**功能的专业 MCP 服务器
 
-**版本**: 1.6.0 | **传输**: HTTP Streamable-HTTP (SSE) | **端口**: 2333  
+**版本**: 1.6.0 | **传输**: HTTP (SSE) / STDIO | **端口**: 2333 (HTTP模式)  
 **内置角色**: 42个精选SKILL | **角色分类**: 6大系列
 
 ---
@@ -48,6 +48,20 @@ PUAX 内置了 **42 个精心设计的 SKILL（角色）**，涵盖：
 
 ### 第 1 步：安装并启动服务器
 
+**方式 1：使用 npx（最简单，推荐新手）**
+
+无需克隆仓库，直接运行：
+
+```bash
+# HTTP 模式
+npx puax-mcp-server
+
+# STDIO 模式（用于本地 MCP 客户端）
+npx puax-mcp-server --stdio
+```
+
+**方式 2：克隆仓库（推荐开发者/需要自定义）**
+
 ```bash
 # 克隆项目
 git clone https://github.com/linkerlin/PUAX.git
@@ -56,12 +70,16 @@ cd PUAX/puax-mcp-server
 # 安装依赖
 npm install
 
-# 编译并启动
+# 编译
 npm run build
-npm start
-```
 
-服务器默认运行在 `http://127.0.0.1:2333`
+# HTTP 模式（推荐用于远程/多客户端场景）
+npm start
+# 服务器默认运行在 http://127.0.0.1:2333
+
+# STDIO 模式（推荐用于本地客户端如 Claude Desktop）
+npm start -- --stdio
+```
 
 ### 第 2 步：验证服务器运行
 
@@ -75,10 +93,12 @@ curl http://127.0.0.1:2333/health
 
 ### 第 3 步：配置你的 AI 客户端
 
-根据你使用的 AI 客户端，添加 MCP 配置：
+根据你使用的 AI 客户端和传输模式，添加 MCP 配置：
+
+#### HTTP 模式配置
 
 <details>
-<summary><b>CRUSH (推荐)</b></summary>
+<summary><b>CRUSH (HTTP 模式)</b></summary>
 
 ```json
 {
@@ -94,7 +114,7 @@ curl http://127.0.0.1:2333/health
 </details>
 
 <details>
-<summary><b>Claude Desktop</b></summary>
+<summary><b>Claude Desktop (HTTP 模式)</b></summary>
 
 ```json
 {
@@ -111,7 +131,7 @@ curl http://127.0.0.1:2333/health
 </details>
 
 <details>
-<summary><b>Cursor / Windsurf / 其他</b></summary>
+<summary><b>Cursor / Windsurf / 其他 (HTTP 模式)</b></summary>
 
 ```json
 {
@@ -123,6 +143,105 @@ curl http://127.0.0.1:2333/health
   }
 }
 ```
+</details>
+
+#### STDIO 模式配置（推荐用于本地客户端）
+
+**使用 npx（最简单方式，无需克隆仓库）**
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+<details>
+<summary><b>Claude Desktop (STDIO 模式 - 推荐)</b></summary>
+
+**方式 1: 使用 npx（最简单，自动更新）**
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+**方式 2: 使用本地代码（开发/离线使用）**
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "node",
+      "args": ["C:/path/to/PUAX/puax-mcp-server/build/index.js", "--stdio"]
+    }
+  }
+}
+```
+配置文件位置:
+- Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+**注意**: 方式 2 需要将路径替换为实际的 `build/index.js` 绝对路径。
+</details>
+
+<details>
+<summary><b>CRUSH (STDIO 模式)</b></summary>
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件位置: `C:\Users\{用户名}\.crush\config.json`
+</details>
+
+<details>
+<summary><b>Cursor (STDIO 模式)</b></summary>
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件位置:
+- Windows: `%APPDATA%/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+- macOS: `~/Library/Application Support/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+</details>
+
+<details>
+<summary><b>Windsurf (STDIO 模式)</b></summary>
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+配置文件位置: `~/.windsurf/mcp_config.json`
 </details>
 
 ✅ **完成！** 现在你可以在 AI 对话中使用 PUAX 的角色系统了。
@@ -506,7 +625,74 @@ PUAX 提供 4 个核心工具：
 
 ## 部署与运维
 
-### 生产环境部署 (PM2)
+### 传输模式选择指南
+
+| 模式 | 适用场景 | 优点 | 缺点 |
+|------|----------|------|------|
+| **HTTP** | 远程访问、多客户端共享 | 支持网络访问、可共享服务 | 需要管理端口、需要保持服务运行 |
+| **STDIO** | 本地客户端（Claude Desktop 等） | 简单直接、无需端口管理、随客户端启动 | 仅本地使用、每个客户端独立实例 |
+
+### 启动参数
+
+#### 本地代码方式
+
+```bash
+# HTTP 模式（默认）
+npm start
+node build/index.js
+node build/index.js --transport=http
+
+# STDIO 模式
+npm start -- --stdio
+node build/index.js --stdio
+node build/index.js --transport=stdio
+
+# 其他常用参数
+node build/index.js --port 8080           # 指定端口
+node build/index.js --host 0.0.0.0        # 允许外部访问
+node build/index.js --quiet               # 静默模式
+node build/index.js --help                # 显示帮助
+```
+
+#### npx 方式（无需克隆仓库）
+
+```bash
+# HTTP 模式
+npx puax-mcp-server
+npx puax-mcp-server --port 8080
+
+# STDIO 模式（用于 MCP 客户端）
+npx puax-mcp-server --stdio
+```
+
+**npx 方式优点：**
+- ✅ 无需克隆仓库
+- ✅ 自动安装最新版本
+- ✅ 适合快速体验或生产部署
+- ✅ 适合配置到 MCP 客户端
+
+**npx 方式缺点：**
+- ⚠️ 首次运行需要下载依赖（稍慢）
+- ⚠️ 需要网络连接
+- ⚠️ 无法控制代码修改
+
+对于开发或需要离线使用，建议克隆仓库后使用本地方式。
+
+### 环境变量
+
+```bash
+# HTTP 模式配置
+PORT=8080                 # 服务器端口
+HOST=0.0.0.0             # 服务器主机
+
+# 传输模式配置
+TRANSPORT=stdio          # 或 http（默认）
+
+# 通用配置
+QUIET=true               # 静默模式
+```
+
+### 生产环境部署 (PM2) - HTTP 模式
 
 ```bash
 # 安装 pm2
@@ -522,7 +708,7 @@ pm2 status
 pm2 logs puax-mcp-server
 ```
 
-### Docker 部署
+### Docker 部署 - HTTP 模式
 
 ```dockerfile
 FROM node:18-alpine
