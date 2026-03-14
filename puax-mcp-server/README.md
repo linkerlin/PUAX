@@ -7,15 +7,37 @@
 
 ---
 
+## 🚀 5秒快速配置
+
+选择你的客户端，复制配置即可：
+
+| 客户端 | 推荐模式 | 配置 |
+|--------|----------|------|
+| **Claude Desktop** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
+| **CRUSH** | STDIO | `{"mcp":{"puax":{"type":"stdio","command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
+| **Cursor** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
+| **Windsurf** | STDIO | `{"mcpServers":{"puax":{"command":"npx","args":["puax-mcp-server","--stdio"]}}}` |
+
+💡 **提示**：STDIO 模式无需后台运行服务，最适合本地客户端！
+
+---
+
 ## 📖 目录
 
-1. [PUAX 是什么？](#puax-是什么)
-2. [快速开始（3步上手）](#快速开始3步上手)
-3. [SKILL 系统详解](#skill-系统详解)
-4. [客户端配置指南](#客户端配置指南)
-5. [工具使用示例](#工具使用示例)
-6. [部署与运维](#部署与运维)
-7. [常见问题](#常见问题)
+1. [5秒快速配置](#5秒快速配置)
+2. [PUAX 是什么？](#puax-是什么)
+3. [快速开始（3步上手）](#快速开始3步上手)
+4. [SKILL 系统详解](#skill-系统详解)
+5. [客户端配置指南](#客户端配置指南)
+   - [HTTP 模式配置](#http-模式配置)
+   - [STDIO 模式配置](#stdio-模式配置)
+   - [更多客户端配置](#更多-mcp-客户端配置)
+   - [配置验证](#配置验证)
+   - [故障排除](#故障排除)
+   - [配置模板速查](#配置模板速查)
+6. [工具使用示例](#工具使用示例)
+7. [部署与运维](#部署与运维)
+8. [常见问题](#常见问题)
 
 ---
 
@@ -254,6 +276,239 @@ curl http://127.0.0.1:2333/health
 ```
 配置文件位置: `~/.windsurf/mcp_config.json`
 </details>
+
+---
+
+### 🛠️ 更多 MCP 客户端配置
+
+<details>
+<summary><b>VS Code + Cline 插件</b></summary>
+
+配置文件：`~/.vscode/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>VS Code + Continue 插件</b></summary>
+
+配置文件：`~/.continue/config.json`
+
+```json
+{
+  "server": {
+    "mcpServers": [
+      {
+        "name": "puax",
+        "command": "npx",
+        "args": ["puax-mcp-server", "--stdio"]
+      }
+    ]
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Zed 编辑器</b></summary>
+
+配置文件：`~/.config/zed/settings.json`
+
+```json
+{
+  "assistant": {
+    "version": "2",
+    "default_model": {
+      "provider": "openai",
+      "model": "gpt-4o"
+    },
+    "enable_experimental_live_diffs": true
+  },
+  "lsp": {
+    "mcp-server": {
+      "binary": {
+        "path": "npx",
+        "arguments": ["puax-mcp-server", "--stdio"]
+      }
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Emacs + gptel</b></summary>
+
+在 Emacs 配置中添加：
+
+```elisp
+(use-package gptel
+  :config
+  (setq gptel-model "gpt-4o")
+  (gptel-make-mcp-server
+   "puax"
+   :command "npx"
+   :args '("puax-mcp-server" "--stdio")))
+```
+</details>
+
+---
+
+### 🔍 配置验证
+
+配置完成后，验证 MCP 服务器是否正常工作：
+
+#### 1. 检查客户端识别
+
+大多数 MCP 客户端在配置后会显示可用工具列表。PUAX 提供以下工具：
+
+| 工具名 | 功能 |
+|--------|------|
+| `list_skills` | 列出所有可用 SKILL |
+| `get_skill` | 获取特定 SKILL 详情 |
+| `search_skills` | 搜索 SKILL |
+| `activate_skill` | 激活特定 SKILL |
+| `detect_trigger` | 检测触发条件 |
+| `recommend_role` | 推荐角色 |
+| `get_role_with_methodology` | 获取带方法论的角色 |
+| `activate_with_context` | 根据上下文激活 |
+
+#### 2. 测试命令行
+
+```bash
+# 测试 STDIO 模式（发送一个初始化请求）
+echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0.0"}}}' | npx puax-mcp-server --stdio
+```
+
+#### 3. 查看日志
+
+如果客户端支持，查看 MCP 服务器输出日志：
+- Claude Desktop: `View` → `Developer` → `Toggle Developer Tools`
+- Cursor: 查看 Output 面板选择 MCP
+
+---
+
+### ❌ 故障排除
+
+#### 问题："command not found: npx"
+
+**解决**：确保 Node.js 已安装且 npx 在 PATH 中
+
+```bash
+# 检查 Node.js 版本
+node --version  # 需要 >= 18.0.0
+
+# 检查 npx
+npx --version
+```
+
+#### 问题："Cannot find module 'puax-mcp-server'"
+
+**解决**：首次使用 npx 时需要下载包，稍等片刻或尝试：
+
+```bash
+# 先全局安装
+npm install -g puax-mcp-server
+
+# 然后使用
+puax-mcp-server --stdio
+```
+
+#### 问题：Claude Desktop 无法连接
+
+**解决**：
+1. 检查配置文件语法是否正确（JSON 格式）
+2. 重启 Claude Desktop
+3. 检查开发者工具中的错误信息
+
+#### 问题：Windows 路径问题
+
+**解决**：Windows 下使用双反斜杠或正斜杠：
+
+```json
+{
+  "command": "node",
+  "args": ["C:\\path\\to\\PUAX\\puax-mcp-server\\build\\index.js", "--stdio"]
+}
+// 或
+{
+  "command": "node",
+  "args": ["C:/path/to/PUAX/puax-mcp-server/build/index.js", "--stdio"]
+}
+```
+
+#### 问题：端口冲突（HTTP 模式）
+
+**解决**：
+
+```bash
+# 查找占用 2333 端口的进程
+# Windows:
+netstat -ano | findstr :2333
+
+# macOS/Linux:
+lsof -i :2333
+
+# 使用其他端口启动
+npx puax-mcp-server --port 8080
+```
+
+---
+
+### 📝 配置模板速查
+
+#### STDIO 模式（推荐）
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+#### HTTP 模式
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "type": "sse",
+      "url": "http://127.0.0.1:2333/mcp"
+    }
+  }
+}
+```
+
+#### 带环境变量的配置
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"],
+      "env": {
+        "PUAX_QUIET": "true"
+      }
+    }
+  }
+}
+```
 
 ✅ **完成！** 现在你可以在 AI 对话中使用 PUAX 的角色系统了。
 
