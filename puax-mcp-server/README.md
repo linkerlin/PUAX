@@ -60,7 +60,18 @@ npx puax-mcp-server
 npx puax-mcp-server --stdio
 ```
 
-**方式 2：克隆仓库（推荐开发者/需要自定义）**
+**方式 2：全局安装（推荐常用用户）**
+
+```bash
+# 全局安装
+npm install -g puax-mcp-server
+
+# 之后可以直接运行
+puax-mcp-server          # HTTP 模式
+puax-mcp-server --stdio  # STDIO 模式
+```
+
+**方式 3：克隆仓库（推荐开发者/需要自定义）**
 
 ```bash
 # 克隆项目
@@ -781,9 +792,82 @@ puax-mcp-server/
 
 ---
 
+## NPM 安装方式对比
+
+| 安装方式 | 命令 | 适用场景 | 更新方式 |
+|----------|------|----------|----------|
+| **npx** | `npx puax-mcp-server` | 临时使用、快速体验 | 自动使用最新版 |
+| **全局安装** | `npm i -g puax-mcp-server` | 经常使用 | `npm update -g puax-mcp-server` |
+| **本地克隆** | `git clone ...` | 开发定制、离线使用 | `git pull` |
+
+### 推荐配置
+
+**Claude Desktop 用户（最简配置）：**
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+---
+
+## 开发者指南
+
+### 本地开发
+
+```bash
+# 克隆仓库
+git clone https://github.com/linkerlin/PUAX.git
+cd PUAX/puax-mcp-server
+
+# 安装依赖
+npm install
+
+# 开发模式（热重载）
+npm run watch
+
+# 运行测试
+npm test
+
+# 构建
+npm run build
+```
+
+### 发布到 NPM
+
+```bash
+# 1. 确保已登录 npm
+npm login
+
+# 2. 更新版本号（遵循 semver）
+npm version patch  # 或 minor / major
+
+# 3. 构建并发布
+npm run build
+npm publish
+
+# 4. 验证发布
+npm view puax-mcp-server
+```
+
+**发布前检查清单：**
+- [ ] 版本号已更新
+- [ ] `npm run build` 成功
+- [ ] `npm test` 通过
+- [ ] README.md 已更新
+- [ ] CHANGELOG.md 已更新
+
+---
+
 ## 相关链接
 
 - [PUAX 项目主页](https://github.com/linkerlin/PUAX)
+- [NPM 包页面](https://www.npmjs.com/package/puax-mcp-server)
 - [MCP TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk)
 - [MCP Inspector](https://github.com/modelcontextprotocol/inspector)
 
