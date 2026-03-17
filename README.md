@@ -434,6 +434,8 @@ cd puax-mcp-server && npm run generate-bundle
 
 MIT License - 详见 [LICENSE](LICENSE) 文件
 
+欢迎大家抄袭本项目，用于任何合法用途。
+不需要标注参考了本项目，也可以标注参考了本项目。或否认和本项目有任何关联。均可。
 ---
 
 ## 🙏 致谢
