@@ -121,6 +121,14 @@ function getEnvConfig(): Partial<ServerConfig> {
 }
 
 /**
+ * 检查是否是导出命令
+ */
+function isExportCommand(): boolean {
+    const args = process.argv.slice(2);
+    return args.some(arg => arg.startsWith('--export') || arg === '--list-platforms');
+}
+
+/**
  * 显示帮助信息
  */
 function showHelp(): void {
@@ -135,7 +143,7 @@ PUAX MCP Server v${version}
   npx puax-mcp-server [选项]
   node build/index.js [选项]
 
-选项:
+服务器选项:
   -p, --port <端口>        指定监听端口 (默认: 2333)
   -H, --host <主机>        指定监听主机 (默认: 127.0.0.1)
   -t, --transport <模式>   传输模式: http 或 stdio (默认: http)
@@ -144,6 +152,14 @@ PUAX MCP Server v${version}
   -v, --version            显示版本号
   -h, --help               显示此帮助信息
 
+导出选项:
+  --export <平台>          导出角色到指定平台 (cursor|vscode|all)
+  --output <路径>          导出输出目录 (默认: ./puax-export)
+  --roles <列表>           只导出指定角色 (逗号分隔)
+  --flavors <列表>         只导出指定风味 (逗号分隔)
+  --lang <语言>            导出语言 (zh|en|all, 默认: all)
+  --list-platforms         列出支持的平台
+
 环境变量:
   PORT / PUAX_PORT         服务器端口
   HOST / PUAX_HOST         服务器主机
@@ -151,12 +167,16 @@ PUAX MCP Server v${version}
   QUIET / PUAX_QUIET       静默模式 (true/false)
 
 示例:
+  # 服务器模式
   puax-mcp-server                      # 使用默认配置启动 (HTTP 模式)
   puax-mcp-server -p 8080              # 在 8080 端口启动
-  puax-mcp-server --host 0.0.0.0       # 允许外部访问
   puax-mcp-server --stdio              # 使用 STDIO 模式
-  puax-mcp-server -t stdio             # 使用 STDIO 模式
-  PORT=8080 puax-mcp-server            # 通过环境变量设置端口
+
+  # 导出模式
+  puax-mcp-server --export=cursor --output=./.cursor/rules
+  puax-mcp-server --export=vscode --output=./.github
+  puax-mcp-server --export=all --output=./puax-export
+  puax-mcp-server --list-platforms     # 查看支持的平台
 
 HTTP 模式端点:
   http://127.0.0.1:2333/mcp           # MCP 标准端点
@@ -167,7 +187,7 @@ STDIO 模式:
   用于与 MCP 客户端通过标准输入输出通信。
   适用于 Claude Desktop 等本地客户端。
 
-更多信息: https://github.com/linkerlin/PUAX
+更多信息: https://puax.net
 `);
 }
 
@@ -179,11 +199,34 @@ function showVersion(): void {
 }
 
 /**
+ * 显示支持的平台列表
+ */
+async function showPlatforms(): Promise<void> {
+    const { globalAdapterRegistry } = await import('../../platform-adapters/base-adapter.js');
+    await import('../../platform-adapters/cursor-adapter.js');
+    await import('../../platform-adapters/vscode-adapter.js');
+    
+    const platforms = globalAdapterRegistry.getSupportedPlatforms();
+    console.log('\n支持的平台:');
+    for (const platform of platforms) {
+        const adapter = globalAdapterRegistry.get(platform);
+        if (adapter) {
+            const langs = ['zh', 'en'].filter(l => adapter.supportsLanguage(l)).join(', ');
+            console.log(`  - ${platform} (支持语言: ${langs})`);
+        }
+    }
+    console.log('\n使用示例:');
+    console.log('  puax-mcp-server --export=cursor --output=./.cursor/rules');
+    console.log('  puax-mcp-server --export=all --output=./puax-export\n');
+}
+
+/**
  * 主函数
  */
 async function main(): Promise<void> {
     // 解析命令行参数
     const cliConfig = parseArgs();
+    const args = process.argv.slice(2);
     
     // 处理帮助和版本请求
     if (cliConfig.help) {
@@ -193,6 +236,19 @@ async function main(): Promise<void> {
     
     if (cliConfig.version) {
         showVersion();
+        process.exit(0);
+    }
+
+    // 处理平台列表请求
+    if (args.includes('--list-platforms')) {
+        await showPlatforms();
+        process.exit(0);
+    }
+    
+    // 处理导出命令
+    if (isExportCommand()) {
+        const { handleExportCommand } = await import('./tools/export-platform.js');
+        await handleExportCommand(args);
         process.exit(0);
     }
     
