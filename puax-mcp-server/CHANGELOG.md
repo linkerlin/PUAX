@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] - 2026-03-26
+
+### Fixed
+- 🐛 **修复 5 个角色验证失败问题** - 标准化五步法和检查清单格式
+  - `military-commander` - 改用标准 Step 1-5 格式
+  - `military-commissar` - 新增监军御史五步法（明察→定责→问责→整顿→归档）
+  - `military-warrior` - 改用标准 Step 1-5 格式
+  - `shaman-jobs` - 新增造化宗师五步法（审视→剖析→删减→打磨→验证）
+  - `shaman-musk` - 新增通玄真人五步法（质疑→本质→重构→验证→实现）
+- 📋 **统一七项检查清单格式** - 所有角色使用标准化检查清单
+
+### Changed
+- 📦 **清理 git 仓库** - 移除错误提交的 node_modules 和 coverage 文件
+  - 删除 9,300 个错误提交的文件
+  - 减少 repo 体积约 150MB+
+  - 更新 .gitignore 使用全局忽略规则
+
+## [3.1.0] - 2026-03-26
+
+### Added
+- ✨ **文言文风格角色** - 全面改用古典中文风格
+  - 诏令体 System Prompt
+  - 兵法/法家/道家经典引用
+  - 古风话术库和唤醒语句
+
 ## [2.1.0] - 2026-03-25
 
 ### Added

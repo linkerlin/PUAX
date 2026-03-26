@@ -247,6 +247,9 @@ curl http://localhost:2333/health
   - L1-L4 压力等级系统
   - 反馈收集与分析
   - PUA 循环报告生成
+  - 补充修复：Hook 触发置信度计算，避免单次明确命中被模式总量稀释
+  - 补充修复：`PreCompact`、`SessionStart`、`Stop` 不再受冷却时间误拦截
+  - 补充验证：Hook 专项测试 47/47 通过，主测试套件 432/432 通过
 - ✨ CC-BOS 集成（PUAX-CC）
   - 8维策略空间
   - 文言文提示词生成器

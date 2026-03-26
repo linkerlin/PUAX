@@ -1,4 +1,4 @@
-# PUAX 2.2 - AI Agent 激励系统
+# PUAX 3.1 - AI Agent 激励系统
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-3.1.0-blue.svg" alt="Version">
@@ -55,6 +55,12 @@ npx puax-mcp-server
 | **压力等级** | L1-L4 四级压力递增机制 |
 | **反馈收集** | 会话结束时的成功率评估 |
 | **PUA 循环报告** | 生成详细的干预效果报告 |
+
+已验证状态：
+- 五类 Hook 事件 `UserPromptSubmit`、`PostToolUse`、`PreCompact`、`SessionStart`、`Stop` 可正常触发
+- 已修复单次明确命中语句被模式总量稀释、导致不触发的问题
+- 已修复 `PreCompact`、`SessionStart`、`Stop` 生命周期事件被冷却时间误拦截的问题
+- Hook 专项测试通过：47/47
 
 ```typescript
 // Hook System 工具

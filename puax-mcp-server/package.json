@@ -1,12 +1,12 @@
 {
   "name": "puax-mcp-server",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（支持 HTTP/SSE 和 STDIO 模式）- 文言文增强版",
   "main": "build/index.js",
   "type": "commonjs",
   "bin": {
-    "puax-mcp-server": "./build/index.js",
-    "puax": "./build/index.js"
+    "puax-mcp-server": "build/index.js",
+    "puax": "build/index.js"
   },
   "scripts": {
     "build": "npm run generate-bundle && tsc",
