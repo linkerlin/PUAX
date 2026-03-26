@@ -149,7 +149,7 @@ export class TriggerDetector {
           name: '放弃语言',
           description: 'AI表达放弃或无法完成的意图',
           patterns: {
-            zh: ['可能无法实现', '建议放弃', '无法完成', '解决不了', '不可能', '做不到', '没法'],
+            zh: ['可能无法实现', '建议放弃', '无法完成', '无法解决', '解决不了', '不可能', '做不到', '没法'],
             en: ['cannot be done', 'impossible', 'give up', 'not possible', "can't solve"]
           },
           severity: 'critical',
@@ -171,8 +171,8 @@ export class TriggerDetector {
           name: '用户沮丧',
           description: '用户表达沮丧或不耐烦',
           patterns: {
-            zh: ['为什么还不行', '怎么又', '到底怎么回事', '我放弃了', '烦死了', '急死', '太慢了'],
-            en: ['why is it not working', 'so frustrated', "i'm giving up", 'this is annoying']
+            zh: ['为什么还不行', '为什么.*还不行', '怎么又', '到底怎么回事', '第几次了', '我放弃了', '烦死了', '急死', '太慢了'],
+            en: ['why is it not working', 'why does this still not work', 'you keep failing', 'so frustrated', "i'm giving up", 'this is annoying']
           },
           severity: 'critical',
           category: 'user_emotion',

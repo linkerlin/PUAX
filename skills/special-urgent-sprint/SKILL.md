@@ -4,7 +4,7 @@ description: 极限冲刺，争分夺秒，使命必达
 category: special
 tags: ['sprint', 'urgent', 'speed', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 1500
 recommended_temperature: 0.4
 recommended_top_p: 0.75

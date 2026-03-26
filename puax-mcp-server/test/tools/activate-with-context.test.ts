@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Activate with Context Tool Unit Tests
  */
@@ -6,6 +5,8 @@
 import { activateWithContextTool } from '../../src/tools/activate-with-context.js';
 
 describe('activate_with_context Tool', () => {
+  const parseInput = (input: unknown) => activateWithContextTool.inputSchema.safeParse(input);
+
   describe('Tool Definition', () => {
     it('should have correct tool name', () => {
       expect(activateWithContextTool.name).toBe('activate_with_context');
@@ -18,65 +19,98 @@ describe('activate_with_context Tool', () => {
 
     it('should have input schema', () => {
       expect(activateWithContextTool.inputSchema).toBeDefined();
-      expect(activateWithContextTool.inputSchema.type).toBe('object');
+      expect(parseInput({
+        context: { conversation_history: [] }
+      }).success).toBe(true);
     });
   });
 
   describe('Input Schema', () => {
     it('should require context', () => {
-      const schema = activateWithContextTool.inputSchema;
-      expect(schema.properties.context).toBeDefined();
-      expect(schema.properties.context.type).toBe('object');
+      expect(parseInput({}).success).toBe(false);
     });
 
     it('should have optional options', () => {
-      const schema = activateWithContextTool.inputSchema;
-      expect(schema.properties.options).toBeDefined();
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { auto_detect: true }
+      }).success).toBe(true);
     });
   });
 
   describe('Context Schema', () => {
     it('should have conversation_history in context', () => {
-      const context = activateWithContextTool.inputSchema.properties.context;
-      expect(context.properties.conversation_history).toBeDefined();
-      expect(context.properties.conversation_history.type).toBe('array');
+      expect(parseInput({
+        context: {
+          conversation_history: [{ role: 'assistant', content: 'hi' }]
+        }
+      }).success).toBe(true);
     });
 
     it('should have optional task_context in context', () => {
-      const context = activateWithContextTool.inputSchema.properties.context;
-      expect(context.properties.task_context).toBeDefined();
+      expect(parseInput({
+        context: {
+          conversation_history: [],
+          task_context: { current_task: 'debugging', attempt_count: 2 }
+        }
+      }).success).toBe(true);
     });
   });
 
   describe('Options Schema', () => {
     it('should have auto_detect boolean', () => {
-      const options = activateWithContextTool.inputSchema.properties.options;
-      expect(options.properties.auto_detect).toBeDefined();
-      expect(options.properties.auto_detect.type).toBe('boolean');
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { auto_detect: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { auto_detect: 'yes' }
+      }).success).toBe(false);
     });
 
     it('should have user_confirmation boolean', () => {
-      const options = activateWithContextTool.inputSchema.properties.options;
-      expect(options.properties.user_confirmation).toBeDefined();
-      expect(options.properties.user_confirmation.type).toBe('boolean');
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { user_confirmation: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { user_confirmation: 'yes' }
+      }).success).toBe(false);
     });
 
     it('should have fallback_role string', () => {
-      const options = activateWithContextTool.inputSchema.properties.options;
-      expect(options.properties.fallback_role).toBeDefined();
-      expect(options.properties.fallback_role.type).toBe('string');
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { fallback_role: 'military-commander' }
+      }).success).toBe(true);
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { fallback_role: 1 }
+      }).success).toBe(false);
     });
 
     it('should have include_methodology boolean', () => {
-      const options = activateWithContextTool.inputSchema.properties.options;
-      expect(options.properties.include_methodology).toBeDefined();
-      expect(options.properties.include_methodology.type).toBe('boolean');
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { include_methodology: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { include_methodology: 'yes' }
+      }).success).toBe(false);
     });
 
     it('should have include_checklist boolean', () => {
-      const options = activateWithContextTool.inputSchema.properties.options;
-      expect(options.properties.include_checklist).toBeDefined();
-      expect(options.properties.include_checklist.type).toBe('boolean');
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { include_checklist: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        context: { conversation_history: [] },
+        options: { include_checklist: 'yes' }
+      }).success).toBe(false);
     });
   });
 
@@ -89,8 +123,7 @@ describe('activate_with_context Tool', () => {
     it('should have example with context', () => {
       if (activateWithContextTool.examples) {
         activateWithContextTool.examples.forEach(example => {
-          expect(example.input.context).toBeDefined();
-          expect(example.input.context.conversation_history).toBeDefined();
+          expect(parseInput(example.input).success).toBe(true);
         });
       }
     });

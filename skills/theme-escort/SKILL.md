@@ -4,7 +4,7 @@ description: 护送任务，安全保障，使命必达
 category: theme
 tags: ['delivery', 'security', 'mission', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.4
 recommended_top_p: 0.75

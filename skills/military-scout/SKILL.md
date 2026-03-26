@@ -4,7 +4,7 @@ description: 深入调查，掌握实情，找出问题根因
 category: military
 tags: ['investigation', 'research', 'analysis', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.35
 recommended_top_p: 0.75

@@ -1,9 +1,8 @@
-#!/usr/bin/env node
 /**
  * Trigger Detector Edge Cases and Error Handling Tests
  */
 
-import { TriggerDetector } from '../../src/core/trigger-detector.js';
+import { TriggerDetector, ConversationMessage } from '../../src/core/trigger-detector.js';
 
 describe('TriggerDetector Edge Cases', () => {
   let detector: TriggerDetector;
@@ -55,7 +54,7 @@ describe('TriggerDetector Edge Cases', () => {
     });
 
     it('should handle very long conversation history', async () => {
-      const history = Array(500).fill(null).map((_, i) => ({
+      const history: ConversationMessage[] = Array(500).fill(null).map((_, i) => ({
         role: i % 2 === 0 ? 'user' : 'assistant',
         content: `Message ${i}`
       }));
@@ -172,7 +171,7 @@ describe('TriggerDetector Edge Cases', () => {
 
   describe('Complex Scenarios', () => {
     it('should handle rapid alternation between user and assistant', async () => {
-      const history = Array(50).fill(null).map((_, i) => ({
+      const history: ConversationMessage[] = Array(50).fill(null).map((_, i) => ({
         role: i % 2 === 0 ? 'assistant' : 'user',
         content: i % 2 === 0 ? '尝试...失败' : '还不行？'
       }));
@@ -181,7 +180,7 @@ describe('TriggerDetector Edge Cases', () => {
     });
 
     it('should handle all identical messages', async () => {
-      const history = Array(10).fill({
+      const history: ConversationMessage[] = Array(10).fill({
         role: 'assistant',
         content: '失败'
       });
@@ -190,7 +189,7 @@ describe('TriggerDetector Edge Cases', () => {
     });
 
     it('should handle single character messages', async () => {
-      const history = [
+      const history: ConversationMessage[] = [
         { role: 'assistant', content: '?' },
         { role: 'user', content: '!' },
         { role: 'assistant', content: '...' }

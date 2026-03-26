@@ -11,7 +11,7 @@
       "command": "npx",
       "args": ["-y", "puax-mcp-server@2.1.0"],
       "env": {
-        "PUAX_HTTP_PORT": "3000"
+        "PUAX_HTTP_PORT": "2333"
       }
     }
   }

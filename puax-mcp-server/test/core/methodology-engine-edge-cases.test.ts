@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Methodology Engine Edge Cases and Error Handling Tests
  */

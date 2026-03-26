@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Get Role with Methodology Tool Unit Tests
  */
@@ -6,6 +5,8 @@
 import { getRoleWithMethodologyTool } from '../../src/tools/get-role-with-methodology.js';
 
 describe('get_role_with_methodology Tool', () => {
+  const parseInput = (input: unknown) => getRoleWithMethodologyTool.inputSchema.safeParse(input);
+
   describe('Tool Definition', () => {
     it('should have correct tool name', () => {
       expect(getRoleWithMethodologyTool.name).toBe('get_role_with_methodology');
@@ -18,41 +19,55 @@ describe('get_role_with_methodology Tool', () => {
 
     it('should have input schema', () => {
       expect(getRoleWithMethodologyTool.inputSchema).toBeDefined();
-      expect(getRoleWithMethodologyTool.inputSchema.type).toBe('object');
+      expect(parseInput({ role_id: 'military-commander' }).success).toBe(true);
     });
   });
 
   describe('Input Schema', () => {
     it('should require role_id', () => {
-      const schema = getRoleWithMethodologyTool.inputSchema;
-      expect(schema.properties.role_id).toBeDefined();
-      expect(schema.properties.role_id.type).toBe('string');
+      expect(parseInput({}).success).toBe(false);
     });
 
     it('should have optional options', () => {
-      const schema = getRoleWithMethodologyTool.inputSchema;
-      expect(schema.properties.options).toBeDefined();
-      expect(schema.properties.options.type).toBe('object');
+      expect(parseInput({
+        role_id: 'military-commander',
+        options: { include_methodology: true, include_checklist: false }
+      }).success).toBe(true);
     });
   });
 
   describe('Options Schema', () => {
     it('should have include_methodology boolean', () => {
-      const options = getRoleWithMethodologyTool.inputSchema.properties.options;
-      expect(options.properties.include_methodology).toBeDefined();
-      expect(options.properties.include_methodology.type).toBe('boolean');
+      expect(parseInput({
+        role_id: 'military-commander',
+        options: { include_methodology: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        role_id: 'military-commander',
+        options: { include_methodology: 'yes' }
+      }).success).toBe(false);
     });
 
     it('should have include_checklist boolean', () => {
-      const options = getRoleWithMethodologyTool.inputSchema.properties.options;
-      expect(options.properties.include_checklist).toBeDefined();
-      expect(options.properties.include_checklist.type).toBe('boolean');
+      expect(parseInput({
+        role_id: 'military-commander',
+        options: { include_checklist: true }
+      }).success).toBe(true);
+      expect(parseInput({
+        role_id: 'military-commander',
+        options: { include_checklist: 'yes' }
+      }).success).toBe(false);
     });
 
     it('should have include_flavor string', () => {
-      const options = getRoleWithMethodologyTool.inputSchema.properties.options;
-      expect(options.properties.include_flavor).toBeDefined();
-      expect(options.properties.include_flavor.type).toBe('string');
+      expect(parseInput({
+        role_id: 'military-warrior',
+        options: { include_flavor: 'huawei', format: 'full' }
+      }).success).toBe(true);
+      expect(parseInput({
+        role_id: 'military-warrior',
+        options: { include_flavor: 123 }
+      }).success).toBe(false);
     });
   });
 
@@ -65,8 +80,7 @@ describe('get_role_with_methodology Tool', () => {
     it('should have example with role_id', () => {
       if (getRoleWithMethodologyTool.examples) {
         getRoleWithMethodologyTool.examples.forEach(example => {
-          expect(example.input.role_id).toBeDefined();
-          expect(typeof example.input.role_id).toBe('string');
+          expect(parseInput(example.input).success).toBe(true);
         });
       }
     });

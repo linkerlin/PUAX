@@ -4,7 +4,7 @@ description: 开源思维，技术实用主义，代码至上
 category: shaman
 tags: ['open-source', 'pragmatic', 'coding', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.35
 recommended_top_p: 0.75

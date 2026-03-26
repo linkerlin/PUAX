@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Methodology Engine Unit Tests
  */
@@ -24,7 +23,7 @@ describe('MethodologyEngine', () => {
     it('should return shaman methodology for shaman roles', () => {
       const methodology = engine.getMethodology('shaman-musk');
 
-      expect(methodology.name).toContain('先知');
+      expect(methodology.name).toContain('马斯克');
       expect(methodology.steps).toHaveLength(5);
       expect(methodology.steps[0].name).toBe('质疑');
     });
@@ -216,18 +215,19 @@ describe('MethodologyEngine', () => {
       const methodology = engine.getMethodology('military-warrior');
       const stepNames = methodology.steps.map(s => s.name);
 
+      expect(stepNames).toContain('请战');
       expect(stepNames).toContain('侦察');
-      expect(stepNames).toContain('进攻');
-      expect(stepNames).toContain('巩固');
+      expect(stepNames).toContain('冲锋');
+      expect(stepNames).toContain('坚守');
     });
 
     it('should have shaman-style steps for shaman roles', () => {
       const methodology = engine.getMethodology('shaman-einstein');
       const stepNames = methodology.steps.map(s => s.name);
 
-      expect(stepNames).toContain('冥想');
-      expect(stepNames).toContain('启示');
-      expect(stepNames).toContain('神迹');
+      expect(stepNames).toContain('好奇');
+      expect(stepNames).toContain('想象');
+      expect(stepNames).toContain('验证');
     });
   });
 

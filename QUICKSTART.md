@@ -1,4 +1,4 @@
-# PUAX 2.0 快速开始
+# PUAX 3.0 快速开始
 
 5分钟内启动并使用 PUAX 激励系统。
 
@@ -54,7 +54,7 @@ npm start
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:2333/mcp"
     }
   }
 }
@@ -71,7 +71,7 @@ npm start
   "servers": [
     {
       "name": "puax",
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:2333/mcp"
     }
   ]
 }
@@ -94,7 +94,7 @@ PUAX 应该检测到 `user_frustration` 触发条件。
 ### 查看角色列表
 
 ```bash
-curl http://localhost:3000/mcp/tools/list_skills
+curl http://localhost:2333/mcp/tools/list_skills
 ```
 
 或询问 AI：
@@ -183,7 +183,7 @@ PUAX会：
 
 ```bash
 # 检查端口占用
-lsof -i :3000
+lsof -i :2333
 
 # 检查日志
 cd puax-mcp-server
@@ -205,7 +205,7 @@ node scripts/validate-role.js --all
 ### MCP连接失败
 
 1. 确认服务器正在运行
-2. 检查URL是否正确：`http://localhost:3000/mcp`
+2. 检查URL是否正确：`http://localhost:2333/mcp`
 3. 查看防火墙设置
 
 ---

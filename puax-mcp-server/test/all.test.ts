@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Test Suite Entry Point
  * Run all tests in sequence

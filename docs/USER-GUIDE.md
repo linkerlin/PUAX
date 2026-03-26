@@ -19,7 +19,7 @@ npm start
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:3000/mcp"
+      "url": "http://localhost:2333/mcp"
     }
   }
 }

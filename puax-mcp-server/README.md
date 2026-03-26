@@ -2,8 +2,8 @@
 
 > 🚀 为 AI Agent 提供**角色选择、切换和激活**功能的专业 MCP 服务器
 
-**版本**: 2.2.0 | **传输**: HTTP (SSE) / STDIO | **端口**: 2333 (HTTP模式)  
-**内置角色**: 50个精选SKILL | **Hook System**: v2.2.0
+**版本**: 3.1.0 | **传输**: HTTP (SSE) / STDIO | **端口**: 2333 (HTTP模式)  
+**内置角色**: 50个精选SKILL | **Hook System**: v3.1.0
 
 ---
 
@@ -89,7 +89,7 @@ npx puax-mcp-server
 npx puax-mcp-server --stdio
 
 # 指定端口
-npx puax-mcp-server --port 3000
+npx puax-mcp-server --port 2333
 ```
 
 ### MCP 客户端配置示例（npx stdio）
@@ -119,7 +119,7 @@ npx puax-mcp-server --port 3000
 | `get_role_with_methodology` | 获取角色+方法论 |
 | `activate_with_context` | 根据上下文一键激活 |
 
-### Hook System 工具 (v2.2.0)
+### Hook System 工具 (v3.1.0)
 
 | 工具名 | 说明 |
 |--------|------|
@@ -231,7 +231,7 @@ curl http://localhost:2333/health
 {
   "status": "ok",
   "service": "puax-mcp-server",
-  "version": "2.2.0",
+  "version": "3.1.0",
   "activeSessions": 0
 }
 ```
@@ -240,9 +240,9 @@ curl http://localhost:2333/health
 
 ## 📝 更新日志
 
-### v2.2.0 (2026-03-26)
+### v3.1.0 (2026-03-26)
 
-- ✨ Hook System v2.2.0 完整实现
+- ✨ Hook System v3.1.0 完整实现
   - 状态持久化（~/.puax/）
   - L1-L4 压力等级系统
   - 反馈收集与分析

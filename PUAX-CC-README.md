@@ -153,8 +153,8 @@ npm run typecheck  ✅ 通过
 
 ## 版本信息
 
-- **PUAX-CC Version**: 3.0.0-cc
-- **Base PUAX Version**: 2.2.0
+- **PUAX-CC Version**: 3.1.0
+- **Base PUAX Version**: 3.1.0
 - **Last Updated**: 2026-03-26
 - **Maintainer**: PUAX-CC Team
 

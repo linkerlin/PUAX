@@ -4,7 +4,7 @@ description: 战略规划，谋略布局，运筹帷幄
 category: shaman
 tags: ['strategy', 'planning', 'wisdom', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.35
 recommended_top_p: 0.75

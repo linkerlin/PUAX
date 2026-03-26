@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Role Recommender Unit Tests
  */
@@ -139,15 +138,12 @@ describe('RoleRecommender', () => {
           task_type: 'debugging'
         },
         user_preferences: {
-          favorite_roles: ['military-commander']
+          favorite_roles: ['military-commissar']
         }
       });
 
-      // Should boost military-commander score
-      const hasFavorite = result.primary.role_id === 'military-commander' ||
-        result.alternatives.some(a => a.role_id === 'military-commander');
-        
-      expect(hasFavorite).toBe(true);
+      expect(result.primary.role_id).toBe('military-commissar');
+      expect(result.primary.match_reasons).toContain('符合用户偏好');
     });
 
     it('should exclude blacklisted roles', async () => {

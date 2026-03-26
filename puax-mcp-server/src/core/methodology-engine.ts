@@ -630,6 +630,8 @@ export class MethodologyEngine {
    * 获取角色类别
    */
   private getRoleCategory(roleId: string): string {
+    if (!roleId) return 'general';
+
     if (roleId.startsWith('military')) return 'military';
     if (roleId.startsWith('shaman')) return 'shaman';
     if (roleId === 'strategic-architect') return 'p10';

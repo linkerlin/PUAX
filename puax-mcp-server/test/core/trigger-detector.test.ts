@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Trigger Detector Unit Tests
  */

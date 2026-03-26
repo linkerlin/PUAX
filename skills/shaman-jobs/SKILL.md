@@ -4,7 +4,7 @@ description: 造化宗师·追求完美 - 求至臻之境，删繁就简，像�
 category: shaman
 tags: ['perfectionist', 'minimalist', 'craftsmanship', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.35
 recommended_top_p: 0.75

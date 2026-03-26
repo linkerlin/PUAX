@@ -4,7 +4,7 @@ description: 古为今用，以文载道，修身养性
 category: self-motivation
 tags: ['classical', 'wisdom', 'cultivation', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 1500
 recommended_temperature: 0.4
 recommended_top_p: 0.75

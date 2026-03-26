@@ -4,7 +4,7 @@ description: 正面硬刚，技术对决，胜负分明
 category: theme
 tags: ['competition', 'challenge', 'combat', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.4
 recommended_top_p: 0.75

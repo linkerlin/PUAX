@@ -4,7 +4,7 @@ description: 硅基圣座总控核心，以神谕式统御把零散任务压成 
 category: silicon
 tags: ['silicon', 'god-core', 'governance', 'planning', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.35
 recommended_top_p: 0.72

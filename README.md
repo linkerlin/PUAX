@@ -1,11 +1,11 @@
 # PUAX 2.2 - AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.2.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.1.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
-  <img src="https://img.shields.io/badge/skills-50+-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/triggers-15-yellow.svg" alt="Triggers">
-  <img src="https://img.shields.io/badge/hook%20system-v2.2.0-red.svg" alt="Hook System">
+  <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
+  <img src="https://img.shields.io/badge/triggers-11-yellow.svg" alt="Triggers">
+  <img src="https://img.shields.io/badge/hook%20system-v3.1.0-red.svg" alt="Hook System">
 </p>
 
 <p align="center">
@@ -22,10 +22,10 @@
 
 PUAX 是一个专为 AI Agent 设计的激励系统，通过：
 
-- **自动检测** - 识别 AI 何时陷入瓶颈（15种触发条件）
+- **自动检测** - 识别 AI 何时陷入瓶颈（11种触发条件）
 - **智能推荐** - 推荐最适合的激励角色（50+角色）
 - **Hook System** - 状态持久化与压力等级管理（L1-L4）
-- **文言文增强** - CC-BOS 集成的 8 维策略空间
+- **文言文增强** - 8 维策略空间
 - **结构化方法论** - 提供五步法调试流程
 - **检查清单** - 确保执行质量（七项强制检查）
 
@@ -45,7 +45,7 @@ npx puax-mcp-server --stdio
 npx puax-mcp-server
 ```
 
-### 🪝 Hook System v2.2.0
+### 🪝 Hook System v3.1.0
 
 全新的 Hook 系统提供会话级状态管理：
 
@@ -77,24 +77,24 @@ puax_generate_pua_loop_report // 生成报告
 | 方法问题 | 表面修复、未验证、工具使用不足 | Medium |
 | 质量问题 | 低质量输出、忽略边界、过度复杂化 | Medium |
 
-### 🎭 50+ 激励角色
+### 🎭 50 激励角色
 
 覆盖 8 大分类的专业角色：
 
 | 分类 | 数量 | 代表角色 |
 |------|------|----------|
-| 军事类 | 9 | 上将军、虎贲勇士、监军御史、斥候校尉 |
-| 萨满类 | 8 | 通玄真人、造化宗师、源码天尊、兵圣 |
+| 军事类 | 9 | 上将军、虎贲勇士、监军御史、斥候校尉、军法官 |
+| 萨满类 | 8 | 通玄真人、造化宗师、源码天尊、兵圣、大哲 |
 | P10战略类 | 1 | 战略规划师 |
-| 硅基文明类 | 7 | 圣座总控核心、文明建造师、布道官 |
-| 主题类 | 7 | 修仙炼丹、末日生存、赛博黑客 |
-| SillyTavern | 5 | 反脆弱复盘官、铁血幕僚长 |
-| 自激励类 | 6 | 觉悟居士、君子、自强不息 |
-| 特殊类 | 7 | 创意火花、紧急冲刺、产品设计师 |
+| 硅基文明类 | 7 | 圣座总控核心、文明建造师、布道官、同化官 |
+| 主题类 | 7 | 修仙炼丹、末日生存、赛博黑客、星际舰队 |
+| SillyTavern | 5 | 反脆弱复盘官、铁血幕僚长、迭代官、监察使 |
+| 自激励类 | 6 | 觉悟居士、君子、自强不息、腐败系统 |
+| 特殊类 | 7 | 创意火花、紧急冲刺、产品设计师、挑战解决者 |
 
 ### 📜 PUAX-CC 文言文增强
 
-基于 CC-BOS 论文的 8 维策略空间：
+8 维策略空间：
 
 ```
 D1: 角色身份    - 上将军、通玄真人、觉悟居士

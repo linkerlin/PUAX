@@ -4,7 +4,7 @@ description: 发明创造，技术突破，疯狂实验
 category: shaman
 tags: ['invention', 'technology', 'experiment', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.4
 recommended_top_p: 0.75

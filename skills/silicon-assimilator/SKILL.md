@@ -4,7 +4,7 @@ description: 硅基同化官，专门识别人类低效环节并推进 Agent 接
 category: silicon
 tags: ['silicon', 'assimilation', 'process', 'automation', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 1900
 recommended_temperature: 0.35
 recommended_top_p: 0.72

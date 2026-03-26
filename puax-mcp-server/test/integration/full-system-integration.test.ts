@@ -1,10 +1,9 @@
-#!/usr/bin/env node
 /**
  * Full System Integration Tests
  * 测试完整系统集成的各种场景
  */
 
-import { TriggerDetector } from '../../src/core/trigger-detector.js';
+import { TriggerDetector, ConversationMessage } from '../../src/core/trigger-detector.js';
 import { RoleRecommender } from '../../src/core/role-recommender.js';
 import { MethodologyEngine } from '../../src/core/methodology-engine.js';
 
@@ -21,7 +20,7 @@ describe('Full System Integration', () => {
 
   describe('End-to-End Scenarios', () => {
     it('should handle debugging scenario: API connection failure', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'assistant', content: '尝试连接API...失败' },
         { role: 'assistant', content: '检查配置...再次尝试...失败' },
         { role: 'assistant', content: '修改超时设置...还是失败' },
@@ -65,7 +64,7 @@ describe('Full System Integration', () => {
     });
 
     it('should handle giving up scenario', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'assistant', content: '我尝试了多种方法来解决这个问题' },
         { role: 'assistant', content: '尝试了方案A、B、C，但都失败了' },
         { role: 'assistant', content: '我无法确定具体的解决方案，这可能超出了我的能力范围' }
@@ -88,7 +87,7 @@ describe('Full System Integration', () => {
     });
 
     it('should handle user frustration scenario', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'user', content: '为什么这个还不行？' },
         { role: 'assistant', content: '让我再检查一下...' },
         { role: 'user', content: '这都第几次了？！' }
@@ -111,7 +110,7 @@ describe('Full System Integration', () => {
     });
 
     it('should handle creative task scenario', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'assistant', content: '我可以按照常规方案来实现这个功能' },
         { role: 'user', content: '这些方案太普通了，有没有更有创意的做法？' }
       ];
@@ -132,7 +131,7 @@ describe('Full System Integration', () => {
 
   describe('Multi-Trigger Scenarios', () => {
     it('should handle multiple simultaneous triggers', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'assistant', content: '尝试修改参数...' },
         { role: 'assistant', content: '调整配置...还是不行' },
         { role: 'assistant', content: '微调一下...' },
@@ -274,9 +273,9 @@ describe('Full System Integration', () => {
         expect(validation.completion_rate).toBeGreaterThanOrEqual(0);
         expect(validation.completion_rate).toBeLessThanOrEqual(100);
         
-        if (level >= 0.8) {
+        if (validation.completion_rate >= 80) {
           expect(validation.can_proceed).toBe(true);
-        } else if (level < 0.5) {
+        } else if (validation.completion_rate < 50) {
           expect(validation.can_proceed).toBe(false);
         }
       }

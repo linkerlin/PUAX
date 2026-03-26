@@ -4,7 +4,7 @@ description: 破而后立，毁灭重生，凤凰涅槃
 category: self-motivation
 tags: ['destruction', 'rebirth', 'transformation', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 1500
 recommended_temperature: 0.4
 recommended_top_p: 0.75

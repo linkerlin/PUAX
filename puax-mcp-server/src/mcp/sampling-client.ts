@@ -85,14 +85,15 @@ export class SamplingClient {
     triggerRequest: SamplingTriggerRequest
   ): any {
     const { triggerType, confidence, context, recommendedRole } = triggerRequest;
+    const triggerDisplayName = this.getTriggerDisplayName(triggerType);
     
     // 根据触发类型构建不同的提示词
     const triggerMessages: Record<string, string> = {
-      consecutive_failures: `检测到连续失败 (${context.attemptCount} 次)，建议激活 ${recommendedRole.name} 角色进行攻坚。`,
-      giving_up: `检测到放弃意图，建议激活 ${recommendedRole.name} 角色重新建立信心。`,
-      user_frustration: `检测到用户沮丧情绪，建议激活 ${recommendedRole.name} 角色安抚或强力推进。`,
-      surface_fix: `检测到表面修复行为，建议激活 ${recommendedRole.name} 角色进行深度分析。`,
-      passive_wait: `检测到被动等待行为，建议激活 ${recommendedRole.name} 角色主动推进。`
+      consecutive_failures: `检测到${triggerDisplayName} (${context.attemptCount} 次)，建议激活 ${recommendedRole.name} 角色进行攻坚。`,
+      giving_up: `检测到${triggerDisplayName}，建议激活 ${recommendedRole.name} 角色重新建立信心。`,
+      user_frustration: `检测到${triggerDisplayName}情绪，建议激活 ${recommendedRole.name} 角色安抚或强力推进。`,
+      surface_fix: `检测到${triggerDisplayName}行为，建议激活 ${recommendedRole.name} 角色进行深度分析。`,
+      passive_wait: `检测到${triggerDisplayName}行为，建议激活 ${recommendedRole.name} 角色主动推进。`
     };
 
     const triggerMessage = triggerMessages[triggerType] || `建议激活 ${recommendedRole.name} 角色。`;
@@ -132,14 +133,28 @@ export class SamplingClient {
     role: { id: string; name: string; systemPrompt: string },
     triggerType: string
   ): string {
+    const triggerDisplayName = this.getTriggerDisplayName(triggerType);
+
     return `# PUAX 自动激活 - ${role.name}
 
-[自动触发原因: ${triggerType}]
+[自动触发原因: ${triggerDisplayName} (${triggerType})]
 
 ${role.systemPrompt}
 
 ---
 [PUAX 自动注入] 此角色由触发条件自动激活。请按照上述角色设定继续对话。`;
+  }
+
+  private getTriggerDisplayName(triggerType: string): string {
+    const displayNames: Record<string, string> = {
+      consecutive_failures: '连续失败',
+      giving_up: '放弃意图',
+      user_frustration: '用户沮丧',
+      surface_fix: '表面修复',
+      passive_wait: '被动等待'
+    };
+
+    return displayNames[triggerType] || triggerType;
   }
 
   /**

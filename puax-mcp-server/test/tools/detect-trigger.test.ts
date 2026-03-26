@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Detect Trigger Tool Unit Tests
  */
@@ -6,6 +5,8 @@
 import { detectTriggerTool } from '../../src/tools/detect-trigger.js';
 
 describe('detect_trigger Tool', () => {
+  const parseInput = (input: unknown) => detectTriggerTool.inputSchema.safeParse(input);
+
   describe('Tool Definition', () => {
     it('should have correct tool name', () => {
       expect(detectTriggerTool.name).toBe('detect_trigger');
@@ -18,23 +19,25 @@ describe('detect_trigger Tool', () => {
 
     it('should have input schema', () => {
       expect(detectTriggerTool.inputSchema).toBeDefined();
-      expect(detectTriggerTool.inputSchema.type).toBe('object');
+      expect(parseInput({ conversation_history: [] }).success).toBe(true);
     });
 
     it('should define conversation_history in schema', () => {
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties).toBeDefined();
-      expect(schema.properties.conversation_history).toBeDefined();
+      expect(parseInput({}).success).toBe(false);
     });
 
     it('should define task_context in schema', () => {
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties.task_context).toBeDefined();
+      expect(parseInput({
+        conversation_history: [],
+        task_context: { current_task: 'debugging' }
+      }).success).toBe(true);
     });
 
     it('should define options in schema', () => {
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties.options).toBeDefined();
+      expect(parseInput({
+        conversation_history: [],
+        options: { sensitivity: 'high', language: 'auto' }
+      }).success).toBe(true);
     });
   });
 
@@ -46,19 +49,16 @@ describe('detect_trigger Tool', () => {
           { role: 'assistant', content: 'Hi there' }
         ]
       };
-      
-      // Schema should allow this input
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties.conversation_history.type).toBe('array');
+
+      expect(parseInput(validInput).success).toBe(true);
     });
 
     it('should accept empty conversation history', () => {
       const emptyInput = {
         conversation_history: []
       };
-      
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties.conversation_history.type).toBe('array');
+
+      expect(parseInput(emptyInput).success).toBe(true);
     });
 
     it('should accept conversation with system messages', () => {
@@ -68,40 +68,62 @@ describe('detect_trigger Tool', () => {
           { role: 'user', content: 'Hello' }
         ]
       };
-      
-      const schema = detectTriggerTool.inputSchema;
-      expect(schema.properties.conversation_history.type).toBe('array');
+
+      expect(parseInput(inputWithSystem).success).toBe(true);
     });
   });
 
   describe('Schema Properties', () => {
     it('should have correct role enum', () => {
-      const messageSchema = detectTriggerTool.inputSchema.properties.conversation_history.items;
-      expect(messageSchema.properties.role.enum).toContain('user');
-      expect(messageSchema.properties.role.enum).toContain('assistant');
-      expect(messageSchema.properties.role.enum).toContain('system');
+      expect(parseInput({
+        conversation_history: [{ role: 'user', content: 'hi' }]
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [{ role: 'assistant', content: 'hi' }]
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [{ role: 'system', content: 'hi' }]
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [{ role: 'tool', content: 'hi' }]
+      }).success).toBe(false);
     });
 
     it('should require content field', () => {
-      const messageSchema = detectTriggerTool.inputSchema.properties.conversation_history.items;
-      expect(messageSchema.properties.content).toBeDefined();
-      expect(messageSchema.properties.content.type).toBe('string');
+      expect(parseInput({
+        conversation_history: [{ role: 'user' }]
+      }).success).toBe(false);
     });
 
     it('should have optional task_context properties', () => {
-      const taskContextSchema = detectTriggerTool.inputSchema.properties.task_context;
-      expect(taskContextSchema.properties.current_task).toBeDefined();
-      expect(taskContextSchema.properties.attempt_count).toBeDefined();
-      expect(taskContextSchema.properties.tools_available).toBeDefined();
-      expect(taskContextSchema.properties.tools_used).toBeDefined();
+      expect(parseInput({
+        conversation_history: [],
+        task_context: {
+          current_task: 'debugging',
+          attempt_count: 2,
+          tools_available: ['search'],
+          tools_used: ['read_file']
+        }
+      }).success).toBe(true);
     });
 
     it('should have optional options properties', () => {
-      const optionsSchema = detectTriggerTool.inputSchema.properties.options;
-      expect(optionsSchema.properties.sensitivity).toBeDefined();
-      expect(optionsSchema.properties.sensitivity.enum).toContain('low');
-      expect(optionsSchema.properties.sensitivity.enum).toContain('medium');
-      expect(optionsSchema.properties.sensitivity.enum).toContain('high');
+      expect(parseInput({
+        conversation_history: [],
+        options: { sensitivity: 'low' }
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [],
+        options: { sensitivity: 'medium' }
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [],
+        options: { sensitivity: 'high' }
+      }).success).toBe(true);
+      expect(parseInput({
+        conversation_history: [],
+        options: { sensitivity: 'extreme' }
+      }).success).toBe(false);
     });
   });
 
@@ -115,8 +137,8 @@ describe('detect_trigger Tool', () => {
       if (detectTriggerTool.examples) {
         detectTriggerTool.examples.forEach(example => {
           expect(example.name).toBeDefined();
-          expect(example.description).toBeDefined();
           expect(example.input).toBeDefined();
+          expect(parseInput(example.input).success).toBe(true);
         });
       }
     });

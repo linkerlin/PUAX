@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * Role Recommender Edge Cases and Error Handling Tests
  */

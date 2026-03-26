@@ -340,7 +340,7 @@ export class RoleRecommender {
   private getFromCache(key: string): RoleRecommendation | null {
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < this.CACHE_TTL_MS) {
-      return cached.result;
+      return this.cloneRecommendation(cached.result, true);
     }
     this.cache.delete(key);
     return null;
@@ -350,7 +350,7 @@ export class RoleRecommender {
    * 存入缓存
    */
   private setCache(key: string, result: RoleRecommendation): void {
-    this.cache.set(key, { result, timestamp: Date.now() });
+    this.cache.set(key, { result: this.cloneRecommendation(result, false), timestamp: Date.now() });
     
     // 清理过期缓存
     if (this.cache.size > 100) {
@@ -371,6 +371,10 @@ export class RoleRecommender {
     const scoredRoles: ScoredRole[] = [];
 
     for (const roleId of allRoles) {
+      if (request.user_preferences?.blacklisted_roles?.includes(roleId)) {
+        continue;
+      }
+
       const scores = this.calculateRoleScores(roleId, request);
       const totalScore = this.calculateTotalScore(scores);
       
@@ -659,7 +663,7 @@ export class RoleRecommender {
     if (!topRoles || topRoles.length === 0) {
       return this.buildDefaultRecommendation(request);
     }
-    
+
     const primary = topRoles[0];
     const primaryMeta = this.mappings.role_metadata[primary.role_id];
 
@@ -701,6 +705,31 @@ export class RoleRecommender {
         calculation_breakdown: primary.scores,
         algorithm_version: '1.0.0',
         cache_hit: false
+      }
+    };
+  }
+
+  private cloneRecommendation(
+    recommendation: RoleRecommendation,
+    cacheHit: boolean
+  ): RoleRecommendation {
+    return {
+      primary: {
+        ...recommendation.primary,
+        match_reasons: [...recommendation.primary.match_reasons]
+      },
+      alternatives: recommendation.alternatives.map(alternative => ({
+        ...alternative
+      })),
+      activation_suggestion: {
+        ...recommendation.activation_suggestion
+      },
+      metadata: {
+        ...recommendation.metadata,
+        calculation_breakdown: {
+          ...recommendation.metadata.calculation_breakdown
+        },
+        cache_hit: cacheHit
       }
     };
   }

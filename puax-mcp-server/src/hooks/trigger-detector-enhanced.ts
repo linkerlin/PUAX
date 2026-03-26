@@ -233,10 +233,14 @@ export class EnhancedTriggerDetector {
   async detect(context: TriggerContext): Promise<EnhancedTriggerResult> {
     const { sessionId, eventType } = context;
 
+    const bypassCooldown = eventType === 'PreCompact' || eventType === 'SessionStart' || eventType === 'Stop';
+
     // 检查冷却时间
-    const cooldown = pressureSystem.checkCooldown(sessionId);
-    if (!cooldown.canTrigger) {
-      return this.createEmptyResult(sessionId, cooldown.remainingMs);
+    if (!bypassCooldown) {
+      const cooldown = pressureSystem.checkCooldown(sessionId);
+      if (!cooldown.canTrigger) {
+        return this.createEmptyResult(sessionId, cooldown.remainingMs);
+      }
     }
 
     // 根据事件类型路由到不同的检测器
@@ -528,7 +532,9 @@ export class EnhancedTriggerDetector {
       }
     }
 
-    const confidence = totalWeight > 0 ? matchedWeight / totalWeight : 0;
+    const confidence = matchedPatterns.length > 0
+      ? Math.min(1, 0.5 + (totalWeight > 0 ? (matchedWeight / totalWeight) * 0.5 : 0))
+      : 0;
     
     return {
       matched: matchedPatterns.length > 0,

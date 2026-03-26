@@ -4,7 +4,7 @@ description: 星际探索，未知领域，开拓前沿
 category: theme
 tags: ['exploration', 'innovation', 'frontier', 'classical-chinese']
 author: PUAX-CC
-version: "3.0.0-cc"
+version: "3.1.0"
 min_tokens: 2000
 recommended_temperature: 0.4
 recommended_top_p: 0.75

@@ -1,10 +1,9 @@
-#!/usr/bin/env node
 /**
  * Performance Tests
  * 验证系统性能指标
  */
 
-import { TriggerDetector } from '../../src/core/trigger-detector.js';
+import { TriggerDetector, ConversationMessage } from '../../src/core/trigger-detector.js';
 import { RoleRecommender } from '../../src/core/role-recommender.js';
 import { MethodologyEngine } from '../../src/core/methodology-engine.js';
 
@@ -36,7 +35,7 @@ describe('Performance Tests', () => {
     });
 
     it('should handle medium conversation within limit', async () => {
-      const history = Array(20).fill(null).map((_, i) => ({
+      const history: ConversationMessage[] = Array(20).fill(null).map((_, i) => ({
         role: i % 2 === 0 ? 'assistant' : 'user',
         content: i % 2 === 0 ? '尝试失败' : '还不行？'
       }));
@@ -94,14 +93,16 @@ describe('Performance Tests', () => {
       };
 
       const start1 = Date.now();
-      await recommender.recommend(request);
+      const result1 = await recommender.recommend(request);
       const duration1 = Date.now() - start1;
 
       const start2 = Date.now();
-      await recommender.recommend(request);
+      const result2 = await recommender.recommend(request);
       const duration2 = Date.now() - start2;
 
-      expect(duration2).toBeLessThan(duration1);
+      expect(result1.metadata.cache_hit).toBe(false);
+      expect(result2.metadata.cache_hit).toBe(true);
+      expect(duration2).toBeLessThanOrEqual(duration1);
     });
   });
 
@@ -147,7 +148,7 @@ describe('Performance Tests', () => {
     });
 
     it('should complete full flow within 500ms', async () => {
-      const conversation = [
+      const conversation: ConversationMessage[] = [
         { role: 'assistant', content: '尝试连接...失败' },
         { role: 'assistant', content: '再试一次...还是失败' },
         { role: 'user', content: '为什么还不行？' }

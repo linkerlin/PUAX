@@ -377,7 +377,7 @@ export class EnhancedTriggerDetector extends TriggerDetector {
 
     // 确定推荐动作
     let recommendedAction: 'immediate_activation' | 'suggest_activation' | 'monitor' | 'none' = 'none';
-    if (overallSeverity === 'critical' || uniqueTriggers.some(t => t.confidence > 0.8)) {
+    if (overallSeverity === 'critical' || uniqueTriggers.some(t => t.confidence >= 0.8)) {
       recommendedAction = 'immediate_activation';
     } else if (overallSeverity === 'high' || uniqueTriggers.some(t => t.confidence > 0.6)) {
       recommendedAction = 'suggest_activation';
