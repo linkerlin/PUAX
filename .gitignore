@@ -1,36 +1,47 @@
-# If you prefer the allow list template instead of the deny list, see community template:
-# https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
-#
-# Binaries for programs and plugins
+# Binaries
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
-PUAX改进方案和计划.md
-实施进度报告-阶段一.md
-实施进度报告-阶段二.md
-PUAX-CC-README.md
-
-# Test binary, built with `go test -c`
 *.test
 
-# Code coverage profiles and other test artifacts
+# Coverage and test artifacts
 *.out
 coverage.*
 *.coverprofile
 profile.cov
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Dependency directories
+node_modules/
+vendor/
 
-# Go workspace file
-go.work
-go.work.sum
+# Build output
+dist/
+build/
+*.tsbuildinfo
 
-# env file
+# Environment files
 .env
+.env.local
+.env.*.local
 
 # Editor/IDE
-# .idea/
-# .vscode/
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PUAX specific
+.puax/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
