@@ -82,9 +82,9 @@ export class SamplingClient {
    * 构建采样请求消息
    */
   private buildSamplingRequest(
-    request: SamplingTriggerRequest
-  ): CreateMessageRequest {
-    const { triggerType, confidence, context, recommendedRole } = request;
+    triggerRequest: SamplingTriggerRequest
+  ): any {
+    const { triggerType, confidence, context, recommendedRole } = triggerRequest;
     
     // 根据触发类型构建不同的提示词
     const triggerMessages: Record<string, string> = {
@@ -97,14 +97,15 @@ export class SamplingClient {
 
     const triggerMessage = triggerMessages[triggerType] || `建议激活 ${recommendedRole.name} 角色。`;
 
-    return {
+    // 构建 MCP Sampling 请求参数
+    const messageRequest: any = {
       messages: [
         {
           role: 'assistant',
           content: {
             type: 'text',
             text: `[PUAX Auto-Trigger] 置信度: ${(confidence * 100).toFixed(1)}%\n${triggerMessage}`
-          } as TextContent
+          }
         }
       ],
       modelPreferences: {
@@ -113,11 +114,15 @@ export class SamplingClient {
         speedPriority: 0.7,
         intelligencePriority: 0.8
       },
-      systemPrompt: this.buildSystemPromptInjection(recommendedRole, triggerType),
       maxTokens: this.config.maxTokensPerRequest,
       temperature: this.config.defaultTemperature,
       includeContext: 'thisServer'
     };
+    
+    // 添加系统提示词注入
+    messageRequest.systemPrompt = this.buildSystemPromptInjection(recommendedRole, triggerType);
+    
+    return messageRequest;
   }
 
   /**

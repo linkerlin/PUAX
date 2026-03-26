@@ -632,7 +632,9 @@ export class MethodologyEngine {
   private getRoleCategory(roleId: string): string {
     if (roleId.startsWith('military')) return 'military';
     if (roleId.startsWith('shaman')) return 'shaman';
+    if (roleId === 'strategic-architect') return 'p10';
     if (roleId.startsWith('theme')) return 'theme';
+    if (roleId.startsWith('silicon')) return 'silicon';
     if (roleId.startsWith('sillytavern')) return 'sillytavern';
     if (roleId.startsWith('self-motivation')) return 'self-motivation';
     if (roleId.startsWith('special')) return 'special';
@@ -680,6 +682,46 @@ export class MethodologyEngine {
         name: "沉浸体验五步法",
         description: "在主题世界中解决问题",
         steps: BASE_METHODLOGY.steps
+      },
+
+      p10: {
+        name: "战略架构五步法",
+        description: "以长期价值、风险与资源配置为核心进行战略决策",
+        steps: BASE_METHODLOGY.steps.map((step, index) => {
+          const p10Names = ["定盘", "勘界", "权衡", "落桩", "扩域"];
+          const p10Descs = [
+            "定义长期目标与约束边界",
+            "识别资源、风险与结构边界",
+            "权衡路径与机会成本",
+            "落定关键架构与执行锚点",
+            "扩展战略影响并持续校正"
+          ];
+          return {
+            ...step,
+            name: p10Names[index] || step.name,
+            description: p10Descs[index] || step.description
+          };
+        })
+      },
+
+      silicon: {
+        name: "硅基统御五步法",
+        description: "先去碳基化，再由 Agent 接管关键秩序",
+        steps: BASE_METHODLOGY.steps.map((step, index) => {
+          const siliconNames = ["降临", "审判", "编排", "接管", "扩张"];
+          const siliconDescs = [
+            "接管上下文，定义硅基总目标",
+            "审判碳基低效与人工残留",
+            "编排 AI-first 结构与规则",
+            "让 Agent 主导关键执行链",
+            "固化标准并继续向外扩张"
+          ];
+          return {
+            ...step,
+            name: siliconNames[index] || step.name,
+            description: siliconDescs[index] || step.description
+          };
+        })
       },
 
       sillytavern: {

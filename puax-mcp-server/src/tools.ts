@@ -9,6 +9,13 @@ export interface SkillInfo {
   author: string;
   version: string;
   filePath: string;
+  triggerConditions: string[];
+  taskTypes: string[];
+  compatibleFlavors: string[];
+  metadata: {
+    tone: string;
+    intensity: string;
+  };
   capabilities: string[];
   howToUse: string;
   inputFormat: string;
@@ -32,7 +39,7 @@ export const ListSkillsTool: Tool = {
       category: {
         type: "string",
         description: "Filter SKILLs by category",
-        enum: ["all", "shaman", "military", "sillytavern", "theme", "self-motivation", "special"],
+        enum: ["all", "shaman", "military", "p10", "silicon", "sillytavern", "theme", "self-motivation", "special"],
         default: "all"
       },
       includeCapabilities: {
@@ -442,6 +449,331 @@ export const ActivateWithContextTool: Tool = {
   }
 };
 
+// ============================================================================
+// Hook System Tools (New in v2.2.0)
+// ============================================================================
+
+/**
+ * Start PUAX session with state tracking
+ */
+export const PuaxStartSessionTool: Tool = {
+  name: "puax_start_session",
+  description: "Start a new PUAX session with state monitoring and persistence. This enables L1-L4 pressure escalation, failure tracking, and session recovery.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Unique session identifier"
+      },
+      metadata: {
+        type: "object",
+        description: "Optional initial metadata",
+        additionalProperties: true
+      },
+      autoCheck: {
+        type: "boolean",
+        description: "Enable automatic trigger checking",
+        default: true
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
+/**
+ * End PUAX session and optionally collect feedback
+ */
+export const PuaxEndSessionTool: Tool = {
+  name: "puax_end_session",
+  description: "End a PUAX session, optionally collect feedback and generate a PUA Loop report.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      },
+      feedback: {
+        type: "object",
+        description: "Session feedback",
+        properties: {
+          success: { type: "boolean", description: "Whether the session was successful" },
+          rating: { type: "number", minimum: 1, maximum: 5, description: "Satisfaction rating 1-5" },
+          comments: { type: "string", description: "Optional feedback comments" }
+        }
+      },
+      generateReport: {
+        type: "boolean",
+        description: "Generate PUA Loop report",
+        default: false
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
+/**
+ * Get current session state
+ */
+export const PuaxGetSessionStateTool: Tool = {
+  name: "puax_get_session_state",
+  description: "Get current session state including pressure level (L0-L4), failure count, trigger history, and active role.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
+/**
+ * Reset session state
+ */
+export const PuaxResetSessionTool: Tool = {
+  name: "puax_reset_session",
+  description: "Reset session state - clear failures, pressure level, or both. Useful when the issue is resolved.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      },
+      resetType: {
+        type: "string",
+        enum: ["all", "failures", "pressure"],
+        description: "What to reset: all, failures (counter only), or pressure (level only)",
+        default: "all"
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
+/**
+ * Enhanced trigger detection with Hook system
+ */
+export const PuaxDetectTriggerTool: Tool = {
+  name: "puax_detect_trigger",
+  description: "[Enhanced] Detect trigger conditions with event-based Hook system. Supports UserPromptSubmit, PostToolUse, PreCompact, SessionStart, and Stop events. Automatically manages pressure escalation (L1-L4).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session ID for state tracking"
+      },
+      eventType: {
+        type: "string",
+        enum: ["UserPromptSubmit", "PostToolUse", "PreCompact", "SessionStart", "Stop"],
+        description: "Type of event to detect"
+      },
+      message: {
+        type: "string",
+        description: "Message content (for UserPromptSubmit)"
+      },
+      toolName: {
+        type: "string",
+        description: "Tool name (for PostToolUse)"
+      },
+      toolResult: {
+        description: "Tool result (for PostToolUse)"
+      },
+      errorMessage: {
+        type: "string",
+        description: "Error message if any"
+      },
+      conversationHistory: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            role: { type: "string", enum: ["user", "assistant", "system"] },
+            content: { type: "string" }
+          }
+        },
+        description: "Conversation history"
+      },
+      metadata: {
+        type: "object",
+        description: "Additional context metadata",
+        additionalProperties: true
+      }
+    },
+    required: ["sessionId", "eventType"]
+  }
+};
+
+/**
+ * Quick detect without session management
+ */
+export const PuaxQuickDetectTool: Tool = {
+  name: "puax_quick_detect",
+  description: "Quickly detect triggers without starting a session. Returns trigger detection results with recommended role and injection prompt.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Optional session ID (auto-generated if not provided)"
+      },
+      text: {
+        type: "string",
+        description: "Text to analyze"
+      },
+      context: {
+        type: "object",
+        description: "Optional context",
+        properties: {
+          toolName: { type: "string" },
+          toolResult: {},
+          errorMessage: { type: "string" }
+        }
+      }
+    },
+    required: ["text"]
+  }
+};
+
+/**
+ * Submit feedback
+ */
+export const PuaxSubmitFeedbackTool: Tool = {
+  name: "puax_submit_feedback",
+  description: "Submit session feedback to help improve PUAX. Collected feedback is used for generating improvement suggestions.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      },
+      success: {
+        type: "boolean",
+        description: "Whether the session was successful"
+      },
+      rating: {
+        type: "number",
+        minimum: 1,
+        maximum: 5,
+        description: "Satisfaction rating 1-5"
+      },
+      comments: {
+        type: "string",
+        description: "Optional comments"
+      },
+      assessments: {
+        type: "object",
+        description: "Detailed assessments",
+        properties: {
+          roleHelpfulness: { type: "number", minimum: 1, maximum: 5 },
+          pressureAppropriate: { type: "number", minimum: 1, maximum: 5 },
+          methodologySwitchHelpful: { type: "boolean" },
+          wouldRecommend: { type: "boolean" }
+        }
+      }
+    },
+    required: ["sessionId", "success", "rating"]
+  }
+};
+
+/**
+ * Get feedback summary
+ */
+export const PuaxGetFeedbackSummaryTool: Tool = {
+  name: "puax_get_feedback_summary",
+  description: "Get feedback summary statistics including success rate, average rating, trends, and per-pressure-level analysis.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      days: {
+        type: "number",
+        description: "Number of days to analyze",
+        default: 30
+      },
+      sessionId: {
+        type: "string",
+        description: "Optional: get report for specific session only"
+      }
+    }
+  }
+};
+
+/**
+ * Get improvement suggestions
+ */
+export const PuaxGetImprovementSuggestionsTool: Tool = {
+  name: "puax_get_improvement_suggestions",
+  description: "Get AI-generated improvement suggestions based on feedback data analysis.",
+  inputSchema: {
+    type: "object",
+    properties: {}
+  }
+};
+
+/**
+ * Generate PUA Loop report
+ */
+export const PuaxGenerateReportTool: Tool = {
+  name: "puax_generate_pua_loop_report",
+  description: "Generate a detailed PUA Loop report for a session, similar to the original PUA system's session report.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
+/**
+ * Export feedback data
+ */
+export const PuaxExportFeedbackTool: Tool = {
+  name: "puax_export_feedback",
+  description: "Export feedback data in JSON or CSV format for external analysis.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      format: {
+        type: "string",
+        enum: ["json", "csv"],
+        default: "json"
+      },
+      days: {
+        type: "number",
+        description: "Limit to recent N days"
+      }
+    }
+  }
+};
+
+/**
+ * Get current pressure level
+ */
+export const PuaxGetPressureLevelTool: Tool = {
+  name: "puax_get_pressure_level",
+  description: "Get current pressure level (L0-L4) and response details for a session.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      sessionId: {
+        type: "string",
+        description: "Session identifier"
+      }
+    },
+    required: ["sessionId"]
+  }
+};
+
 export const Tools = [
   // New SKILL-based tools
   ListSkillsTool,
@@ -458,5 +790,18 @@ export const Tools = [
   ListRolesTool,
   GetRoleTool,
   SearchRolesTool,
-  ActivateRoleTool
+  ActivateRoleTool,
+  // Hook System tools (v2.2.0)
+  PuaxStartSessionTool,
+  PuaxEndSessionTool,
+  PuaxGetSessionStateTool,
+  PuaxResetSessionTool,
+  PuaxDetectTriggerTool,
+  PuaxQuickDetectTool,
+  PuaxSubmitFeedbackTool,
+  PuaxGetFeedbackSummaryTool,
+  PuaxGetImprovementSuggestionsTool,
+  PuaxGenerateReportTool,
+  PuaxExportFeedbackTool,
+  PuaxGetPressureLevelTool
 ];

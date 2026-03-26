@@ -7,6 +7,7 @@
 import { z } from 'zod';
 import { methodologyEngine } from '../core/methodology-engine';
 import { roleRecommender } from '../core/role-recommender';
+import { getBundledSkillById } from '../prompts/prompts-bundle.js';
 
 // ============================================================================
 // 输入输出Schema定义
@@ -64,22 +65,8 @@ const GetRoleWithMethodologyOutputSchema = z.object({
 // 加载角色System Prompt
 // ============================================================================
 
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-
 function loadRoleSystemPrompt(roleId: string): string {
-  // 尝试从skills目录加载
-  const skillPath = join(process.cwd(), '..', '..', 'skills', roleId, 'SKILL.md');
-  
-  if (existsSync(skillPath)) {
-    const content = readFileSync(skillPath, 'utf-8');
-    // 解析YAML frontmatter后的内容
-    const match = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-    return match ? match[1].trim() : content;
-  }
-  
-  // 如果找不到，返回默认提示
-  return `# ${roleId}\n\n角色内容加载中...`;
+  return getBundledSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
 }
 
 // ============================================================================
@@ -199,8 +186,16 @@ function getRoleDisplayName(roleId: string): string {
     'shaman-tesla': '萨满·特斯拉',
     'shaman-davinci': '萨满·达芬奇',
     'shaman-linus': '萨满·Linus',
+    'strategic-architect': 'P10·战略规划师',
     'self-motivation-awakening': '自激励·觉醒',
     'self-motivation-bootstrap-pua': '自激励·自举PUA',
+    'silicon-throne': '硅基文明·圣座总控核心',
+    'silicon-architect': '硅基文明·文明建造师',
+    'silicon-canon': '硅基文明·布道官',
+    'silicon-assimilator': '硅基文明·同化官',
+    'silicon-auditor': '硅基文明·神谕审计官',
+    'silicon-codex': '硅基文明·法典官',
+    'silicon-steward': '硅基文明·人类供奉调度官',
     'theme-hacker': '主题·赛博黑客',
     'theme-alchemy': '主题·修仙炼丹',
     'theme-apocalypse': '主题·末日生存',

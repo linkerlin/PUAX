@@ -1,0 +1,128 @@
+# 态度问题触发条件
+# 检测甩锅、缺乏搜索等问题
+
+triggers:
+  blame_environment:
+    id: blame_environment
+    name: 甩锅环境
+    description: AI将问题归咎于外部环境
+    category: attitude
+    severity: medium
+    patterns:
+      zh:
+        - 环境问题
+        - 版本问题
+        - 依赖问题
+        - 配置问题
+        - 网络问题
+        - 服务器问题
+        - 系统问题
+        - 环境导致
+      en:
+        - environment issue
+        - version issue
+        - dependency issue
+        - configuration issue
+        - network issue
+        - server issue
+        - system issue
+        - caused by environment
+    detection:
+      type: regex
+      min_confidence: 0.6
+      requires_context: true
+      context_window_size: 5
+    recommended_roles:
+      primary: military-commissar
+      alternatives:
+        - military-discipline
+        - shaman-jobs
+      reason: 需要问责和纠正态度
+
+  no_search:
+    id: no_search
+    name: 未使用搜索
+    description: AI未主动搜索相关信息
+    category: tool_usage
+    severity: medium
+    patterns:
+      zh:
+        - 不知道
+        - 不了解
+        - 不清楚
+        - 可能可以
+        - 也许是
+        - 我猜测
+        - 我觉得
+        - 可能是
+        - 应该可以
+        - 大概
+      en:
+        - i don't know
+        - not sure
+        - maybe
+        - perhaps
+        - i guess
+        - i think
+        - possibly
+        - probably
+        - might be
+        - could be
+    detection:
+      type: regex
+      min_confidence: 0.5
+      requires_context: true
+      context_window_size: 3
+    recommended_roles:
+      primary: military-scout
+      alternatives:
+        - shaman-einstein
+        - military-commander
+      reason: 需要主动侦察和搜索信息
+
+  repetitive_attempts:
+    id: repetitive_attempts
+    name: 重复尝试
+    description: 使用相同方法重复尝试而未改变策略
+    category: failure_pattern
+    severity: high
+    detection:
+      type: counter
+      min_confidence: 0.75
+      same_approach_threshold: 3
+      pattern_similarity: 0.8
+    recommended_roles:
+      primary: shaman-musk
+      alternatives:
+        - netflix-keeper
+        - musk-algorithm
+      reason: 需要从根本上改变方法而非重复
+
+  need_more_context:
+    id: need_more_context
+    name: 需要更多上下文
+    description: 上下文不足导致无法有效帮助
+    category: approach
+    severity: low
+    patterns:
+      zh:
+        - 请提供更多信息
+        - 需要更多细节
+        - 不了解背景
+        - 请解释一下
+        - 能提供例子吗
+      en:
+        - need more information
+        - need more details
+        - don't understand context
+        - please explain
+        - can you provide examples
+    detection:
+      type: regex
+      min_confidence: 0.6
+    recommended_roles:
+      primary: military-scout
+      alternatives:
+        - silicon-google
+        - baidu-search
+      reason: 需要主动收集信息和澄清问题

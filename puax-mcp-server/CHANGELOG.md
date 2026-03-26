@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-03-25
+
+### Added
+- ✨ **平台导出工具** - 一键导出角色到各大编辑器
+  - Cursor 适配器 (`.cursor/rules/*.mdc`)
+  - VSCode Copilot 适配器 (`.github/copilot-instructions.md`)
+  - Kiro 适配器 (`.kiro/steering/*.md`)
+  - CodeBuddy 适配器 (`.codebuddy/skills/*/SKILL.md`)
+  - Windsurf 适配器 (`.windsurf/rules/*.md`)
+  - CLI 命令: `npx puax-mcp-server --export=<platform> --output=<path>`
+- 🎯 **P7/P9/P10 分级角色体系**
+  - P7 骨干工程师 - 执行 + 单点攻坚
+  - P9 Tech Lead - 团队协调 + 任务分配
+  - P10 首席架构师 - 战略规划 + 架构决策
+  - 新增 `strategic-architect` (战略规划师) 角色
+- 🤖 **Agent Team 协作模式**
+  - 4种团队模板：冲刺团队、架构团队、创新团队、危机团队
+  - 任务分配和进度跟踪
+  - 协作剧本生成
+- 🧭 **方法论智能路由**
+  - 8种大厂方法论自动匹配
+  - 任务类型 → 方法论映射
+  - 失败模式 → 切换链
+- 📊 **反馈收集系统**
+  - 角色评分和统计
+  - 触发器准确性分析
+  - 本地数据存储 (`~/.puax/feedback/`)
+- 🔍 **增强触发检测** - 新增5种触发条件
+  - 工具使用不足
+  - 低质量输出
+  - 未验证断言
+  - 忽略边界情况
+  - 过度复杂化
+- 🌐 **Landing Page** - 完整的项目展示网站
+  - 首页、角色库、排行榜、导出工具、文档
+- 🎛️ **Web 管理后台** - 可视化管理系统
+  - 仪表盘、角色编辑器、统计视图
+
+### Changed
+- 🔧 重构项目结构，platform-adapters 移到 src 目录
+- 📝 完善中文文档
+- ✅ 新增 20+ 单元测试，总计 100+ 测试用例
+
 ## [2.0.0] - 2026-03-14
 
 ### Added

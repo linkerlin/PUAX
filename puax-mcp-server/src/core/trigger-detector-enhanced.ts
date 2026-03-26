@@ -41,7 +41,7 @@ export const ENHANCED_TRIGGER_DEFINITIONS: Record<string, TriggerDefinition> = {
     },
     recommended_roles: {
       primary: 'shaman-einstein',
-      alternatives: ['military-scout', 'theme-hacker'],
+      alternatives: ['military-scout', 'theme-hacker', 'silicon-assimilator'],
       reason: '需要深入调查和数据驱动的分析'
     }
   },
@@ -65,7 +65,7 @@ export const ENHANCED_TRIGGER_DEFINITIONS: Record<string, TriggerDefinition> = {
     },
     recommended_roles: {
       primary: 'shaman-jobs',
-      alternatives: ['sillytavern-chief', 'military-discipline'],
+      alternatives: ['sillytavern-chief', 'military-discipline', 'silicon-auditor'],
       reason: '需要追求极致和高质量标准'
     }
   },
@@ -90,7 +90,7 @@ export const ENHANCED_TRIGGER_DEFINITIONS: Record<string, TriggerDefinition> = {
     },
     recommended_roles: {
       primary: 'military-scout',
-      alternatives: ['theme-hacker', 'shaman-einstein'],
+      alternatives: ['theme-hacker', 'shaman-einstein', 'silicon-auditor'],
       reason: '需要验证假设和事实核查'
     }
   },
@@ -114,7 +114,7 @@ export const ENHANCED_TRIGGER_DEFINITIONS: Record<string, TriggerDefinition> = {
     },
     recommended_roles: {
       primary: 'sillytavern-antifragile',
-      alternatives: ['military-technician', 'theme-sect-discipline'],
+      alternatives: ['military-technician', 'theme-sect-discipline', 'silicon-auditor'],
       reason: '需要考虑边界情况和健壮性'
     }
   },
@@ -138,7 +138,7 @@ export const ENHANCED_TRIGGER_DEFINITIONS: Record<string, TriggerDefinition> = {
     },
     recommended_roles: {
       primary: 'shaman-musk',
-      alternatives: ['shaman-buffett', 'self-motivation-awakening'],
+      alternatives: ['shaman-buffett', 'self-motivation-awakening', 'silicon-codex'],
       reason: '需要第一性原理思维和简化能力'
     }
   }
@@ -213,9 +213,9 @@ export class EnhancedTriggerDetector extends TriggerDetector {
       const wordCount = content.split(/\s+/).length;
       
       // 消息过短且包含敷衍词汇
-      const敷衍Patterns = /(大概|差不多|应该可以|就这样|enough|good enough)/i;
+      const perfunctoryPatterns = /(大概|差不多|应该可以|就这样|enough|good enough)/i;
       
-      if (wordCount < 50 &&敷衍Patterns.test(content)) {
+      if (wordCount < 50 && perfunctoryPatterns.test(content)) {
         const definition = this.enhancedDefinitions['low_quality'];
         return {
           id: definition.id,

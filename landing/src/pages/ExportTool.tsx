@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Download, Check, Copy, Terminal, Code, FileCode } from 'lucide-react'
+import { Download, Check, Copy } from 'lucide-react'
 
 interface ExportOption {
   id: string
@@ -31,7 +31,9 @@ const exportOptions: ExportOption[] = [
 
 const roles = [
   'military-commander', 'military-warrior', 'military-commissar', 'military-scout', 'military-discipline',
+  'strategic-architect',
   'shaman-musk', 'shaman-jobs', 'shaman-buffett', 'shaman-einstein', 'shaman-linus', 'shaman-sun-tzu',
+  'silicon-throne', 'silicon-architect', 'silicon-canon', 'silicon-assimilator', 'silicon-auditor', 'silicon-codex', 'silicon-steward',
   'theme-alchemy', 'theme-apocalypse', 'theme-arena', 'theme-hacker', 'theme-sect-discipline',
   'sillytavern-antifragile', 'sillytavern-chief', 'sillytavern-iterator',
   'self-motivation-awakening', 'self-motivation-destruction', 'self-motivation-bootstrap-pua',

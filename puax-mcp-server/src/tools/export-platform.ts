@@ -3,15 +3,11 @@
  * 实现 npx puax-mcp-server --export [platform] 功能
  */
 
-import { globalAdapterRegistry, PlatformExportConfig } from '../../../platform-adapters/base-adapter.js';
-import '../../../platform-adapters/cursor-adapter.js';
-import '../../../platform-adapters/vscode-adapter.js';
-import { readdirSync, readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { globalAdapterRegistry, PlatformExportConfig } from '../platform-adapters/base-adapter.js';
+import '../platform-adapters/cursor-adapter.js';
+import '../platform-adapters/vscode-adapter.js';
+import { join } from 'path';
+import { getAllBundledSkills } from '../prompts/prompts-bundle.js';
 
 // ============================================================================
 // 类型定义
@@ -68,141 +64,24 @@ interface FlavorData {
 }
 
 /**
- * 从 skills 目录加载角色数据
+ * 从内置 bundle 加载角色数据
  */
 function loadRoles(): RoleData[] {
-  const skillsDir = join(__dirname, '..', '..', '..', '..', 'skills');
-  const roles: RoleData[] = [];
-
-  if (!existsSync(skillsDir)) {
-    console.warn(`[PUAX Export] Skills directory not found: ${skillsDir}`);
-    return roles;
-  }
-
-  try {
-    const skillDirs = readdirSync(skillsDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
-
-    for (const skillDir of skillDirs) {
-      const skillPath = join(skillsDir, skillDir);
-      const v2File = join(skillPath, 'SKILL.v2.md');
-      const v1File = join(skillPath, 'SKILL.md');
-
-      const skillFile = existsSync(v2File) ? v2File : (existsSync(v1File) ? v1File : null);
-      
-      if (skillFile) {
-        try {
-          const content = readFileSync(skillFile, 'utf-8');
-          const role = parseRoleFromMarkdown(skillDir, content);
-          if (role) {
-            roles.push(role);
-          }
-        } catch (error) {
-          console.warn(`[PUAX Export] Failed to parse ${skillFile}:`, error);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('[PUAX Export] Error loading roles:', error);
-  }
-
-  return roles;
-}
-
-/**
- * 解析 Markdown 角色文件
- */
-function parseRoleFromMarkdown(id: string, content: string): RoleData | null {
-  try {
-    // 解析 YAML frontmatter
-    const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
-    if (!frontmatterMatch) {
-      // 没有 frontmatter，使用默认解析
-      return createDefaultRole(id, content);
-    }
-
-    const frontmatter = frontmatterMatch[1];
-    const lines = frontmatter.split('\n');
-    
-    const data: Record<string, any> = {};
-    let currentKey = '';
-    let currentList: string[] = [];
-
-    for (const line of lines) {
-      const keyValueMatch = line.match(/^(\w+):\s*(.*)$/);
-      if (keyValueMatch) {
-        if (currentKey && currentList.length > 0) {
-          data[currentKey] = currentList;
-          currentList = [];
-        }
-        currentKey = keyValueMatch[1];
-        const value = keyValueMatch[2].trim();
-        
-        if (value.startsWith('[') && value.endsWith(']')) {
-          // 数组格式: [item1, item2]
-          data[currentKey] = value.slice(1, -1).split(',').map(s => s.trim().replace(/['"]/g, ''));
-        } else if (value) {
-          data[currentKey] = value.replace(/['"]/g, '');
-        }
-      } else if (line.trim().startsWith('- ')) {
-        // 列表项
-        currentList.push(line.trim().slice(2).replace(/['"]/g, ''));
-      }
-    }
-
-    if (currentKey && currentList.length > 0) {
-      data[currentKey] = currentList;
-    }
-
-    // 提取 system prompt
-    const systemPromptMatch = content.match(/## System Prompt\n```markdown\n([\s\S]*?)```/);
-    const systemPrompt = systemPromptMatch ? systemPromptMatch[1].trim() : 
-                        content.split('---').slice(2).join('---').trim();
-
-    return {
-      id: data.name || id,
-      name: data.name || id,
-      description: data.description || '',
-      category: data.category || 'general',
-      systemPrompt: systemPrompt || '',
-      triggerConditions: data.trigger_conditions || [],
-      taskTypes: data.task_types || [],
-      compatibleFlavors: data.compatible_flavors || [],
-      metadata: {
-        tone: data.metadata?.tone || 'analytical',
-        intensity: data.metadata?.intensity || 'medium',
-        version: data.version || '1.0.0'
-      }
-    };
-  } catch (error) {
-    console.warn(`[PUAX Export] Failed to parse role ${id}:`, error);
-    return createDefaultRole(id, content);
-  }
-}
-
-/**
- * 创建默认角色数据
- */
-function createDefaultRole(id: string, content: string): RoleData {
-  const nameMatch = content.match(/^#\s+(.+)$/m);
-  const descMatch = content.match(/## 一句话定位\s*\n>\s*(.+)/);
-  
-  return {
-    id,
-    name: nameMatch ? nameMatch[1] : id,
-    description: descMatch ? descMatch[1] : '',
-    category: 'general',
-    systemPrompt: content,
-    triggerConditions: [],
-    taskTypes: [],
-    compatibleFlavors: [],
+  return getAllBundledSkills().map(skill => ({
+    id: skill.id,
+    name: skill.name,
+    description: skill.description,
+    category: skill.category,
+    systemPrompt: skill.content,
+    triggerConditions: skill.triggerConditions,
+    taskTypes: skill.taskTypes,
+    compatibleFlavors: skill.compatibleFlavors,
     metadata: {
-      tone: 'analytical',
-      intensity: 'medium',
-      version: '1.0.0'
+      tone: skill.metadata.tone,
+      intensity: skill.metadata.intensity,
+      version: skill.version
     }
-  };
+  }));
 }
 
 /**

@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { TriggerDetector } from '../core/trigger-detector';
 import { RoleRecommender } from '../core/role-recommender';
 import { methodologyEngine } from '../core/methodology-engine';
+import { getBundledSkillById } from '../prompts/prompts-bundle.js';
 
 // ============================================================================
 // 输入输出Schema定义
@@ -239,19 +240,8 @@ export const activateWithContextTool = {
 // 辅助函数
 // ============================================================================
 
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-
 function loadRoleSystemPrompt(roleId: string): string {
-  const skillPath = join(process.cwd(), '..', '..', 'skills', roleId, 'SKILL.md');
-  
-  if (existsSync(skillPath)) {
-    const content = readFileSync(skillPath, 'utf-8');
-    const match = content.match(/^---\n[\s\S]*?\n---\n([\s\S]*)$/);
-    return match ? match[1].trim() : content;
-  }
-  
-  return `# ${roleId}\n\n角色内容加载中...`;
+  return getBundledSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
 }
 
 function inferTaskType(taskDescription: string): string {

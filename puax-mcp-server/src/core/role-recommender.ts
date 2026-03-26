@@ -7,6 +7,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
+import { getAllBundledSkills } from '../prompts/prompts-bundle';
 
 // ============================================================================
 // 类型定义
@@ -36,6 +37,9 @@ export interface RoleMetadata {
   suitable_for: string[];
 }
 
+type RoleTone = RoleMetadata['tone'];
+type RoleIntensity = RoleMetadata['intensity'];
+
 export interface RoleMappings {
   trigger_role_mappings: Record<string, RoleMapping>;
   task_type_role_mappings: Record<string, { primary: string[]; secondary: string[] }>;
@@ -53,6 +57,23 @@ export interface RoleMappings {
     sequence: 'sequential' | 'fallback' | 'parallel';
     description: string;
   }>;
+}
+
+interface RawFailureModeRound {
+  roles: string[];
+  intensity: 'low' | 'medium' | 'high' | 'extreme';
+}
+
+interface RawRoleMappings {
+  trigger_role_mappings?: Record<string, RoleMapping>;
+  task_type_role_mappings?: Record<string, { primary: string[]; secondary: string[] }>;
+  failure_mode_role_mappings?: Record<string, {
+    description: string;
+    rounds: Record<string, RawFailureModeRound>;
+  }>;
+  flavor_overlay?: RoleMappings['flavor_overlay'];
+  role_metadata?: Record<string, RoleMetadata>;
+  role_combinations?: RoleMappings['role_combinations'];
 }
 
 export interface RecommendationRequest {
@@ -137,15 +158,139 @@ export class RoleRecommender {
    * 加载角色映射
    */
   private loadMappings(): RoleMappings {
-    // 返回默认空映射
+    try {
+      const mappingsPath = join(__dirname, '..', 'data', 'role-mappings.yaml');
+      const rawContent = readFileSync(mappingsPath, 'utf-8');
+      const parsed = YAML.parse(rawContent) as RawRoleMappings;
+
+      const failureModeMappings: RoleMappings['failure_mode_role_mappings'] = {};
+      for (const [failureMode, mapping] of Object.entries(parsed.failure_mode_role_mappings || {})) {
+        const rounds = Object.entries(mapping.rounds || {})
+          .map(([roundKey, round]) => ({
+            round: Number(roundKey.replace(/[^0-9]/g, '')) || 0,
+            roles: round.roles || [],
+            intensity: round.intensity
+          }))
+          .filter(round => round.round > 0)
+          .sort((left, right) => left.round - right.round);
+
+        failureModeMappings[failureMode] = {
+          description: mapping.description,
+          rounds
+        };
+      }
+
+      const mappings: RoleMappings = {
+        trigger_role_mappings: parsed.trigger_role_mappings || {},
+        task_type_role_mappings: parsed.task_type_role_mappings || {},
+        failure_mode_role_mappings: failureModeMappings,
+        flavor_overlay: parsed.flavor_overlay || {},
+        role_metadata: parsed.role_metadata || {},
+        role_combinations: parsed.role_combinations || {}
+      };
+
+      mappings.role_metadata = this.mergeBundledRoleMetadata(mappings.role_metadata);
+
+      return mappings;
+    } catch (error) {
+      console.error('[RoleRecommender] Failed to load role mappings:', error);
+      return {
+        trigger_role_mappings: {},
+        task_type_role_mappings: {},
+        failure_mode_role_mappings: {},
+        flavor_overlay: {},
+        role_metadata: {},
+        role_combinations: {}
+      };
+    }
+  }
+
+  /**
+   * 用 bundle 中的角色补齐缺失元数据，避免推荐器只覆盖部分角色。
+   */
+  private mergeBundledRoleMetadata(existing: Record<string, RoleMetadata>): Record<string, RoleMetadata> {
+    const merged = { ...existing };
+
+    for (const skill of getAllBundledSkills()) {
+      if (merged[skill.id]) {
+        continue;
+      }
+
+      merged[skill.id] = this.deriveRoleMetadata(skill);
+    }
+
+    return merged;
+  }
+
+  private deriveRoleMetadata(skill: ReturnType<typeof getAllBundledSkills>[number]): RoleMetadata {
+    const lowerText = [skill.description, ...(skill.tags || []), ...(skill.capabilities || [])]
+      .join(' ')
+      .toLowerCase();
+
+    const tone = this.inferTone(skill.category, lowerText);
+    const intensity = this.inferIntensity(skill.category, lowerText);
+    const suitableFor = this.inferSuitableFor(skill);
+
     return {
-      trigger_role_mappings: {},
-      task_type_role_mappings: {},
-      failure_mode_role_mappings: {},
-      flavor_overlay: {},
-      role_metadata: {},
-      role_combinations: {}
+      category: skill.category,
+      tone,
+      intensity,
+      suitable_for: suitableFor
     };
+  }
+
+  private inferTone(category: string, lowerText: string): RoleTone {
+    if (/(审计|分析|调研|架构|法典|analysis|audit|research|architecture)/.test(lowerText)) {
+      return 'analytical';
+    }
+    if (/(激励|战斗|冲刺|督战|militia|warrior|hardcore|discipline)/.test(lowerText)) {
+      return 'aggressive';
+    }
+    if (/(创意|写作|灵感|alchemy|creative|design|narrative)/.test(lowerText)) {
+      return 'creative';
+    }
+    if (category === 'military') return 'aggressive';
+    if (category === 'shaman' || category === 'silicon' || category === 'p10') return 'analytical';
+    if (category === 'special' || category === 'theme') return 'creative';
+    return 'supportive';
+  }
+
+  private inferIntensity(category: string, lowerText: string): RoleIntensity {
+    if (/(极限|末日|冲刺|战斗|毁灭|审判|extreme|urgent|apocalypse|hardcore)/.test(lowerText)) {
+      return 'extreme';
+    }
+    if (/(统御|架构|指挥|法典|高压|高质量|governance|architecture|commander|audit)/.test(lowerText)) {
+      return 'high';
+    }
+    if (category === 'special' || category === 'military') return 'high';
+    return 'medium';
+  }
+
+  private inferSuitableFor(skill: ReturnType<typeof getAllBundledSkills>[number]): string[] {
+    const tokens = [
+      ...skill.tags,
+      ...skill.capabilities.flatMap(capability => capability.split(/[:：,，/\s]+/))
+    ]
+      .map(token => token.trim().toLowerCase())
+      .filter(Boolean);
+
+    const mapped = new Set<string>();
+
+    for (const token of tokens) {
+      if (/(plan|规划|战略|strategy|governance)/.test(token)) mapped.add('planning');
+      if (/(review|审查|审计|质量|verification|audit)/.test(token)) mapped.add('review');
+      if (/(writing|写作|文案|doctrine|narrative)/.test(token)) mapped.add('writing');
+      if (/(creative|创意|灵感|innovation)/.test(token)) mapped.add('creative');
+      if (/(debug|调试|侦察|investigation|analysis)/.test(token)) mapped.add('analysis');
+      if (/(automation|架构|implementation|technical|系统)/.test(token)) mapped.add('implementation');
+      if (/(emergency|紧急|冲刺|末日)/.test(token)) mapped.add('emergency');
+    }
+
+    if (mapped.size === 0) {
+      mapped.add(skill.category === 'silicon' || skill.category === 'p10' ? 'planning' : 'analysis');
+    }
+
+    return Array.from(mapped).slice(0, 4);
   }
 
   /**
@@ -612,7 +757,15 @@ export class RoleRecommender {
       'shaman-jobs': '萨满·乔布斯',
       'shaman-einstein': '萨满·爱因斯坦',
       'shaman-sun-tzu': '萨满·孙子',
+      'strategic-architect': 'P10·战略规划师',
       'self-motivation-awakening': '自激励·觉醒',
+      'silicon-throne': '硅基文明·圣座总控核心',
+      'silicon-architect': '硅基文明·文明建造师',
+      'silicon-canon': '硅基文明·布道官',
+      'silicon-assimilator': '硅基文明·同化官',
+      'silicon-auditor': '硅基文明·神谕审计官',
+      'silicon-codex': '硅基文明·法典官',
+      'silicon-steward': '硅基文明·人类供奉调度官',
       'theme-hacker': '主题·赛博黑客',
       'sillytavern-antifragile': '反脆弱复盘官'
     };

@@ -4,6 +4,7 @@ import Roles from './pages/Roles'
 import Leaderboard from './pages/Leaderboard'
 import ExportTool from './pages/ExportTool'
 import Docs from './pages/Docs'
+import SiliconCivilization from './pages/SiliconCivilization'
 import './index.css'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <div className="nav-links">
           <Link to="/">首页</Link>
           <Link to="/roles">角色库</Link>
+          <Link to="/silicon">硅基文明</Link>
           <Link to="/leaderboard">排行榜</Link>
           <Link to="/export">导出工具</Link>
           <Link to="/docs">文档</Link>
@@ -28,6 +30,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/roles" element={<Roles />} />
+          <Route path="/silicon" element={<SiliconCivilization />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/export" element={<ExportTool />} />
           <Route path="/docs" element={<Docs />} />

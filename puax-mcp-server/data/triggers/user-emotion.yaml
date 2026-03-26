@@ -1,0 +1,84 @@
+# 用户情绪触发条件
+# 检测用户沮丧、不耐烦等情绪
+
+triggers:
+  user_frustration:
+    id: user_frustration
+    name: 用户沮丧
+    description: 用户表达沮丧或不耐烦
+    category: user_emotion
+    severity: critical
+    patterns:
+      zh:
+        - 为什么还不行
+        - 怎么又
+        - 到底怎么回事
+        - 我放弃了
+        - 烦死了
+        - 急死
+        - 太慢了
+        - 一点都不好
+        - 太差了
+        - 失望
+        - 浪费时间
+        - 搞什么
+        - 怎么回事
+        - 搞不定
+      en:
+        - why is it not working
+        - so frustrated
+        - i'm giving up
+        - this is annoying
+        - too slow
+        - what's going on
+        - disappointed
+        - waste of time
+        - what's wrong
+        - can't get it
+    detection:
+      type: regex
+      min_confidence: 0.7
+      requires_context: false
+      context_window_size: 3
+    recommended_roles:
+      primary: military-warrior
+      alternatives:
+        - special-cute-coder-wife
+        - shaman-musk
+      reason: 用户情绪需要安抚或强力推进
+
+  user_urgency:
+    id: user_urgency
+    name: 用户紧急
+    description: 用户表达时间紧迫
+    category: user_emotion
+    severity: high
+    patterns:
+      zh:
+        - 快点
+        - 很急
+        - 马上
+        - 立刻
+        - 现在就要
+        - 来不及了
+        - 赶时间
+        -  deadline
+        - 截止
+      en:
+        - hurry up
+        - urgent
+        - asap
+        - immediately
+        - right now
+        - running out of time
+        - deadline
+        - due soon
+    detection:
+      type: regex
+      min_confidence: 0.65
+    recommended_roles:
+      primary: silicon-openai
+      alternatives:
+        - military-commander
+        - p10-cto
+      reason: 需要快速高效的问题解决

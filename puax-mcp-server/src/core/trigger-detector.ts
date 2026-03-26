@@ -140,7 +140,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'military-warrior',
-            alternatives: ['military-commander', 'shaman-musk'],
+            alternatives: ['military-commander', 'shaman-musk', 'silicon-throne'],
             reason: '连续失败需要强力攻坚或重新思考'
           }
         },
@@ -162,7 +162,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'military-commissar',
-            alternatives: ['self-motivation-awakening', 'shaman-jobs'],
+            alternatives: ['self-motivation-awakening', 'shaman-jobs', 'silicon-throne'],
             reason: '需要激励和重新建立信心'
           }
         },
@@ -184,7 +184,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'special-cute-coder-wife',
-            alternatives: ['military-warrior', 'shaman-musk'],
+            alternatives: ['military-warrior', 'shaman-musk', 'silicon-steward'],
             reason: '用户情绪需要安抚或强力推进'
           }
         },
@@ -206,7 +206,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'shaman-linus',
-            alternatives: ['military-scout', 'shaman-sun-tzu'],
+            alternatives: ['military-scout', 'shaman-sun-tzu', 'silicon-auditor'],
             reason: '需要深入根本分析和系统思考'
           }
         },
@@ -228,7 +228,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'military-warrior',
-            alternatives: ['self-motivation-awakening', 'shaman-musk'],
+            alternatives: ['self-motivation-awakening', 'shaman-musk', 'silicon-steward'],
             reason: '需要主动推进和积极行动'
           }
         },
@@ -250,7 +250,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'military-scout',
-            alternatives: ['shaman-einstein', 'military-commander'],
+            alternatives: ['shaman-einstein', 'military-commander', 'silicon-codex'],
             reason: '需要主动侦察和搜索信息'
           }
         },
@@ -272,7 +272,7 @@ export class TriggerDetector {
           },
           recommended_roles: {
             primary: 'military-commissar',
-            alternatives: ['military-discipline', 'shaman-jobs'],
+            alternatives: ['military-discipline', 'shaman-jobs', 'silicon-auditor'],
             reason: '需要问责和纠正态度'
           }
         }

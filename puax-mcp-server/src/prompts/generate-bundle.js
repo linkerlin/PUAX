@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const YAML = require('yaml');
 
 const SKILLS_DIR = path.join(__dirname, '..', '..', '..', 'skills');
 const OUTPUT_FILE = path.join(__dirname, 'prompts-bundle.ts');
@@ -8,45 +9,10 @@ const OUTPUT_FILE = path.join(__dirname, 'prompts-bundle.ts');
  * Parse YAML frontmatter from SKILL.md content
  */
 function parseYAMLFrontmatter(content) {
-  const match = content.match(/^---\n([\s\S]*?)\n---/);
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return null;
-  
-  const frontmatter = match[1];
-  const data = {};
-  
-  frontmatter.split('\n').forEach(line => {
-    const colonIndex = line.indexOf(':');
-    if (colonIndex > 0) {
-      const key = line.slice(0, colonIndex).trim();
-      let value = line.slice(colonIndex + 1).trim();
-      
-      // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"')) || 
-          (value.startsWith("'") && value.endsWith("'"))) {
-        value = value.slice(1, -1);
-      }
-      
-      // Handle inline arrays
-      if (value.startsWith('[') && value.endsWith(']')) {
-        value = value.slice(1, -1).split(',').map(s => s.trim().replace(/['"]/g, ''));
-      }
-      
-      data[key] = value;
-    }
-  });
-  
-  // Handle multi-line tags (YAML list format)
-  if (!Array.isArray(data.tags) && frontmatter.includes('tags:')) {
-    const tagsMatch = frontmatter.match(/tags:\s*\n((?:\s+-.*\n?)+)/);
-    if (tagsMatch) {
-      data.tags = tagsMatch[1].split('\n')
-        .map(line => line.trim())
-        .filter(line => line.startsWith('-'))
-        .map(line => line.slice(1).trim());
-    }
-  }
-  
-  return data;
+
+  return YAML.parse(match[1]) || null;
 }
 
 /**
@@ -105,7 +71,7 @@ function parseSections(body) {
   sections.exampleUsage = sectionMap['example usage'] || sectionMap['使用示例'] || '';
   
   // Extract system prompt from markdown code block
-  const systemPromptMatch = body.match(/## System Prompt\s*\n\s*```[\s\S]*?\n([\s\S]*?)\n```/);
+  const systemPromptMatch = body.match(/## System Prompt\s*\r?\n\s*```[\s\S]*?\r?\n([\s\S]*?)\r?\n```/);
   if (systemPromptMatch) {
     sections.systemPrompt = systemPromptMatch[1].trim();
   } else {
@@ -138,11 +104,7 @@ function scanSkills() {
   
   for (const categoryDir of categories) {
     const skillDir = path.join(SKILLS_DIR, categoryDir);
-    // 优先使用SKILL.v2.md，如果不存在则使用SKILL.md
-    const v2File = path.join(skillDir, 'SKILL.v2.md');
-    const v1File = path.join(skillDir, 'SKILL.md');
-    
-    const skillFile = fs.existsSync(v2File) ? v2File : v1File;
+    const skillFile = path.join(skillDir, 'SKILL.md');
     
     if (fs.existsSync(skillFile)) {
       const content = fs.readFileSync(skillFile, 'utf-8');
@@ -150,12 +112,8 @@ function scanSkills() {
       
       if (frontmatter) {
         // Remove frontmatter to get body
-        const body = content.replace(/^---\n[\s\S]*?\n---\n?/, '');
+        const body = content.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
         const sections = parseSections(body);
-        
-        // 根据使用的文件版本设置filePath
-        const isV2 = skillFile === v2File;
-        const version = isV2 ? (frontmatter.version || '2.0') : (frontmatter.version || '1.0');
         
         skills.push({
           // Metadata from frontmatter
@@ -165,8 +123,15 @@ function scanSkills() {
           description: frontmatter.description || '',
           tags: frontmatter.tags || [],
           author: frontmatter.author || 'PUAX',
-          version: version,
-          filePath: isV2 ? `skills/${categoryDir}/SKILL.v2.md` : `skills/${categoryDir}/SKILL.md`,
+          version: frontmatter.version || '1.0',
+          filePath: `skills/${categoryDir}/SKILL.md`,
+          triggerConditions: frontmatter.trigger_conditions || [],
+          taskTypes: frontmatter.task_types || [],
+          compatibleFlavors: frontmatter.compatible_flavors || [],
+          metadata: {
+            tone: frontmatter.metadata?.tone || 'analytical',
+            intensity: frontmatter.metadata?.intensity || 'medium'
+          },
           
           // Parsed sections
           capabilities: sections.capabilities,
@@ -199,6 +164,10 @@ function generateBundle(skills) {
     author: "${skill.author}",
     version: "${skill.version}",
     filePath: "${skill.filePath}",
+    triggerConditions: ${JSON.stringify(skill.triggerConditions)},
+    taskTypes: ${JSON.stringify(skill.taskTypes)},
+    compatibleFlavors: ${JSON.stringify(skill.compatibleFlavors)},
+    metadata: ${JSON.stringify(skill.metadata)},
     capabilities: ${JSON.stringify(skill.capabilities)},
     howToUse: ${JSON.stringify(skill.howToUse)},
     inputFormat: ${JSON.stringify(skill.inputFormat)},
@@ -222,6 +191,13 @@ export interface BundledSkill {
   author: string;
   version: string;
   filePath: string;
+  triggerConditions: string[];
+  taskTypes: string[];
+  compatibleFlavors: string[];
+  metadata: {
+    tone: string;
+    intensity: string;
+  };
   
   // Parsed sections
   capabilities: string[];
@@ -239,6 +215,8 @@ export const CATEGORIES = [
   'all',
   'shaman',
   'military',
+  'p10',
+  'silicon',
   'sillytavern',
   'theme',
   'self-motivation',
@@ -252,6 +230,8 @@ export const CATEGORY_NAMES: Record<string, string> = {
   'all': 'All',
   'shaman': 'Shaman Series',
   'military': 'Military Organization',
+  'p10': 'P10 Strategic Roles',
+  'silicon': 'Silicon Civilization',
   'sillytavern': 'SillyTavern Series',
   'theme': 'Theme Scenarios',
   'self-motivation': 'Self-Motivation',

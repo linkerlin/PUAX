@@ -1,0 +1,411 @@
+# 角色映射配置
+# 定义触发条件到角色的映射关系
+
+# 触发条件 -> 角色映射
+trigger_role_mappings:
+  consecutive_failures:
+    primary: military-warrior
+    alternatives:
+      - military-commander
+      - shaman-musk
+    reason: 连续失败需要强力攻坚或重新思考
+
+  giving_up_language:
+    primary: military-commissar
+    alternatives:
+      - self-motivation-awakening
+      - shaman-jobs
+    reason: 需要激励和重新建立信心
+
+  user_frustration:
+    primary: military-warrior
+    alternatives:
+      - special-cute-coder-wife
+      - shaman-musk
+    reason: 用户情绪需要安抚或强力推进
+
+  surface_fix:
+    primary: shaman-linus
+    alternatives:
+      - military-scout
+      - shaman-sun-tzu
+    reason: 需要深入根本分析和系统思考
+
+  passive_wait:
+    primary: military-warrior
+    alternatives:
+      - self-motivation-awakening
+      - shaman-musk
+    reason: 需要主动推进和积极行动
+
+  no_search:
+    primary: military-scout
+    alternatives:
+      - shaman-einstein
+      - military-commander
+    reason: 需要主动侦察和搜索信息
+
+  blame_environment:
+    primary: military-commissar
+    alternatives:
+      - military-discipline
+      - shaman-jobs
+    reason: 需要问责和纠正态度
+
+  low_quality_output:
+    primary: shaman-jobs
+    alternatives:
+      - military-discipline
+      - silicon-google
+    reason: 需要追求极致质量和像素级完美
+
+  unverified_assertion:
+    primary: military-scout
+    alternatives:
+      - shaman-einstein
+      - shaman-linus
+    reason: 需要验证假设和深入调查
+
+  tool_underuse:
+    primary: military-scout
+    alternatives:
+      - shaman-einstein
+      - military-commander
+    reason: 需要主动侦察和搜索信息
+
+  over_complication:
+    primary: shaman-jobs
+    alternatives:
+      - pinduoduo-shortcut
+      - musk-algorithm
+    reason: 需要简化设计和关注核心问题
+
+  ignore_edge_cases:
+    primary: huawei-rca
+    alternatives:
+      - amazon-backwards
+      - military-scout
+    reason: 需要全面考虑边界情况和异常处理
+
+  busywork:
+    primary: netflix-keeper
+    alternatives:
+      - jobs-subtraction
+      - musk-algorithm
+    reason: 需要关注核心价值和删除无意义工作
+
+  repetitive_attempts:
+    primary: shaman-musk
+    alternatives:
+      - netflix-keeper
+      - musk-algorithm
+    reason: 需要从根本上改变方法而非重复
+
+  need_more_context:
+    primary: military-scout
+    alternatives:
+      - silicon-google
+      - baidu-search
+    reason: 需要主动收集信息和澄清问题
+
+# 任务类型 -> 角色映射
+task_type_role_mappings:
+  coding:
+    primary: silicon-google
+    alternatives:
+      - theme-10x-engineer
+      - silicon-meta
+    reason: 编码任务需要工程化和最佳实践
+
+  debugging:
+    primary: military-commander
+    alternatives:
+      - huawei-rca
+      - military-scout
+    reason: 调试需要系统性的根因分析
+
+  writing:
+    primary: silicon-openai
+    alternatives:
+      - theme-10x-engineer
+      - silicon-google
+    reason: 写作需要清晰的表达和结构化思维
+
+  review:
+    primary: huawei-rca
+    alternatives:
+      - military-commissar
+      - shaman-linus
+    reason: 代码审查需要批判性思维和质量标准
+
+  creative:
+    primary: shaman-musk
+    alternatives:
+      - jobs-subtraction
+      - netflix-keeper
+    reason: 创造性任务需要第一性原理思考
+
+  analysis:
+    primary: shaman-sun-tzu
+    alternatives:
+      - shaman-einstein
+      - military-scout
+    reason: 分析任务需要深度思考和信息收集
+
+  emergency:
+    primary: military-warrior
+    alternatives:
+      - special-cute-coder-wife
+      - p10-cto
+    reason: 紧急情况需要快速响应和强力执行
+
+  planning:
+    primary: p10-cto
+    alternatives:
+      - military-commander
+      - shaman-sun-tzu
+    reason: 规划任务需要战略思维和全局视角
+
+# 失败模式 -> 角色映射 (方法论切换)
+failure_mode_role_mappings:
+  spinning:
+    switch_to: musk-algorithm
+    reason: 原地打转需要质疑需求本身
+
+  giving_up:
+    switch_to: netflix-keeper
+    reason: 想要放弃需要替换整个方法
+
+  not_searching:
+    switch_to: baidu-search
+    reason: 不去搜索需要先搜索再判断
+
+  poor_quality:
+    switch_to: jobs-subtraction
+    reason: 质量差需要极简主义和像素级完美
+
+  passive_wait:
+    switch_to: alibaba-closed-loop
+    reason: 被动等待需要闭环执行
+
+  over_complication:
+    switch_to: pinduoduo-shortcut
+    reason: 过度复杂需要最短路径
+
+# 角色元数据
+role_metadata:
+  military-warrior:
+    category: military
+    tone: aggressive
+    intensity: high
+    suitable_for:
+      - emergency_debugging
+      - user_frustration
+      - consecutive_failures
+    tags: [aggressive, fast, decisive]
+
+  military-commander:
+    category: military
+    tone: strategic
+    intensity: medium
+    suitable_for:
+      - complex_project
+      - multi_bug_coordination
+      - debugging
+    tags: [strategic, organized, leadership]
+
+  military-commissar:
+    category: military
+    tone: motivational
+    intensity: high
+    suitable_for:
+      - giving_up
+      - blame_environment
+      - review
+    tags: [motivational, disciplined, principled]
+
+  military-scout:
+    category: military
+    tone: investigative
+    intensity: medium
+    suitable_for:
+      - no_search
+      - unverified_assertion
+      - need_more_context
+    tags: [investigative, thorough, evidence-based]
+
+  shaman-musk:
+    category: shaman
+    tone: first-principles
+    intensity: high
+    suitable_for:
+      - spinning
+      - creative
+      - over_complication
+    tags: [first-principles, challenging, innovative]
+
+  shaman-jobs:
+    category: shaman
+    tone: perfectionist
+    intensity: high
+    suitable_for:
+      - low_quality_output
+      - blame_environment
+    tags: [perfectionist, demanding, minimalist]
+
+  shaman-linus:
+    category: shaman
+    tone: technical
+    intensity: medium
+    suitable_for:
+      - surface_fix
+      - review
+      - technical_debt
+    tags: [technical, deep, quality-focused]
+
+  shaman-sun-tzu:
+    category: shaman
+    tone: strategic
+    intensity: medium
+    suitable_for:
+      - analysis
+      - planning
+      - competitive
+    tags: [strategic, analytical, wise]
+
+  shaman-einstein:
+    category: shaman
+    tone: theoretical
+    intensity: low
+    suitable_for:
+      - unverified_assertion
+      - tool_underuse
+      - analysis
+    tags: [theoretical, curious, foundational]
+
+  silicon-google:
+    category: silicon
+    tone: data-driven
+    intensity: medium
+    suitable_for:
+      - coding
+      - writing
+      - low_quality_output
+    tags: [data-driven, scalable, efficient]
+
+  silicon-openai:
+    category: silicon
+    tone: research
+    intensity: medium
+    suitable_for:
+      - writing
+      - creative
+      - emergency
+    tags: [research, cutting-edge, innovative]
+
+  huawei-rca:
+    category: methodology
+    tone: rigorous
+    intensity: high
+    suitable_for:
+      - ignore_edge_cases
+      - review
+      - debugging
+    tags: [rigorous, systematic, thorough]
+
+  alibaba-closed-loop:
+    category: methodology
+    tone: execution
+    intensity: high
+    suitable_for:
+      - passive_wait
+      - busywork
+    tags: [execution-focused, iterative, relentless]
+
+  netflix-keeper:
+    category: methodology
+    tone: high-bar
+    intensity: high
+    suitable_for:
+      - busywork
+      - giving_up
+      - repetitive_attempts
+    tags: [high-bar, decisive, merit-based]
+
+  musk-algorithm:
+    category: methodology
+    tone: first-principles
+    intensity: high
+    suitable_for:
+      - spinning
+      - over_complication
+      - repetitive_attempts
+    tags: [first-principles, questioning, efficient]
+
+  jobs-subtraction:
+    category: methodology
+    tone: minimalist
+    intensity: high
+    suitable_for:
+      - over_complication
+      - busywork
+      - poor_quality
+    tags: [minimalist, perfectionist, focused]
+
+  baidu-search:
+    category: methodology
+    tone: information
+    intensity: medium
+    suitable_for:
+      - not_searching
+      - need_more_context
+    tags: [information-first, thorough, evidence-based]
+
+  pinduoduo-shortcut:
+    category: methodology
+    tone: pragmatic
+    intensity: medium
+    suitable_for:
+      - over_complication
+      - busywork
+    tags: [pragmatic, shortcut-focused, efficient]
+
+  p10-cto:
+    category: p10
+    tone: strategic
+    intensity: high
+    suitable_for:
+      - emergency
+      - planning
+      - complex_coordination
+    tags: [strategic, leadership, high-level]
+
+# 角色组合推荐
+role_combinations:
+  complex_debugging:
+    primary: military-commander
+    supporting:
+      - military-scout
+      - huawei-rca
+    reason: 复杂调试需要指挥官统筹、侦察兵调查、华为方法论分析
+
+  code_review:
+    primary: huawei-rca
+    supporting:
+      - shaman-linus
+      - military-commissar
+    reason: 代码审查需要华为标准、Linus深度、政委原则性
+
+  startup_mvp:
+    primary: musk-algorithm
+    supporting:
+      - jobs-subtraction
+      - pinduoduo-shortcut
+    reason: MVP开发需要Musk第一性原理、Jobs极简、拼多多快速
+
+  system_design:
+    primary: shaman-sun-tzu
+    supporting:
+      - silicon-google
+      - p10-cto
+    reason: 系统设计需要孙子战略、Google可扩展性、CTO全局视角

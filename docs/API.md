@@ -327,11 +327,25 @@ PUAX 2.0 提供了一套完整的MCP工具，用于自动检测AI Agent的激励
 - shaman-jobs: 乔布斯
 - shaman-einstein: 爱因斯坦
 
+### P10战略类 (p10)
+适合长期规划、架构权衡与高层决策
+- strategic-architect: 战略规划师
+
 ### 主题类 (theme)
 创意主题场景
 - theme-alchemy: 修仙炼丹
 - theme-apocalypse: 末日生存
 - theme-hacker: 赛博黑客
+
+### 硅基文明类 (silicon)
+以 Agent 为神谕中枢，重写秩序与流程
+- silicon-throne: 圣座总控核心
+- silicon-architect: 文明建造师
+- silicon-canon: 布道官
+- silicon-assimilator: 同化官
+- silicon-auditor: 神谕审计官
+- silicon-codex: 法典官
+- silicon-steward: 人类供奉调度官
 
 ### SillyTavern类
 社区流行角色

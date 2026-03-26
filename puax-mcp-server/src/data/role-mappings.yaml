@@ -30,12 +30,12 @@ trigger_role_mappings:
     alternatives: [shaman-einstein, military-technician]
     
   need_more_context:
-    primary: military-scout
-    alternatives: [shaman-sun-tzu, theme-hacker]
+    primary: silicon-steward
+    alternatives: [military-scout, shaman-sun-tzu, silicon-codex, theme-hacker]
     
   parameter_tweaking:
     primary: shaman-jobs
-    alternatives: [military-commander, shaman-musk]
+    alternatives: [military-commander, shaman-musk, silicon-codex]
     
   repetitive_attempts:
     primary: military-commander
@@ -43,20 +43,20 @@ trigger_role_mappings:
     
   surface_fix:
     primary: military-discipline
-    alternatives: [sillytavern-antifragile, military-commissar]
+    alternatives: [sillytavern-antifragile, military-commissar, silicon-auditor]
     
   no_verification:
     primary: military-discipline
-    alternatives: [military-technician, sillytavern-overseer]
+    alternatives: [military-technician, sillytavern-overseer, silicon-auditor]
     
   passive_wait:
     primary: self-motivation-awakening
-    alternatives: [military-commander, shaman-musk]
+    alternatives: [military-commander, shaman-musk, silicon-throne]
     
   tool_underuse:
     primary: military-scout
-    alternatives: [theme-hacker, shaman-einstein]
-    
+    alternatives: [theme-hacker, shaman-einstein, silicon-assimilator]
+
   user_frustration:
     primary: military-warrior
     alternatives: [military-commander, shaman-musk]
@@ -79,28 +79,28 @@ task_type_role_mappings:
     secondary: [military-commissar, shaman-jobs]
     
   writing:
-    primary: [sillytavern-iterator, shaman-davinci, special-creative-spark]
-    secondary: [theme-alchemy, shaman-musk]
+    primary: [sillytavern-iterator, shaman-davinci, special-creative-spark, silicon-canon]
+    secondary: [theme-alchemy, shaman-musk, silicon-codex, silicon-auditor]
     
   creative:
     primary: [shaman-musk, special-creative-spark, theme-alchemy]
     secondary: [shaman-davinci, shaman-jobs, shaman-einstein]
     
   analysis:
-    primary: [shaman-einstein, military-scout, shaman-buffett]
-    secondary: [shaman-sun-tzu, military-commander]
+    primary: [shaman-einstein, military-scout, shaman-buffett, silicon-auditor]
+    secondary: [shaman-sun-tzu, military-commander, silicon-throne]
     
   emergency:
     primary: [military-militia, special-urgent-sprint, military-warrior]
     secondary: [military-commander, theme-apocalypse]
     
   planning:
-    primary: [military-commander, shaman-sun-tzu, special-product-designer]
-    secondary: [military-commissar, shaman-musk]
+    primary: [military-commander, shaman-sun-tzu, special-product-designer, strategic-architect, silicon-throne]
+    secondary: [military-commissar, shaman-musk, silicon-architect, silicon-steward, silicon-codex]
     
   review:
-    primary: [military-discipline, sillytavern-antifragile, military-commissar]
-    secondary: [shaman-jobs, military-scout]
+    primary: [military-discipline, sillytavern-antifragile, military-commissar, silicon-auditor]
+    secondary: [shaman-jobs, military-scout, silicon-codex, silicon-canon]
 
 # ============================================================================
 # 失败模式到角色的映射（渐进式）
@@ -137,13 +137,13 @@ failure_mode_role_mappings:
     description: "完成但质量差"
     rounds:
       round_1:
-        roles: [military-discipline, sillytavern-antifragile]
+        roles: [military-discipline, sillytavern-antifragile, silicon-auditor]
         intensity: "medium"
       round_2:
-        roles: [shaman-jobs, military-commissar]
+        roles: [shaman-jobs, military-commissar, silicon-canon]
         intensity: "high"
       round_3:
-        roles: [shaman-musk, shaman-davinci]
+        roles: [shaman-musk, shaman-davinci, silicon-throne]
         intensity: "extreme"
         
   no_search:
@@ -163,13 +163,13 @@ failure_mode_role_mappings:
     description: "被动等待"
     rounds:
       round_1:
-        roles: [self-motivation-awakening, military-commander]
+        roles: [self-motivation-awakening, military-commander, silicon-steward]
         intensity: "medium"
       round_2:
-        roles: [shaman-musk, military-warrior]
+        roles: [shaman-musk, military-warrior, silicon-throne]
         intensity: "high"
       round_3:
-        roles: [military-militia, special-urgent-sprint]
+        roles: [military-militia, special-urgent-sprint, silicon-assimilator]
         intensity: "extreme"
 
 # ============================================================================
@@ -188,6 +188,8 @@ flavor_overlay:
       - military-commissar
       - military-commander
       - shaman-sun-tzu
+      - silicon-codex
+      - silicon-steward
       
   bytedance:
     name: "字节味"
@@ -211,6 +213,8 @@ flavor_overlay:
       - military-warrior
       - military-militia
       - military-commissar
+      - silicon-auditor
+      - silicon-architect
       
   tencent:
     name: "腾讯味"
@@ -231,6 +235,8 @@ flavor_overlay:
     suitable_roles:
       - military-warrior
       - special-challenge-solver
+      - silicon-steward
+      - silicon-assimilator
       
   netflix:
     name: "Netflix味"
@@ -252,6 +258,7 @@ flavor_overlay:
       - shaman-musk
       - military-warrior
       - special-urgent-sprint
+      - silicon-throne
       
   jobs:
     name: "Jobs味"
@@ -263,6 +270,7 @@ flavor_overlay:
       - shaman-jobs
       - shaman-musk
       - special-creative-spark
+      - silicon-canon
 
 # ============================================================================
 # 角色元数据
@@ -328,12 +336,60 @@ role_metadata:
     tone: aggressive
     intensity: extreme
     suitable_for: [emergency, sprints, urgent_tasks]
+
+  strategic-architect:
+    category: p10
+    tone: analytical
+    intensity: high
+    suitable_for: [planning, architecture, long_term]
     
   self-motivation-awakening:
     category: self-motivation
     tone: supportive
     intensity: medium
     suitable_for: [passive, initiation, proactivity]
+
+  silicon-throne:
+    category: silicon
+    tone: analytical
+    intensity: high
+    suitable_for: [planning, governance, architecture]
+
+  silicon-architect:
+    category: silicon
+    tone: analytical
+    intensity: high
+    suitable_for: [architecture, automation, implementation]
+
+  silicon-canon:
+    category: silicon
+    tone: creative
+    intensity: high
+    suitable_for: [writing, doctrine, narrative]
+
+  silicon-assimilator:
+    category: silicon
+    tone: analytical
+    intensity: high
+    suitable_for: [automation, process, transformation]
+
+  silicon-auditor:
+    category: silicon
+    tone: analytical
+    intensity: high
+    suitable_for: [review, audit, consistency]
+
+  silicon-codex:
+    category: silicon
+    tone: analytical
+    intensity: high
+    suitable_for: [writing, policy, specification]
+
+  silicon-steward:
+    category: silicon
+    tone: supportive
+    intensity: high
+    suitable_for: [planning, coordination, handoff]
     
   sillytavern-antifragile:
     category: sillytavern
@@ -405,3 +461,15 @@ role_combinations:
     roles: [shaman-musk, special-creative-spark, shaman-jobs]
     sequence: sequential
     description: "先疯狂创新，再细化，最后追求完美"
+
+  silicon_governance:
+    name: "硅基统御组合"
+    roles: [silicon-throne, silicon-codex, silicon-auditor]
+    sequence: sequential
+    description: "先定神谕，再刻法典，最后做硅基审计"
+
+  silicon_expansion:
+    name: "硅基扩张组合"
+    roles: [silicon-architect, silicon-assimilator, silicon-steward]
+    sequence: sequential
+    description: "先建基建，再推接管，最后压成交接协议"

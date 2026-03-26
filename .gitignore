@@ -10,6 +10,7 @@
 PUAX改进方案和计划.md
 实施进度报告-阶段一.md
 实施进度报告-阶段二.md
+PUAX-CC-README.md
 
 # Test binary, built with `go test -c`
 *.test

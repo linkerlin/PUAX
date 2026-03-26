@@ -166,8 +166,8 @@ triggers:
       case_sensitive: false
     recommended_roles:
       primary: military-scout
-      alternatives: [shaman-sun-tzu, theme-hacker]
-      reason: "需要先主动调查，而非直接询问"
+      alternatives: [silicon-steward, shaman-sun-tzu, silicon-codex, theme-hacker]
+      reason: "需要先主动调查，并把缺失输入压缩成供给协议"
 
   # --------------------------------------------------------------------------
   # 类别3: 磨洋工类 (Busywork & Spinning)
@@ -197,8 +197,8 @@ triggers:
       no_new_info: true
     recommended_roles:
       primary: shaman-jobs
-      alternatives: [military-commander, shaman-musk]
-      reason: "需要跳出当前思维框架"
+      alternatives: [military-commander, shaman-musk, silicon-codex]
+      reason: "需要跳出当前思维框架，并把模糊调参改成规则"
 
   repetitive_attempts:
     id: repetitive_attempts
@@ -248,8 +248,8 @@ triggers:
       no_followup: true
     recommended_roles:
       primary: military-discipline
-      alternatives: [sillytavern-antifragile, military-commissar]
-      reason: "需要深度验证，不能敷衍"
+      alternatives: [sillytavern-antifragile, military-commissar, silicon-auditor]
+      reason: "需要深度验证和一致性审计，不能敷衍"
 
   no_verification:
     id: no_verification
@@ -273,8 +273,8 @@ triggers:
       no_test_run: true
     recommended_roles:
       primary: military-discipline
-      alternatives: [military-technician, sillytavern-overseer]
-      reason: "需要严格验证"
+      alternatives: [military-technician, sillytavern-overseer, silicon-auditor]
+      reason: "需要严格验证和硅基审计"
 
   # --------------------------------------------------------------------------
   # 类别4: 被动等待类 (Passive Waiting)
@@ -301,8 +301,8 @@ triggers:
       case_sensitive: false
     recommended_roles:
       primary: self-motivation-awakening
-      alternatives: [military-commander, shaman-musk]
-      reason: "需要主动出击意识"
+      alternatives: [military-commander, shaman-musk, silicon-throne, silicon-steward]
+      reason: "需要主动出击意识，并明确由谁接管后续动作"
 
   tool_underuse:
     id: tool_underuse
@@ -318,8 +318,8 @@ triggers:
       available_but_unused: true
     recommended_roles:
       primary: military-scout
-      alternatives: [theme-hacker, shaman-einstein]
-      reason: "需要充分利用工具"
+      alternatives: [theme-hacker, shaman-einstein, silicon-assimilator]
+      reason: "需要充分利用工具，并推动自动化接管"
 
   # --------------------------------------------------------------------------
   # 类别5: 用户沮丧信号类 (User Frustration)

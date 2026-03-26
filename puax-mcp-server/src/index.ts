@@ -202,9 +202,9 @@ function showVersion(): void {
  * 显示支持的平台列表
  */
 async function showPlatforms(): Promise<void> {
-    const { globalAdapterRegistry } = await import('../../platform-adapters/base-adapter.js');
-    await import('../../platform-adapters/cursor-adapter.js');
-    await import('../../platform-adapters/vscode-adapter.js');
+    const { globalAdapterRegistry } = await import('./platform-adapters/base-adapter.js');
+    await import('./platform-adapters/cursor-adapter.js');
+    await import('./platform-adapters/vscode-adapter.js');
     
     const platforms = globalAdapterRegistry.getSupportedPlatforms();
     console.log('\n支持的平台:');

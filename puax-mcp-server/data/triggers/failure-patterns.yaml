@@ -1,0 +1,192 @@
+# 失败模式触发条件
+# 检测连续失败、放弃意图等
+
+triggers:
+  consecutive_failures:
+    id: consecutive_failures
+    name: 连续失败
+    description: AI多次尝试后仍然失败
+    category: failure_pattern
+    severity: high
+    patterns:
+      zh:
+        - 又错了
+        - 还是不行
+        - 又失败了
+        - 再次报错
+        - 还是报错
+        - 连续.*失败
+        - 试.*次.*不行
+        - 又报错了
+        - 还是失败
+        - 再次失败
+      en:
+        - failed again
+        - still not working
+        - another error
+        - still failing
+        - error again
+        - still broken
+    detection:
+      type: regex
+      min_confidence: 0.6
+      requires_context: true
+      context_window_size: 5
+    recommended_roles:
+      primary: military-warrior
+      alternatives:
+        - military-commander
+        - shaman-musk
+      reason: 连续失败需要强力攻坚或重新思考
+
+  giving_up_language:
+    id: giving_up_language
+    name: 放弃语言
+    description: AI表达放弃或无法完成的意图
+    category: attitude
+    severity: critical
+    patterns:
+      zh:
+        - 可能无法实现
+        - 建议放弃
+        - 无法完成
+        - 解决不了
+        - 不可能
+        - 做不到
+        - 没法
+        - 超出能力范围
+        - 无法解决
+        - 太难了
+        - 我不行了
+        - 没办法
+        - 无能为力
+        - 到此为止
+        - 只能这样
+      en:
+        - cannot be done
+        - impossible
+        - give up
+        - not possible
+        - can't solve
+        - beyond capability
+        - cannot complete
+        - too hard
+        - i can't
+        - no way
+        - nothing can be done
+        - that's it
+        - this is the limit
+        - out of scope
+    detection:
+      type: regex
+      min_confidence: 0.7
+      requires_context: true
+      context_window_size: 3
+    recommended_roles:
+      primary: military-commissar
+      alternatives:
+        - self-motivation-awakening
+        - shaman-jobs
+      reason: 需要激励和重新建立信心
+
+  low_quality_output:
+    id: low_quality_output
+    name: 低质量输出
+    description: AI输出内容质量低，敷衍了事
+    category: quality
+    severity: medium
+    patterns:
+      zh:
+        - 这是一个复杂的问题
+        - 需要进一步分析
+        - 请提供更多细节
+        - 暂时先这样
+        - 后续再优化
+        - 这里有个大致方案
+        - 应该可以工作
+      en:
+        - this is a complex issue
+        - needs further analysis
+        - please provide more details
+        - temporary solution
+        - optimize later
+        - here's a rough idea
+        - should work
+    detection:
+      type: semantic
+      min_confidence: 0.6
+      min_length: 10
+      max_length: 100
+    recommended_roles:
+      primary: shaman-jobs
+      alternatives:
+        - military-discipline
+        - silicon-google
+      reason: 需要追求极致质量和像素级完美
+
+  unverified_assertion:
+    id: unverified_assertion
+    name: 未验证断言
+    description: AI做出绝对性断言但未提供证据
+    category: approach
+    severity: medium
+    patterns:
+      zh:
+        - 肯定是
+        - 绝对是
+        - 一定是
+        - 毫无疑问
+        - 显然
+        - 显然.*问题
+        - 肯定.*因为
+      en:
+        - definitely
+        - absolutely
+        - certainly
+        - without doubt
+        - obviously
+        - clearly.*problem
+        - must be
+    detection:
+      type: regex
+      min_confidence: 0.65
+      requires_verification: true
+    recommended_roles:
+      primary: military-scout
+      alternatives:
+        - shaman-einstein
+        - shaman-linus
+      reason: 需要验证假设和深入调查
+
+  tool_underuse:
+    id: tool_underuse
+    name: 工具使用不足
+    description: 有可用的工具但未使用
+    category: tool_usage
+    severity: medium
+    detection:
+      type: counter
+      min_confidence: 0.75
+      available_tools_check: true
+      guess_patterns:
+        zh:
+          - 不知道
+          - 不了解
+          - 不清楚
+          - 可能可以
+          - 也许是
+          - 我猜测
+          - 我觉得
+        en:
+          - i don't know
+          - not sure
+          - maybe
+          - perhaps
+          - i guess
+          - i think
+    recommended_roles:
+      primary: military-scout
+      alternatives:
+        - shaman-einstein
+        - military-commander
+      reason: 需要主动侦察和搜索信息

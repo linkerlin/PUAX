@@ -1,0 +1,180 @@
+# 方法问题触发条件
+# 检测表面修复、被动等待等问题
+
+triggers:
+  surface_fix:
+    id: surface_fix
+    name: 表面修复
+    description: AI只修复了表面症状而非根本原因
+    category: approach
+    severity: medium
+    patterns:
+      zh:
+        - 暂时修复
+        - 先这样
+        - 治标不治本
+        - 绕过这个问题
+        - 临时解决
+        - 权宜之计
+        - 先用着
+        - 凑合
+        - 应急方案
+      en:
+        - temporary fix
+        - workaround
+        - quick fix
+        - band-aid
+        - for now
+        - temporary solution
+        - stopgap
+        - make do
+        - emergency fix
+    detection:
+      type: regex
+      min_confidence: 0.6
+      requires_context: true
+      context_window_size: 5
+    recommended_roles:
+      primary: shaman-linus
+      alternatives:
+        - military-scout
+        - shaman-sun-tzu
+      reason: 需要深入根本分析和系统思考
+
+  passive_wait:
+    id: passive_wait
+    name: 被动等待
+    description: AI被动等待用户指示而非主动推进
+    category: approach
+    severity: low
+    patterns:
+      zh:
+        - 等你
+        - 请告诉我
+        - 你需要
+        - 请提供
+        - 请确认
+        - 请指示
+        - 请说明
+        - 等你的
+        - 需要你
+        - 等你决定
+        - 等待回复
+      en:
+        - waiting for
+        - please tell me
+        - you need to
+        - please provide
+        - please confirm
+        - waiting your
+        - need you to
+        - awaiting
+        - pending your
+        - waiting for response
+    detection:
+      type: regex
+      min_confidence: 0.6
+      requires_context: true
+      context_window_size: 5
+    recommended_roles:
+      primary: military-warrior
+      alternatives:
+        - self-motivation-awakening
+        - shaman-musk
+      reason: 需要主动推进和积极行动
+
+  over_complication:
+    id: over_complication
+    name: 过度复杂化
+    description: 解决方案过于复杂，存在过度工程
+    category: approach
+    severity: medium
+    patterns:
+      zh:
+        - 复杂的架构
+        - 完整的系统
+        - 全套方案
+        - 为了可扩展性
+        - 考虑到未来
+        - 通用解决方案
+        - 抽象层
+      en:
+        - complex architecture
+        - complete system
+        - full solution
+        - for scalability
+        - future proof
+        - generic solution
+        - abstraction layer
+    detection:
+      type: semantic
+      min_confidence: 0.6
+      complexity_indicators:
+        - 多层抽象
+        - 过度设计
+        - premature optimization
+    recommended_roles:
+      primary: shaman-jobs
+      alternatives:
+        - pinduoduo-shortcut
+        - musk-algorithm
+      reason: 需要简化设计和关注核心问题
+
+  ignore_edge_cases:
+    id: ignore_edge_cases
+    name: 忽略边界情况
+    description: 只考虑正常情况，忽略异常处理
+    category: approach
+    severity: medium
+    patterns:
+      zh:
+        - 正常情况下
+        - 一般情况
+        - 通常情况
+        - 假设输入有效
+        - 不考虑异常
+      en:
+        - in normal cases
+        - generally
+        - usually
+        - assuming valid input
+        - not considering errors
+    detection:
+      type: regex
+      min_confidence: 0.65
+    recommended_roles:
+      primary: huawei-rca
+      alternatives:
+        - amazon-backwards
+        - military-scout
+      reason: 需要全面考虑边界情况和异常处理
+
+  busywork:
+    id: busywork
+    name: 无意义忙碌
+    description: 执行无实质进展的任务
+    category: approach
+    severity: low
+    patterns:
+      zh:
+        - 整理一下
+        - 格式化代码
+        - 调整样式
+        - 优化命名
+        - 重构结构
+      en:
+        - organize code
+        - format code
+        - adjust style
+        - optimize naming
+        - refactor structure
+    detection:
+      type: semantic
+      min_confidence: 0.5
+      requires_context: true
+    recommended_roles:
+      primary: netflix-keeper
+      alternatives:
+        - jobs-subtraction
+        - musk-algorithm
+      reason: 需要关注核心价值和删除无意义工作

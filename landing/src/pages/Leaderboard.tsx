@@ -53,10 +53,9 @@ const roleNames: Record<string, string> = {
 }
 
 function Leaderboard() {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>(mockLeaderboard)
-  const [stats, setStats] = useState<Stats>(mockStats)
+  const [entries] = useState<LeaderboardEntry[]>(mockLeaderboard)
+  const [stats] = useState<Stats>(mockStats)
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'all'>('all')
-  const [loading, setLoading] = useState(false)
 
   // 实际项目中应从 API 获取
   useEffect(() => {
@@ -71,12 +70,12 @@ function Leaderboard() {
   }
 
   const getLevel = (triggers: number, l3Count: number) => {
-    if (triggers >= 200 && l3Count >= 40) return { name: 'P10', color: '#ffd700' }
-    if (triggers >= 100 && l3Count >= 30) return { name: 'P9', color: '#c0c0c0' }
-    if (triggers >= 50 && l3Count >= 20) return { name: 'P8', color: '#cd7f32' }
-    if (triggers >= 20 && l3Count >= 10) return { name: 'P7', color: '#22c55e' }
-    if (triggers >= 5) return { name: 'P6', color: '#3b82f6' }
-    return { name: 'P5', color: '#6b7280' }
+    if (triggers >= 200 && l3Count >= 40) return { name: 'P10', className: 'level-p10' }
+    if (triggers >= 100 && l3Count >= 30) return { name: 'P9', className: 'level-p9' }
+    if (triggers >= 50 && l3Count >= 20) return { name: 'P8', className: 'level-p8' }
+    if (triggers >= 20 && l3Count >= 10) return { name: 'P7', className: 'level-p7' }
+    if (triggers >= 5) return { name: 'P6', className: 'level-p6' }
+    return { name: 'P5', className: 'level-p5' }
   }
 
   return (
@@ -163,7 +162,7 @@ function Leaderboard() {
                     <span className="user-name">{entry.displayName}</span>
                   </td>
                   <td>
-                    <span className="level-badge" style={{ color: level.color, borderColor: level.color }}>
+                    <span className={`level-badge ${level.className}`}>
                       {level.name}
                     </span>
                   </td>
@@ -188,27 +187,27 @@ function Leaderboard() {
         <h3>段位体系</h3>
         <div className="level-legend">
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#ffd700' }}>P10</span>
+            <span className="level-badge level-p10">P10</span>
             <span>PUA ≥200 + L3+ ≥40% + 连续≥30天</span>
           </div>
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#c0c0c0' }}>P9</span>
+            <span className="level-badge level-p9">P9</span>
             <span>PUA ≥100 + L3+ ≥30% + 连续≥14天</span>
           </div>
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#cd7f32' }}>P8</span>
+            <span className="level-badge level-p8">P8</span>
             <span>PUA ≥50 + L3+ ≥20%</span>
           </div>
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#22c55e' }}>P7</span>
+            <span className="level-badge level-p7">P7</span>
             <span>PUA ≥20 + L3+ ≥10%</span>
           </div>
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#3b82f6' }}>P6</span>
+            <span className="level-badge level-p6">P6</span>
             <span>PUA ≥5</span>
           </div>
           <div className="level-item">
-            <span className="level-badge" style={{ color: '#6b7280' }}>P5</span>
+            <span className="level-badge level-p5">P5</span>
             <span>PUA &lt; 5</span>
           </div>
         </div>

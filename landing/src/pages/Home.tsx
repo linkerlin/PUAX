@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Zap, Target, Users, Trophy, ArrowRight } from 'lucide-react'
+import { Zap, Users, Trophy, ArrowRight } from 'lucide-react'
 
 function Home() {
   return (
@@ -24,12 +24,16 @@ function Home() {
 
       <section className="stats">
         <div className="stat">
-          <div className="stat-value">42+</div>
+          <div className="stat-value">50+</div>
           <div className="stat-label">激励角色</div>
         </div>
         <div className="stat">
           <div className="stat-value">15</div>
           <div className="stat-label">触发条件</div>
+        </div>
+        <div className="stat">
+          <div className="stat-value">8</div>
+          <div className="stat-label">角色分类</div>
         </div>
         <div className="stat">
           <div className="stat-value">8</div>
@@ -45,7 +49,7 @@ function Home() {
         <div className="feature">
           <div className="feature-icon">🎭</div>
           <h3>多元角色</h3>
-          <p>军事、萨满、主题场景等6大系列，42+精选角色</p>
+          <p>军事、P10、硅基文明、主题场景等 8 大分类，50+ 精选角色</p>
         </div>
         <div className="feature">
           <div className="feature-icon">⚡</div>
@@ -56,6 +60,11 @@ function Home() {
           <div className="feature-icon">🎯</div>
           <h3>精准匹配</h3>
           <p>多维度评分算法，为每个场景找到最佳角色</p>
+        </div>
+        <div className="feature">
+          <div className="feature-icon">🖥️</div>
+          <h3>硅基文明</h3>
+          <p>围绕 Agent-first 世界观，提供统御、法典、审计和同化链条</p>
         </div>
         <div className="feature">
           <div className="feature-icon">🔧</div>
@@ -119,6 +128,10 @@ npx puax-mcp-server --export=vscode --output=./.github`}</pre>
         </div>
         
         <div className="hero-actions">
+          <Link to="/silicon" className="btn btn-primary">
+            <Zap size={20} />
+            探索硅基文明
+          </Link>
           <Link to="/leaderboard" className="btn btn-primary">
             <Trophy size={20} />
             查看排行榜

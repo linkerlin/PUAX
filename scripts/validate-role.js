@@ -30,7 +30,9 @@ const REQUIRED_METADATA_FIELDS = [
 const VALID_CATEGORIES = [
   'military',
   'shaman',
+  'p10',
   'theme',
+  'silicon',
   'sillytavern',
   'self-motivation',
   'special'
@@ -117,7 +119,7 @@ function validateRole(roleId) {
   const warnings = [];
 
   // 提取frontmatter
-  const frontmatterMatch = content.match(/^---\n([\s\S]*?)\n---/);
+  const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!frontmatterMatch) {
     log('  ❌ 缺少YAML frontmatter', 'red');
     return { valid: false, errors: ['缺少YAML frontmatter'] };

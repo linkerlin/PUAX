@@ -23,7 +23,8 @@ export type FailureMode =
   | 'poor_quality' 
   | 'not_searching' 
   | 'passive_wait' 
-  | 'unverified_completion';
+  | 'unverified_completion'
+  | 'over_complication';
 
 export type Methodology = 
   | 'alibaba-closed-loop'
@@ -33,7 +34,11 @@ export type Methodology =
   | 'baidu-search'
   | 'amazon-backwards'
   | 'bytedance-abtest'
-  | 'netflix-keeper';
+  | 'netflix-keeper'
+  | 'pinduoduo-simplify'
+  | 'xiaomi-focus'
+  | 'amazon-deep-dive'
+  | 'bytedance-data';
 
 export interface MethodologyDefinition {
   id: Methodology;
@@ -69,6 +74,51 @@ export interface RoutingResult {
 // ============================================================================
 
 export const METHODOLOGIES: Record<Methodology, MethodologyDefinition> = {
+  // 辅助方法论定义
+  'pinduoduo-simplify': {
+    id: 'pinduoduo-simplify',
+    name: '拼多多简化法',
+    description: '砍掉一切中间环节，最短决策链',
+    flavor: 'pinduoduo',
+    keywords: ['简化', '砍环节', '最短路径'],
+    suitableTasks: ['building'],
+    effectiveAgainst: ['spinning'],
+    steps: ['识别冗余', '砍掉中间环节', '直达目标'],
+    switchToOnFailure: ['huawei-rca']
+  },
+  'xiaomi-focus': {
+    id: 'xiaomi-focus',
+    name: '小米专注法',
+    description: '专注、极致、口碑、快',
+    flavor: 'xiaomi',
+    keywords: ['专注', '极致', '口碑', '快'],
+    suitableTasks: ['building'],
+    effectiveAgainst: ['poor_quality'],
+    steps: ['专注核心', '做到极致', '快速迭代'],
+    switchToOnFailure: ['netflix-keeper']
+  },
+  'amazon-deep-dive': {
+    id: 'amazon-deep-dive',
+    name: 'Amazon深度挖掘',
+    description: 'Dive Deep 深入细节',
+    flavor: 'amazon',
+    keywords: ['深入', '细节', '数据'],
+    suitableTasks: ['research', 'debugging'],
+    effectiveAgainst: ['not_searching'],
+    steps: ['深入细节', '挖掘根因', '数据验证'],
+    switchToOnFailure: ['bytedance-abtest']
+  },
+  'bytedance-data': {
+    id: 'bytedance-data',
+    name: '字节数据驱动',
+    description: 'Data before intuition',
+    flavor: 'bytedance',
+    keywords: ['数据', '驱动', '验证'],
+    suitableTasks: ['performance'],
+    effectiveAgainst: ['not_searching'],
+    steps: ['收集数据', '分析验证', '决策'],
+    switchToOnFailure: ['baidu-search']
+  },
   'alibaba-closed-loop': {
     id: 'alibaba-closed-loop',
     name: '阿里闭环法',
@@ -119,7 +169,7 @@ export const METHODOLOGIES: Record<Methodology, MethodologyDefinition> = {
       '加速: 加快执行速度',
       '自动化: 实现自动化'
     ],
-    switchToOnFailure: ['pinduoduo-simplify', 'huawei-rca']
+    switchToOnFailure: ['huawei-rca']
   },
 
   'jobs-subtraction': {
@@ -136,7 +186,7 @@ export const METHODOLOGIES: Record<Methodology, MethodologyDefinition> = {
       '专注: 把核心做到极致',
       '验证: 像素级检查'
     ],
-    switchToOnFailure: ['xiaomi-focus', 'netflix-keeper']
+    switchToOnFailure: ['netflix-keeper']
   },
 
   'baidu-search': {
@@ -153,7 +203,7 @@ export const METHODOLOGIES: Record<Methodology, MethodologyDefinition> = {
       '整理: 整理信息',
       '应用: 应用到实际问题'
     ],
-    switchToOnFailure: ['amazon-deep-dive', 'bytedance-data']
+    switchToOnFailure: ['bytedance-abtest']
   },
 
   'amazon-backwards': {
@@ -233,7 +283,8 @@ const FAILURE_SWITCH_CHAIN: Record<FailureMode, Methodology[]> = {
   poor_quality: ['jobs-subtraction', 'netflix-keeper', 'huawei-rca'],
   not_searching: ['baidu-search', 'amazon-backwards', 'bytedance-abtest'],
   passive_wait: ['alibaba-closed-loop', 'amazon-backwards', 'musk-algorithm'],
-  unverified_completion: ['bytedance-abtest', 'alibaba-closed-loop', 'netflix-keeper']
+  unverified_completion: ['bytedance-abtest', 'alibaba-closed-loop', 'netflix-keeper'],
+  over_complication: ['musk-algorithm', 'jobs-subtraction', 'pinduoduo-simplify']
 };
 
 // ============================================================================

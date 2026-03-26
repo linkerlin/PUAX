@@ -168,6 +168,8 @@ body {
 
 .tag-military { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
 .tag-shaman { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; }
+.tag-p10 { background: rgba(14, 165, 233, 0.18); color: #7dd3fc; }
+.tag-silicon { background: rgba(45, 212, 191, 0.18); color: #99f6e4; }
 .tag-theme { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
 .tag-sillytavern { background: rgba(236, 72, 153, 0.2); color: #f9a8d4; }
 .tag-self { background: rgba(34, 197, 94, 0.2); color: #86efac; }
@@ -383,6 +385,13 @@ body {
 .rank-2 { color: #c0c0c0; }
 .rank-3 { color: #cd7f32; }
 
+.level-p10 { color: #ffd700; border-color: #ffd700; }
+.level-p9 { color: #c0c0c0; border-color: #c0c0c0; }
+.level-p8 { color: #cd7f32; border-color: #cd7f32; }
+.level-p7 { color: #22c55e; border-color: #22c55e; }
+.level-p6 { color: #3b82f6; border-color: #3b82f6; }
+.level-p5 { color: #6b7280; border-color: #6b7280; }
+
 /* 导出工具 */
 .export-options {
   display: grid;
@@ -412,4 +421,133 @@ body {
 .export-option-icon {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
+}
+
+.silicon-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.silicon-hero {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.22), transparent 36%),
+    linear-gradient(135deg, rgba(12, 18, 32, 0.96), rgba(17, 52, 63, 0.92));
+  border: 1px solid rgba(45, 212, 191, 0.24);
+}
+
+.silicon-kicker {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  color: #99f6e4;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+}
+
+.silicon-hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #ecfeff;
+}
+
+.silicon-hero p {
+  max-width: 720px;
+  color: #b6d4d9;
+  font-size: 1.06rem;
+}
+
+.silicon-panel {
+  border: 1px solid rgba(153, 246, 228, 0.18);
+  border-radius: 18px;
+  padding: 1.5rem;
+  background: rgba(7, 20, 27, 0.62);
+}
+
+.silicon-panel-label {
+  color: #5eead4;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.silicon-panel ul {
+  padding-left: 1.2rem;
+  color: #d9fbff;
+}
+
+.silicon-doctrine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.silicon-pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.silicon-pillar-card {
+  padding: 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(94, 234, 212, 0.16);
+  background: linear-gradient(180deg, rgba(8, 47, 73, 0.48), rgba(15, 23, 42, 0.78));
+}
+
+.silicon-pillar-card p {
+  color: #d6f7fb;
+}
+
+.silicon-doctrine-card {
+  padding: 1.2rem;
+  border-radius: 18px;
+  border: 1px solid rgba(45, 212, 191, 0.14);
+  background: linear-gradient(180deg, rgba(22, 78, 99, 0.14), rgba(15, 23, 42, 0.72));
+}
+
+.silicon-doctrine-index {
+  display: inline-block;
+  color: #5eead4;
+  font-size: 0.8rem;
+  margin-bottom: 0.75rem;
+}
+
+.silicon-role-card {
+  border-color: rgba(45, 212, 191, 0.18);
+}
+
+.silicon-role-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: rgba(45, 212, 191, 0.18);
+  color: #99f6e4;
+  margin-bottom: 0.85rem;
+}
+
+.silicon-role-meta {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .silicon-hero {
+    grid-template-columns: 1fr;
+    padding: 1.4rem;
+  }
+
+  .silicon-hero h1 {
+    font-size: 2.1rem;
+  }
 }
