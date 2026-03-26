@@ -11,10 +11,12 @@
 coverage.*
 *.coverprofile
 profile.cov
+**/coverage/
+**/coverage/**
 
 # Dependency directories
-node_modules/
-vendor/
+**/node_modules/
+**/vendor/
 
 # Build output
 dist/
