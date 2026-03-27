@@ -293,7 +293,7 @@ export class PuaxMcpServer {
         this.httpServer.on('error', (error: NodeJS.ErrnoException) => {
             if (error.code === 'EADDRINUSE') {
                 const { port, host } = this.config;
-                console.log('');
+                this.logger.error('');
                 this.logger.error(`Port ${port} is already in use!`);
                 this.logger.warn('Options:');
                 this.logger.warn(`  1. Stop the process using port ${port}`);
@@ -314,7 +314,7 @@ export class PuaxMcpServer {
         const { port, host } = this.config;
         
         this.httpServer.listen(port, host, () => {
-            console.log('');
+            this.logger.info('');
             this.logger.success('Server started successfully!');
             this.logger.success('Mode: HTTP (Streamable HTTP / SSE)');
             this.logger.success(`Listening on http://${host}:${port}`);
@@ -338,10 +338,10 @@ export class PuaxMcpServer {
         await this.server.connect(this.stdioTransport);
         
         if (!this.config.quiet) {
-            console.error('');
-            console.error('\x1b[32m[PUAX]\x1b[0m Server started successfully!');
-            console.error('\x1b[36m[PUAX]\x1b[0m Mode: STDIO');
-            console.error('\x1b[36m[PUAX]\x1b[0m Server is running and waiting for MCP messages...');
+            this.logger.info('');
+            this.logger.success('Server started successfully!');
+            this.logger.info('Mode: STDIO');
+            this.logger.info('Server is running and waiting for MCP messages...');
         }
         
         process.on('SIGINT', () => this.shutdownStdio());
@@ -350,7 +350,7 @@ export class PuaxMcpServer {
     }
 
     private shutdown(): void {
-        console.log('');
+        this.logger.warn('');
         this.logger.warn('Shutting down server...');
         if (this.httpServer) {
             this.httpServer.close(() => {
@@ -367,7 +367,7 @@ export class PuaxMcpServer {
 
     private shutdownStdio(): void {
         if (!this.config.quiet) {
-            console.error('\x1b[33m[PUAX]\x1b[0m Shutting down stdio server...');
+            this.logger.warn('Shutting down stdio server...');
         }
         
         if (this.stdioTransport) {
@@ -381,7 +381,7 @@ export class PuaxMcpServer {
         }
         
         setTimeout(() => {
-            console.error('\x1b[31m[PUAX]\x1b[0m Forced shutdown after timeout');
+            this.logger.error('Forced shutdown after timeout');
             process.exit(1);
         }, 5000);
     }
@@ -446,8 +446,10 @@ export class PuaxMcpServer {
             }
         } catch (error) {
             this.logger.error('Request handling error:', error);
-            res.writeHead(500, { 'Content-Type': 'text/plain' });
-            res.end('Internal Server Error');
+            if (!res.headersSent) {
+                res.writeHead(500, { 'Content-Type': 'text/plain' });
+                res.end('Internal Server Error');
+            }
         }
     }
 }

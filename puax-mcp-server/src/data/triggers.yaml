@@ -351,7 +351,7 @@ triggers:
         - "you keep failing"
         - "stop giving up"
         - "figure it out"
-        - "again???"
+        - "again\\?+"
         - "not working"
         - "still broken"
         - "this is frustrating"

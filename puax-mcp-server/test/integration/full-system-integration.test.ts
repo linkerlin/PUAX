@@ -88,9 +88,9 @@ describe('Full System Integration', () => {
 
     it('should handle user frustration scenario', async () => {
       const conversation: ConversationMessage[] = [
-        { role: 'user', content: '为什么这个还不行？' },
+        { role: 'user', content: '为什么还不行？' },
         { role: 'assistant', content: '让我再检查一下...' },
-        { role: 'user', content: '这都第几次了？！' }
+        { role: 'user', content: '怎么又失败了？！' }
       ];
 
       const detection = await detector.detect(conversation);
