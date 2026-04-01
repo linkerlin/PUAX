@@ -1,10 +1,10 @@
 # PUAX 3.1 - AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.1.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.1.2-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/triggers-11-yellow.svg" alt="Triggers">
+  <img src="https://img.shields.io/badge/triggers-16-yellow.svg" alt="Triggers">
   <img src="https://img.shields.io/badge/hook%20system-v3.1.0-red.svg" alt="Hook System">
 </p>
 
@@ -22,10 +22,10 @@
 
 PUAX 是一个专为 AI Agent 设计的激励系统，通过：
 
-- **自动检测** - 识别 AI 何时陷入瓶颈（11种触发条件）
-- **智能推荐** - 推荐最适合的激励角色（50+角色）
-- **Hook System** - 状态持久化与压力等级管理（L1-L4）
-- **文言文增强** - 8 维策略空间
+- **自动检测** - 识别 AI 何时陷入瓶颈（16种触发条件，分4大类别）
+- **智能推荐** - 推荐最适合的激励角色（50+角色，覆盖8大分类）
+- **Hook System** - 状态持久化与压力等级管理（L1-L4，5种Hook事件）
+- **CC-BOS** - 8维策略空间，文言文增强（1,000万+种策略组合）
 - **结构化方法论** - 提供五步法调试流程
 - **检查清单** - 确保执行质量（七项强制检查）
 

@@ -1,10 +1,17 @@
-# PUAX 2.0 使用指南
+# PUAX 3.1 使用指南
 
 ## 快速开始
 
 ### 1. 安装和启动
 
 ```bash
+# 方式一：npx 一键启动（推荐）
+npx puax-mcp-server --stdio
+
+# 方式二：HTTP 模式
+npx puax-mcp-server --port 2333
+
+# 方式三：从源码启动
 cd puax-mcp-server
 npm install
 npm run generate-bundle
@@ -13,13 +20,43 @@ npm start
 
 ### 2. 配置MCP客户端
 
-在Cursor/Cline中配置MCP服务器：
+#### Claude Desktop
+
+编辑 `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) 或 `%APPDATA%/Claude/claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
     "puax": {
-      "url": "http://localhost:2333/mcp"
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+#### Cursor / Windsurf
+
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
+```
+
+#### CRUSH
+
+```json
+{
+  "mcp": {
+    "puax": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
     }
   }
 }
@@ -31,26 +68,34 @@ npm start
 
 ### 触发条件 (Trigger Conditions)
 
-当AI Agent出现以下行为时，PUAX会自动检测并建议激活激励角色：
+PUAX 自动检测 **16 种**需要干预的场景：
 
-1. **连续失败** - 多次尝试同一任务失败
-2. **放弃语言** - 表达"我无法解决"等放弃意图
-3. **归咎环境** - 将问题归咎于外部因素
-4. **用户挫折** - 用户表现出沮丧情绪
-5. **表面修复** - 只解决表面症状而非根本原因
+| 类别 | 触发条件 | 严重级别 |
+|------|----------|----------|
+| **失败模式** | 连续失败、重复尝试 | High |
+| **态度问题** | 放弃语言、甩锅环境、被动等待 | Medium-Critical |
+| **方法问题** | 表面修复、未验证、工具使用不足 | Medium |
+| **质量问题** | 低质量输出、忽略边界、过度复杂化 | Medium |
+| **用户情绪** | 用户沮丧 | Critical |
 
 ### 角色分类
 
-| 分类 | 特点 | 适用场景 |
-|------|------|----------|
-| 军事类 | 严格、执行力强 | 紧急调试、需要强力推动 |
-| 萨满类 | 洞察、创新 | 需要突破思维定式 |
-| 主题类 | 创意、有趣 | 日常开发、降低压力 |
-| SillyTavern | 社区流行 | 特定场景深度优化 |
+PUAX 包含 **50 个**专业角色，覆盖 **8 大分类**：
+
+| 分类 | 数量 | 代表角色 | 适用场景 |
+|------|------|----------|----------|
+| **军事类** | 9 | 上将军、监军御史、虎贲勇士 | 紧急调试、强力推动 |
+| **萨满类** | 8 | 通玄真人、造化宗师、源码天尊 | 突破思维定式、创新 |
+| **P10战略类** | 1 | 战略规划师 | 架构决策、长期规划 |
+| **硅基文明类** | 7 | 圣座总控核心、文明建造师、布道官 | Agent 系统治理 |
+| **主题类** | 7 | 修仙炼丹、赛博黑客、末日生存 | 创意场景 |
+| **SillyTavern** | 5 | 反脆弱复盘官、铁血幕僚长 | 社区流行 |
+| **自激励类** | 6 | 觉悟居士、君子、自强不息 | 自我驱动 |
+| **特殊类** | 7 | 创意火花、紧急冲刺、挑战解决者 | 特殊场景 |
 
 ### 五步法方法论
 
-每个v2.0角色都包含五步法：
+每个角色都包含五步法：
 
 1. **准备/侦察** - 收集信息，了解情况
 2. **分析/诊断** - 深入分析，找出根本原因
@@ -62,16 +107,53 @@ npm start
 
 L3+级别角色强制执行：
 
-基础检查 (必须):
+**基础检查**:
 - [ ] **读失败信号** - 逐字读完了吗？
 - [ ] **主动搜索** - 用工具搜索过核心问题了吗？
 - [ ] **读原始材料** - 读过失败位置的原始上下文了吗？
 
-进阶检查 (必须):
+**进阶检查**:
 - [ ] **验证前置假设** - 所有假设都用工具确认了吗？
-- [ ] **反转假设** - 试过与当前方向完全相反的假设吗？
+- [ ] **反转假设** - 试过与当前方向完全相反的假设吗?
 - [ ] **最小隔离** - 能在最小范围内隔离/复现这个问题吗？
-- [ ] **换方向** - 换过工具、方法、角度、技术栈、框架吗？
+- [ ] **换方向** - 换过工具、方法、角度、技术栈、框架吗?
+
+---
+
+## Hook System v3.1.0
+
+### 状态持久化
+
+所有会话状态保存到 `~/.puax/` 目录：
+
+```
+~/.puax/
+├── session-state.json       # 会话状态
+├── failure-count.json       # 失败计数
+├── trigger-history.json     # 触发历史
+├── feedback-history.json    # 反馈历史
+└── builder-journal.md       # 构建日志
+```
+
+### 压力等级系统
+
+| 等级 | 名称 | 说明 |
+|------|------|------|
+| L0 | Normal | 正常状态，无需干预 |
+| L1 | Elevated | 初次触发，建议关注 |
+| L2 | High | 多次触发，建议激活角色 |
+| L3 | Critical | 严重触发，强制执行检查清单 |
+| L4 | Emergency | 极限状态，最高压力干预 |
+
+### Hook 事件类型
+
+| 事件类型 | 说明 |
+|----------|------|
+| `UserPromptSubmit` | 用户提交消息时检测 |
+| `PostToolUse` | 工具使用后检测 |
+| `PreCompact` | 上下文压缩前检测 |
+| `SessionStart` | 会话开始时恢复状态 |
+| `Stop` | 会话结束时生成报告 |
 
 ---
 
@@ -79,13 +161,12 @@ L3+级别角色强制执行：
 
 ### 场景1：AI反复失败
 
-当AI多次尝试失败时，自动激活军事类角色：
-
 ```
 [对话历史]
 AI: 尝试连接数据库...失败
 AI: 再试一次...还是失败
 AI: 可能是网络问题？再试...失败
+User: 为什么还不行？
 
 [触发检测]
 → 检测到: consecutive_failures, user_frustration
@@ -94,8 +175,6 @@ AI: 可能是网络问题？再试...失败
 ```
 
 ### 场景2：AI要放弃
-
-当AI表达放弃意图时：
 
 ```
 [对话历史]
@@ -108,17 +187,13 @@ AI: 这超出了我的能力范围
 → 方法论: 问责→教育→激励→监督→总结
 ```
 
-### 场景3：需要创意
-
-当需要突破常规思维：
+### 场景3：需要创意突破
 
 ```
-[对话历史]
-User: 这些方案太普通了，需要更有创意的
-
 [触发检测]
 → 推荐角色: shaman-musk (马斯克)
-→ 方法论: 质疑→想象→验证→放大→实现
+→ 方法论: 质疑→拆解→重构→验证→放大
+→ CC-BOS: 8维策略空间，文言文增强
 ```
 
 ---
@@ -127,10 +202,10 @@ User: 这些方案太普通了，需要更有创意的
 
 ### 使用大厂风味
 
-可以为角色叠加不同公司的风格：
+可以为角色叠加 8 种企业文化：
 
 ```typescript
-// 阿里风味 - 强调价值观和执行力
+// 阿里风味 - 强调闭环方法论
 get_role_with_methodology({
   role_id: "military-commander",
   options: { include_flavor: "alibaba" }
@@ -142,11 +217,43 @@ get_role_with_methodology({
   options: { include_flavor: "huawei" }
 })
 
-// 马斯克风味 - 强调第一性原理
+// Musk风味 - 强调第一性原理
 get_role_with_methodology({
   role_id: "shaman-musk",
   options: { include_flavor: "musk" }
 })
+```
+
+### 使用 Hook System
+
+```typescript
+// 开始会话
+await client.callTool('puax_start_session', {
+  session_id: 'session-001'
+});
+
+// 检测触发
+await client.callTool('puax_detect_trigger', {
+  session_id: 'session-001',
+  event_type: 'UserPromptSubmit',
+  message: '又失败了'
+});
+
+// 提交反馈
+await client.callTool('puax_submit_feedback', {
+  session_id: 'session-001',
+  feedback: { success: true, rating: 5 }
+});
+
+// 获取压力等级
+await client.callTool('puax_get_pressure_level', {
+  session_id: 'session-001'
+});
+
+// 生成报告
+await client.callTool('puax_generate_pua_loop_report', {
+  session_id: 'session-001'
+});
 ```
 
 ### 自定义偏好
@@ -165,64 +272,56 @@ recommend_role({
 
 ---
 
-## 故障排除
+## 方法论路由
 
-### 问题1：触发检测不敏感
+PUAX 支持智能方法论路由，根据任务类型和失败模式自动选择最优方法论：
 
-**解决方案**: 提高灵敏度设置
-```typescript
-detect_trigger({
-  options: { sensitivity: "high" }
-})
-```
+| 任务类型 | 推荐方法论 |
+|----------|------------|
+| debugging | 华为根因分析 (5-Why + 蓝军) |
+| building | Musk算法 (质疑→删除→简化→加速→自动化) |
+| research | 百度搜索优先 |
+| architecture | Amazon逆向工作 |
+| performance | 字节A/B测试 |
+| review | Jobs减法哲学 |
+| planning | Amazon逆向工作 + 阿里闭环 |
+| deployment | 阿里闭环法 |
 
-### 问题2：推荐的角色不合适
+---
 
-**解决方案**: 
-1. 检查任务类型是否正确指定
-2. 提供用户偏好设置
-3. 查看备选角色列表
+## 平台导出
 
-### 问题3：方法论步骤不完整
-
-**解决方案**: 确认角色已升级到v2.0
 ```bash
-grep -c 'version: "2.0.0"' puax-mcp-server/src/prompts/prompts-bundle.ts
+# 导出到 Cursor Rules
+npx puax-mcp-server --export=cursor --output=./.cursor/rules
+
+# 导出到 VSCode Copilot
+npx puax-mcp-server --export=vscode --output=./.github
+
+# 查看支持的平台
+npx puax-mcp-server --list-platforms
 ```
 
 ---
 
-## 最佳实践
+## 角色分级体系 (P7/P9/P10)
 
-### 1. 及时激活
+| 等级 | 定位 | 代表角色 |
+|------|------|----------|
+| **P7** 骨干工程师 | 执行 + 单点攻坚 | military-warrior, theme-hacker |
+| **P9** Tech Lead | 团队协调 + 任务分配 | military-commander, shaman-sun-tzu |
+| **P10** 首席架构师 | 战略规划 + 架构决策 | strategic-architect, shaman-musk |
 
-当检测到以下情况时立即激活角色：
-- 用户表现出挫折情绪
-- AI连续失败3次以上
-- AI表达放弃意图
+---
 
-### 2. 合理使用风味
+## Agent Team 协作模式
 
-- **紧急任务** - 使用华为/军事风味，强调执行
-- **创新任务** - 使用马斯克/乔布斯风味，强调突破
-- **日常任务** - 使用主题类角色，降低压力
-
-### 3. 检查清单验证
-
-激活角色后，确保AI完成检查清单：
-- 基础3项必须全部完成
-- 进阶4项至少完成80%
-
-### 4. 轮换角色
-
-避免重复使用同一角色，使用`session_history`记录已使用角色：
-```typescript
-recommend_role({
-  session_history: {
-    recently_used_roles: ["military-commander"]
-  }
-})
-```
+| 模板 | 适用场景 | 成员 |
+|------|----------|------|
+| 冲刺团队 | 标准开发 | 战士 + 侦察兵 + 反脆弱复盘官 |
+| 架构团队 | 架构设计 | 爱因斯坦 + 巴菲特 + 铁血幕僚长 |
+| 创新团队 | 创新突破 | 马斯克 + 达芬奇 + 创意火花 |
+| 危机团队 | 紧急修复 | 战士 + 侦察兵 + 督战队 + 紧急冲刺 |
 
 ---
 
@@ -238,15 +337,34 @@ recommend_role({
 | 用户沮丧 | military-commander | 统筹解决 |
 | 环境配置 | military-technician | 技术攻坚 |
 | 性能优化 | shaman-einstein | 深度思考 |
+| 架构设计 | strategic-architect | 战略规划 |
+| Agent 治理 | silicon-throne | 硅基统御 |
+| 自我激励 | self-motivation-awakening | 觉醒驱动 |
 
 ---
 
 ## 更新日志
 
+### v3.1.2
+- 修复 5 个角色验证失败
+- 标准化 5 步法和 7 项检查清单
+
+### v3.1.0
+- Hook System v3.1.0 完整实现
+- CC-BOS 集成（8维策略空间、50个文言文角色）
+- server.ts 重构（5模块拆分）
+- 触发条件外部化（16种触发类型）
+- 平台导出（Cursor、VSCode）
+- P7/P9/P10 分级 + Agent Team
+
+### v2.1.0
+- 角色推荐系统
+- 方法论引擎
+- 自动触发检测
+
 ### v2.0.0
-- ✅ 40个角色升级到v2.0
-- ✅ 14种触发条件
-- ✅ 4个MCP工具
-- ✅ 五步法方法论
-- ✅ 七项检查清单
-- ✅ 8种大厂风味支持
+- 40个角色升级到v2.0
+- 14种触发条件
+- 五步法方法论
+- 七项检查清单
+- 8种大厂风味支持

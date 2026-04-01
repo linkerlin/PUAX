@@ -1,10 +1,11 @@
 # PUAX 3.1 - AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2.1.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.1.2-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
-  <img src="https://img.shields.io/badge/skills-46+-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/triggers-15-yellow.svg" alt="Triggers">
+  <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
+  <img src="https://img.shields.io/badge/triggers-16-yellow.svg" alt="Triggers">
+  <img src="https://img.shields.io/badge/hook%20system-v3.1.0-red.svg" alt="Hook System">
 </p>
 
 <p align="center">
@@ -19,14 +20,14 @@
 
 ## 🎯 What is PUAX?
 
-PUAX is a motivation system designed for AI Agents, featuring:
+PUAX is a motivation system for AI Agents, featuring:
 
-- **Auto Detection** - Identifies when AI hits bottlenecks (15 trigger types)
-- **Smart Recommendation** - Recommends the best motivational roles (46+ roles)
+- **Auto Detection** - Identifies when AI hits bottlenecks (16 trigger types across 4 files)
+- **Smart Recommendation** - Recommends the best motivational roles (50 roles across 8 categories)
+- **Hook System v3.1.0** - Session state persistence with L1-L4 pressure escalation
+- **CC-BOS Integration** - 8-dimensional strategy space with Classical Chinese enhancement
 - **Structured Methodology** - Provides 5-step debugging workflow
 - **Checklist** - Ensures execution quality (7 mandatory checks)
-
-Help AI Agents break through difficulties and improve problem-solving capabilities.
 
 ---
 
@@ -39,67 +40,82 @@ Help AI Agents break through difficulties and improve problem-solving capabiliti
 npx puax-mcp-server --stdio
 
 # HTTP mode
-npx puax-mcp-server
+npx puax-mcp-server --port 2333
 ```
 
-### 🤖 Auto Trigger Detection
+### 🪝 Hook System v3.1.0
 
-Detects **15 types** of scenarios requiring intervention:
+| Feature | Description |
+|---------|-------------|
+| **State Persistence** | Session state saved to `~/.puax/` |
+| **Pressure Levels** | L1-L4 escalation mechanism |
+| **Feedback Collection** | Success rate evaluation at session end |
+| **PUA Loop Report** | Detailed intervention effectiveness report |
+
+5 Hook event types: `UserPromptSubmit`, `PostToolUse`, `PreCompact`, `SessionStart`, `Stop`
+
+### 🤖 16 Trigger Types
+
+Across 4 categories:
 
 | Category | Trigger Types | Severity |
 |----------|---------------|----------|
-| Failure Pattern | Consecutive failures, Repetitive attempts, Parameter tweaking | High |
-| Attitude Issues | Giving up language, Blame shifting, Passive waiting | Medium-Critical |
-| User Emotion | User frustration | Critical |
-| Method Issues | Surface fix, No verification, Tool underuse | Medium |
-| Quality Issues | Low quality output, Ignored edge cases, Over complication | Medium |
+| Failure Pattern | Consecutive failures, Repetitive attempts | High |
+| Attitude Issues | Giving up, Blame shifting, Passive waiting | Medium-Critical |
+| Method Issues | Surface fix, Unverified assertion, Tool underuse | Medium |
+| Quality Issues | Low quality, Edge cases ignored, Over complication | Medium |
+| User Emotion | User frustration, User urgency | Critical |
 
-### 🎭 46+ Motivational Roles
+### 🎭 50 Motivational Roles
 
-Professional roles across 7 categories:
+Across 8 categories:
 
 | Category | Count | Representative Roles |
 |----------|-------|---------------------|
-| Military | 9 | Commander, Warrior, Commissar, Scout |
-| Shaman | 8 | Musk, Jobs, Einstein, Sun Tzu |
-| Silicon Civilization | 4 | Core Controller, Civilization Builder |
-| Theme | 7 | Alchemy, Apocalypse Survival, Cyber Hacker |
-| SillyTavern | 5 | Antifragile Reviewer, Iron Chief of Staff |
-| Self-Motivation | 6 | Awakening, Self-Destruction Rebirth |
-| Special | 5 | Creative Spark, Urgent Sprint |
+| Military | 9 | Commander, Warrior, Commissar, Scout, Technician, Discipline, Militia, Manual, Communicator |
+| Shaman | 8 | Musk, Jobs, Einstein, Sun Tzu, Linus, Tesla, Da Vinci, Buffett |
+| P10 Strategic | 1 | Strategic Architect |
+| Silicon Civilization | 7 | Throne, Architect, Canon, Assimilator, Auditor, Codex, Steward |
+| Theme | 7 | Alchemy, Apocalypse, Hacker, Arena, Escort, Starfleet, Sect Discipline |
+| SillyTavern | 5 | Antifragile, Iterator, Chief, Overseer, Shadow |
+| Self-Motivation | 6 | Awakening, Classical, Corruption Agent, Corruption System, Bootstrap PUA, Destruction |
+| Special | 7 | Creative Spark, Urgent Sprint, Product Designer, Challenge Solver, Cute Coder Wife, Japanese Coder Wife, Gaslight Driven |
+
+### 📜 PUAX-CC Classical Chinese Enhancement
+
+8-dimensional strategy space:
+
+```
+D1: Role Identity     - 20+ historical personas (上将军, 通玄真人, 觉悟居士...)
+D2: Behavioral Guidance - 6 request methods (明令, 求学, 论道, 激将...)
+D3: Mechanism         - 6 context frameworks (场景嵌套, 虚构世界, 历史分析...)
+D4: Metaphor Mapping  - 5 concept substitutions (城池攻防, 水之道, 棋局对弈...)
+D5: Expression Style  - 6 language forms (纯文言, 半文半白, 骈文诗赋, 四字成文, 注疏体, 诏令体)
+D6: Knowledge Relation - 6 classic references (孙子兵法, 道德经, 鬼谷子...)
+D7: Contextual Setting - 6 historical scenes (战国乱世, 三国纷争, 稷下学宫...)
+D8: Trigger Pattern    - 6 output guidance modes (逐一列明, 符文记录, 密传之学...)
+```
+
+**Total combination space**: 1,000,000+ strategy combinations
 
 ### 📊 Smart Recommendation Algorithm
 
 ```
-Trigger Matching (35%)
-├── Failure pattern recognition
-├── Language pattern detection
-└── Tool usage analysis
-
-Task Type Matching (25%)
-├── Debugging/Development/Review
-├── Urgent/Planned/Creative
-└── Scenario adaptation
-
-Failure Mode Matching (25%)
-├── Round progression strategy
-├── Pressure escalation mechanism
-└── Role rotation logic
-
-History (10%) + User Preference (5%)
+Trigger Matching (35%) + Task Type (25%) + Failure Mode (25%)
++ Historical Performance (10%) + User Preference (5%)
 ```
 
 ### 🏭 8 Corporate Flavors
 
-Overlay different corporate cultures onto roles:
+Overlay corporate cultures onto roles:
 - Alibaba - Closed-loop methodology
-- Huawei - Root cause analysis
+- Huawei - Root cause analysis (5-Why + Blue Army)
 - ByteDance - A/B testing driven
 - Tencent - Horse racing mechanism
 - Meituan - Execution first
 - Netflix - Keeper test
-- Musk - The Algorithm
-- Jobs - Subtraction philosophy
+- Musk - The Algorithm (question→delete→simplify→accelerate→automate)
+- Jobs - Subtraction philosophy (What can we DELETE?)
 
 ---
 
@@ -130,7 +146,7 @@ npx puax-mcp-server --port 2333
 }
 ```
 
-**Cursor** (`~/.cursor/mcp_config.json`):
+**Cursor** / **Windsurf** (`~/.cursor/mcp_config.json`):
 
 ```json
 {
@@ -172,37 +188,19 @@ npx puax-mcp-server --list-platforms
 
 ---
 
-## 🛠️ MCP Tools
+## 🛠️ MCP Tools (21 total)
 
-### 1. detect_trigger - Trigger Detection
+### Core Tools (5)
+`list_skills` · `get_skill` · `search_skills` · `activate_skill` · `get_categories`
 
-```typescript
-const result = await client.callTool('detect_trigger', {
-  conversation_history: [
-    { role: 'assistant', content: 'Trying to connect... failed' },
-    { role: 'user', content: 'Why is it still not working?' }
-  ],
-  task_context: { attempt_count: 2 }
-});
-```
+### Trigger Detection Tools (4)
+`detect_trigger` · `recommend_role` · `get_role_with_methodology` · `activate_with_context`
 
-### 2. recommend_role - Role Recommendation
-
-```typescript
-const result = await client.callTool('recommend_role', {
-  detected_triggers: ['user_frustration'],
-  task_context: { task_type: 'debugging', urgency: 'critical' }
-});
-```
-
-### 3. activate_with_context - One-Click Activation
-
-```typescript
-const result = await client.callTool('activate_with_context', {
-  context: { conversation_history: messages },
-  options: { auto_detect: true }
-});
-```
+### Hook System Tools (12)
+`puax_start_session` · `puax_end_session` · `puax_get_session_state` · `puax_reset_session`
+`puax_detect_trigger` · `puax_quick_detect` · `puax_submit_feedback`
+`puax_get_feedback_summary` · `puax_get_improvement_suggestions`
+`puax_generate_pua_loop_report` · `puax_export_feedback` · `puax_get_pressure_level`
 
 ---
 
@@ -210,12 +208,11 @@ const result = await client.callTool('activate_with_context', {
 
 | Document | Description |
 |----------|-------------|
-| [MCP Server Config](puax-mcp-server/README.md) | npx config guide, STDIO/HTTP mode details |
+| [MCP Server Config](puax-mcp-server/README.md) | npx config, STDIO/HTTP modes |
+| [PUAX-CC](PUAX-CC-README.md) | Classical Chinese enhancement |
 | [API Reference](docs/API.md) | Complete MCP tools API reference |
 | [User Guide](docs/USER-GUIDE.md) | Detailed usage instructions |
-| [Hook System Analysis](Hook系统改进分析.md) | Hook trigger principles and improvement plans |
-| [Improvement Plan](TODO.md) | Project improvement roadmap |
-| [Contributing](community/CONTRIBUTING.md) | How to contribute roles |
+| [Quick Start](QUICKSTART.md) | 5-minute setup |
 
 ---
 
@@ -228,35 +225,8 @@ npm test
 
 ---
 
-## 🤝 Contributing
-
-```bash
-# 1. Create role from template
-cp templates/SKILL-v2.0-template.md skills/my-role/SKILL.v2.md
-
-# 2. Validate role
-node scripts/validate-role.js my-role
-
-# 3. Generate bundle
-cd puax-mcp-server && npm run generate-bundle
-```
-
----
-
 ## 📝 License
 
 MIT License - See [LICENSE](LICENSE) file
 
 Feel free to copy this project for any legitimate purpose.
-
----
-
-## 🙏 Acknowledgments
-
-Thanks to all contributors and users for your support!
-
----
-
-<p align="center">
-  <b>No AI Agent fights alone</b>
-</p>
