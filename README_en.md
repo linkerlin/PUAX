@@ -1,7 +1,7 @@
 # PUAX 3.1 - AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.1.2-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.1.3-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
   <img src="https://img.shields.io/badge/triggers-16-yellow.svg" alt="Triggers">
