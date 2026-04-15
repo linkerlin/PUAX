@@ -12,6 +12,9 @@ import { z } from 'zod';
 import { hookManager } from '../hooks/hook-manager.js';
 import { stateManager } from '../hooks/state-manager.js';
 import { feedbackSystem } from '../hooks/feedback-system.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // start_session
@@ -52,7 +55,7 @@ export const startSessionTool = {
           : '新会话已启动'
       };
     } catch (error) {
-      console.error('[start_session] Error:', error);
+      logger.error('[start_session] Error:', error);
       throw new Error(`Failed to start session: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -106,7 +109,7 @@ export const endSessionTool = {
         report
       };
     } catch (error) {
-      console.error('[end_session] Error:', error);
+      logger.error('[end_session] Error:', error);
       throw new Error(`Failed to end session: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -150,7 +153,7 @@ export const getSessionStateTool = {
         isActive: hookManager.getActiveSessions().includes(args.sessionId)
       };
     } catch (error) {
-      console.error('[get_session_state] Error:', error);
+      logger.error('[get_session_state] Error:', error);
       throw new Error(`Failed to get session state: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -200,7 +203,7 @@ export const resetSessionTool = {
         message: `会话已重置 (${args.resetType})`
       };
     } catch (error) {
-      console.error('[reset_session] Error:', error);
+      logger.error('[reset_session] Error:', error);
       throw new Error(`Failed to reset session: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

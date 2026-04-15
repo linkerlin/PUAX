@@ -17,21 +17,21 @@ import {
     McpError,
     type TextContent
 } from '@modelcontextprotocol/sdk/types.js';
-import { Tools } from '../tools.js';
+import { allTools, Tools } from '../tools/index.js';
 import { promptManager } from '../prompts/index.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { Logger } from '../utils/logger.js';
 import { loadVersion } from '../utils/version.js';
 import type { ServerConfig } from '../types.js';
+import { hookToolHandlers } from '../handlers/hook-handlers.js';
 
-// Import handler modules
-import {
-    handleListSkills, handleGetSkill, handleSearchSkills,
-    handleActivateSkill, handleGetCategories,
-    handleListRoles, handleGetRole, handleSearchRoles, handleActivateRole,
-    handleDetectTrigger, handleRecommendRole, handleGetRoleWithMethodology, handleActivateWithContext,
-    hookToolHandlers
-} from '../handlers/index.js';
+// 构建 tool name → handler 的查找表（用于快速分发）
+const toolHandlerMap = new Map<string, (args: Record<string, unknown>) => unknown>();
+for (const tool of allTools) {
+    if ('handler' in tool && typeof tool.handler === 'function') {
+        toolHandlerMap.set(tool.name, tool.handler as (args: Record<string, unknown>) => unknown);
+    }
+}
 
 // MCP Tool response type
 interface McpToolResponse {
@@ -96,66 +96,32 @@ export class PuaxMcpServer {
             tools: Tools
         }));
 
-        // Tool execution dispatcher
+        // Tool execution dispatcher：遍历 allTools，通过嵌入 handler 分发
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             try {
                 const { name, arguments: args } = request.params;
                 const safeArgs = (args as Record<string, unknown>) || {};
 
-                switch (name) {
-                    // SKILL tools
-                    case 'list_skills':
-                        return handleListSkills(safeArgs) as McpToolResponse;
-                    case 'get_skill':
-                        return handleGetSkill(safeArgs) as McpToolResponse;
-                    case 'search_skills':
-                        return handleSearchSkills(safeArgs) as McpToolResponse;
-                    case 'activate_skill':
-                        return handleActivateSkill(safeArgs) as McpToolResponse;
-                    case 'get_categories':
-                        return handleGetCategories(safeArgs) as McpToolResponse;
-                    
-                    // Auto-trigger tools
-                    case 'detect_trigger':
-                        return await handleDetectTrigger(safeArgs) as McpToolResponse;
-                    case 'recommend_role':
-                        return await handleRecommendRole(safeArgs) as McpToolResponse;
-                    case 'get_role_with_methodology':
-                        return await handleGetRoleWithMethodology(safeArgs) as McpToolResponse;
-                    case 'activate_with_context':
-                        return await handleActivateWithContext(safeArgs) as McpToolResponse;
-                    
-                    // Legacy role tools
-                    case 'list_roles':
-                        return handleListRoles(safeArgs) as McpToolResponse;
-                    case 'get_role':
-                        return handleGetRole(safeArgs) as McpToolResponse;
-                    case 'search_roles':
-                        return handleSearchRoles(safeArgs) as McpToolResponse;
-                    case 'activate_role':
-                        return handleActivateRole(safeArgs) as McpToolResponse;
-                    
-                    // Hook System tools
-                    case 'puax_start_session':
-                    case 'puax_end_session':
-                    case 'puax_get_session_state':
-                    case 'puax_reset_session':
-                    case 'puax_detect_trigger':
-                    case 'puax_quick_detect':
-                    case 'puax_submit_feedback':
-                    case 'puax_get_feedback_summary':
-                    case 'puax_get_improvement_suggestions':
-                    case 'puax_generate_pua_loop_report':
-                    case 'puax_export_feedback':
-                    case 'puax_get_pressure_level':
-                        return await this.handleHookTool(name, safeArgs);
-                    
-                    default:
-                        throw new McpError(
-                            ErrorCode.MethodNotFound,
-                            `Unknown tool: ${name}`
-                        );
+                // 优先从 allTools 的嵌入 handler 分发
+                const handler = toolHandlerMap.get(name);
+                if (handler) {
+                    const result = handler(safeArgs);
+                    if (result instanceof Promise) {
+                        return await result as McpToolResponse;
+                    }
+                    return result as McpToolResponse;
                 }
+
+                // 兼容：仍从 hookToolHandlers 查找（已废弃路径）
+                const legacyHandler = hookToolHandlers[name];
+                if (legacyHandler) {
+                    return await legacyHandler(safeArgs) as McpToolResponse;
+                }
+
+                throw new McpError(
+                    ErrorCode.MethodNotFound,
+                    `Unknown tool: ${name}`
+                );
             } catch (error) {
                 if (error instanceof McpError) {
                     throw error;
@@ -166,19 +132,6 @@ export class PuaxMcpServer {
                 );
             }
         });
-    }
-
-    private async handleHookTool(toolName: string, args: Record<string, unknown>): Promise<McpToolResponse> {
-        const handler = hookToolHandlers[toolName];
-        
-        if (!handler) {
-            throw new McpError(
-                ErrorCode.MethodNotFound,
-                `Hook tool not found: ${toolName}`
-            );
-        }
-        
-        return await handler(args) as McpToolResponse;
     }
 
     private setupPromptHandlers(): void {

@@ -12,6 +12,9 @@
 import type { StateManager, FeedbackRecord, SessionState } from './state-manager.js';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 import { stateManager as defaultStateManager } from './state-manager.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -87,7 +90,7 @@ export class FeedbackSystem {
       comments: feedback.comments
     });
 
-    console.log(`[FeedbackSystem] Feedback collected for ${feedback.sessionId}: ${feedback.rating}/5, success=${feedback.success}`);
+    logger.info(`[FeedbackSystem] Feedback collected for ${feedback.sessionId}: ${feedback.rating}/5, success=${feedback.success}`);
   }
 
   /**

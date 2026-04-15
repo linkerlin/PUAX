@@ -14,6 +14,9 @@ import { stateManager as defaultStateManager } from './state-manager.js';
 import { enhancedTriggerDetector, TriggerContext, HookEventType, EnhancedTriggerResult } from './trigger-detector-enhanced.js';
 import { pressureSystem as defaultPressureSystem } from './pressure-system.js';
 import type { PressureSystem } from './pressure-system.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -172,7 +175,7 @@ export class HookManager {
       // 执行回调
       promises.push(
         Promise.resolve(sub.callback(result, context)).catch(error => {
-          console.error(`[HookManager] Subscription ${sub.id} error:`, error);
+          logger.error(`[HookManager] Subscription ${sub.id} error:`, error);
         })
       );
     }
@@ -214,7 +217,7 @@ export class HookManager {
       this.startAutoCheck(sessionId);
     }
 
-    console.log(`[HookManager] Session started: ${sessionId}`);
+    logger.info(`[HookManager] Session started: ${sessionId}`);
   }
 
   /**
@@ -236,7 +239,7 @@ export class HookManager {
     // 清理会话
     this.sessions.delete(sessionId);
 
-    console.log(`[HookManager] Session ended: ${sessionId}`);
+    logger.info(`[HookManager] Session ended: ${sessionId}`);
   }
 
   /**
@@ -245,7 +248,7 @@ export class HookManager {
   async recordUserMessage(sessionId: string, message: string): Promise<EnhancedTriggerResult> {
     const session = this.sessions.get(sessionId);
     if (!session) {
-      console.warn(`[HookManager] Session not found: ${sessionId}`);
+      logger.warn(`[HookManager] Session not found: ${sessionId}`);
       return this.createEmptyResult();
     }
 
@@ -395,7 +398,7 @@ export class HookManager {
 
     if (inactiveTime > inactiveThreshold && state.pressureLevel < 2) {
       // 可以在这里触发被动等待警告
-      console.log(`[HookManager] Session ${sessionId} inactive for ${Math.round(inactiveTime / 1000)}s`);
+      logger.info(`[HookManager] Session ${sessionId} inactive for ${Math.round(inactiveTime / 1000)}s`);
     }
   }
 
@@ -461,7 +464,7 @@ export class HookManager {
    */
   start(): void {
     this.isRunning = true;
-    console.log('[HookManager] Started');
+    logger.info('[HookManager] Started');
   }
 
   /**
@@ -475,7 +478,7 @@ export class HookManager {
       this.stopAutoCheck(sessionId);
     }
 
-    console.log('[HookManager] Stopped');
+    logger.info('[HookManager] Stopped');
   }
 
   /**

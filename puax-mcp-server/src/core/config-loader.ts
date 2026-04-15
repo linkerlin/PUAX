@@ -7,58 +7,16 @@ import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
 
-// ============================================================================
-// 类型定义
-// ============================================================================
+// Re-export types from centralized location
+export type {
+  TriggerPattern, TriggerDetection, TriggerDefinition,
+  TriggerCategory, TriggerCatalog
+} from '../types.js';
 
-export interface TriggerPattern {
-  zh?: string[];
-  en?: string[];
-}
-
-export interface TriggerDetection {
-  type?: 'regex' | 'counter' | 'pattern' | 'capability_check';
-  threshold?: number;
-  case_sensitive?: boolean;
-  requires_verification?: boolean;
-  same_approach_count?: number;
-  no_new_info?: boolean;
-  available_but_unused?: boolean;
-  min_confidence?: number;
-  requires_context?: boolean;
-  context_window_size?: number;
-  window?: string;
-  no_verification?: boolean;
-  no_followup?: boolean;
-  same_command_threshold?: number;
-}
-
-export interface TriggerDefinition {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  patterns: TriggerPattern;
-  detection: TriggerDetection;
-  recommended_roles: {
-    primary: string;
-    alternatives: string[];
-    reason: string;
-  };
-}
-
-export interface TriggerCategory {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-}
-
-export interface TriggerCatalog {
-  triggers: Record<string, TriggerDefinition>;
-  categories: Record<string, TriggerCategory>;
-}
+// Import types for internal use
+import type {
+  TriggerPattern, TriggerDetection, TriggerDefinition, TriggerCategory, TriggerCatalog
+} from '../types.js';
 
 interface RawTriggerDefinition {
   id: string;

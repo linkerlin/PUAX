@@ -3,15 +3,16 @@
  * 新增5个触发条件，提升检测准确性
  */
 
-import { 
-  TriggerDetector, 
-  TriggerDefinition, 
-  DetectedTrigger, 
-  TriggerDetectionResult,
-  ConversationMessage,
-  TaskContext,
-  DetectionOptions
-} from './trigger-detector.js';
+import { TriggerDetector } from './trigger-detector.js';
+
+// Re-export types from centralized location
+export type { TriggerDefinition, DetectedTrigger, TriggerDetectionResult } from '../types.js';
+
+// Import types for internal use (NOT from trigger-detector.js to avoid duplicate identifiers)
+import type {
+  TriggerDefinition, DetectedTrigger, TriggerDetectionResult,
+  ConversationMessage, TaskContext, DetectionOptions
+} from '../types.js';
 
 // ============================================================================
 // 扩展的触发条件定义

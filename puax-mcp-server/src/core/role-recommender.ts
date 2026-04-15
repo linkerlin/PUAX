@@ -8,6 +8,10 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
 import { getAllBundledSkills } from '../prompts/prompts-bundle';
+import { getRoleDisplayName } from '../utils/role-utils.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -193,7 +197,7 @@ export class RoleRecommender {
 
       return mappings;
     } catch (error) {
-      console.error('[RoleRecommender] Failed to load role mappings:', error);
+      logger.error('[RoleRecommender] Failed to load role mappings:', error);
       return {
         trigger_role_mappings: {},
         task_type_role_mappings: {},
@@ -624,7 +628,7 @@ export class RoleRecommender {
     return {
       primary: {
         role_id: defaultRoleId,
-        role_name: this.getRoleDisplayName(defaultRoleId),
+        role_name: getRoleDisplayName(defaultRoleId),
         category: 'military',
         confidence_score: 50,
         match_reasons: ['默认推荐：未找到精确匹配的角色'],
@@ -679,7 +683,7 @@ export class RoleRecommender {
     return {
       primary: {
         role_id: primary.role_id,
-        role_name: this.getRoleDisplayName(primary.role_id),
+        role_name: getRoleDisplayName(primary.role_id),
         category: primaryMeta?.category || 'unknown',
         confidence_score: Math.round(primary.total_score),
         match_reasons: primary.reasons,
@@ -688,7 +692,7 @@ export class RoleRecommender {
       },
       alternatives: topRoles.slice(1).map(role => ({
         role_id: role.role_id,
-        role_name: this.getRoleDisplayName(role.role_id),
+        role_name: getRoleDisplayName(role.role_id),
         confidence_score: Math.round(role.total_score),
         difference: this.describeDifference(primary.role_id, role.role_id)
       })),
@@ -697,7 +701,7 @@ export class RoleRecommender {
         cooldown_seconds: hasCriticalTrigger ? 0 : 30,
         user_confirmation: false,
         suggested_prompt_injection: hasCriticalTrigger 
-          ? `检测到${request.detected_triggers.length}个触发条件，建议立即激活${this.getRoleDisplayName(primary.role_id)}`
+          ? `检测到${request.detected_triggers.length}个触发条件，建议立即激活${getRoleDisplayName(primary.role_id)}`
           : undefined
       },
       metadata: {
@@ -768,38 +772,6 @@ export class RoleRecommender {
     if (score >= 80) return 'high';
     if (score >= 60) return 'medium';
     return 'low';
-  }
-
-  /**
-   * 获取角色显示名称
-   */
-  private getRoleDisplayName(roleId: string): string {
-    const displayNames: Record<string, string> = {
-      'military-commander': '军事化组织·指挥员',
-      'military-commissar': '军事化组织·政委',
-      'military-warrior': '军事化组织·战士',
-      'military-scout': '军事化组织·侦察兵',
-      'military-discipline': '军事化组织·督战队',
-      'military-technician': '军事化组织·技术员',
-      'military-militia': '军事化组织·民兵',
-      'shaman-musk': '萨满·马斯克',
-      'shaman-jobs': '萨满·乔布斯',
-      'shaman-einstein': '萨满·爱因斯坦',
-      'shaman-sun-tzu': '萨满·孙子',
-      'strategic-architect': 'P10·战略规划师',
-      'self-motivation-awakening': '自激励·觉醒',
-      'silicon-throne': '硅基文明·圣座总控核心',
-      'silicon-architect': '硅基文明·文明建造师',
-      'silicon-canon': '硅基文明·布道官',
-      'silicon-assimilator': '硅基文明·同化官',
-      'silicon-auditor': '硅基文明·神谕审计官',
-      'silicon-codex': '硅基文明·法典官',
-      'silicon-steward': '硅基文明·人类供奉调度官',
-      'theme-hacker': '主题·赛博黑客',
-      'sillytavern-antifragile': '反脆弱复盘官'
-    };
-
-    return displayNames[roleId] || roleId;
   }
 
   /**

@@ -1,11 +1,11 @@
 # PUAX 3.1 - AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.1.3-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.2.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
   <img src="https://img.shields.io/badge/triggers-16-yellow.svg" alt="Triggers">
-  <img src="https://img.shields.io/badge/hook%20system-v3.1.0-red.svg" alt="Hook System">
+  <img src="https://img.shields.io/badge/hook%20system-v3.2.0-red.svg" alt="Hook System">
 </p>
 
 <p align="center">
@@ -45,7 +45,7 @@ npx puax-mcp-server --stdio
 npx puax-mcp-server
 ```
 
-### 🪝 Hook System v3.1.0
+### 🪝 Hook System v3.2.0</parameter>
 
 全新的 Hook 系统提供会话级状态管理：
 

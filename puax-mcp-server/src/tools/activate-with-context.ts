@@ -9,6 +9,10 @@ import { TriggerDetector } from '../core/trigger-detector';
 import { RoleRecommender } from '../core/role-recommender';
 import { methodologyEngine } from '../core/methodology-engine';
 import { getBundledSkillById } from '../prompts/prompts-bundle.js';
+import { inferTaskType } from '../utils/role-utils.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 输入输出Schema定义
@@ -238,7 +242,7 @@ export const activateWithContextTool = {
       };
       
     } catch (error) {
-      console.error('Error in activate_with_context:', error);
+      logger.error('Error in activate_with_context:', error);
       throw new Error(`Activation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -251,35 +255,6 @@ export const activateWithContextTool = {
 function loadRoleSystemPrompt(roleId: string): string {
   return getBundledSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
 }
-
-function inferTaskType(taskDescription: string): string {
-  const desc = taskDescription.toLowerCase();
-  
-  if (desc.includes('debug') || desc.includes('fix') || desc.includes('error')) {
-    return 'debugging';
-  }
-  if (desc.includes('code') || desc.includes('implement') || desc.includes('develop')) {
-    return 'coding';
-  }
-  if (desc.includes('review') || desc.includes('audit')) {
-    return 'review';
-  }
-  if (desc.includes('write') || desc.includes('document')) {
-    return 'writing';
-  }
-  if (desc.includes('design') || desc.includes('plan')) {
-    return 'planning';
-  }
-  if (desc.includes('urgent') || desc.includes('emergency') || desc.includes('asap')) {
-    return 'emergency';
-  }
-  if (desc.includes('analyze') || desc.includes('research')) {
-    return 'analysis';
-  }
-  
-  return 'debugging'; // 默认
-}
-
 // 导出类型
 export type ActivateWithContextInput = z.infer<typeof ActivateWithContextInputSchema>;
 export type ActivateWithContextOutput = z.infer<typeof ActivateWithContextOutputSchema>;

@@ -12,6 +12,9 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -137,7 +140,7 @@ export class StateManager {
     try {
       writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to save session state:', error);
+      logger.error('[StateManager] Failed to save session state:', error);
     }
   }
 
@@ -161,7 +164,7 @@ export class StateManager {
     try {
       writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to clear session state:', error);
+      logger.error('[StateManager] Failed to clear session state:', error);
     }
   }
 
@@ -184,7 +187,7 @@ export class StateManager {
         return JSON.parse(content) as Record<string, SessionState>;
       }
     } catch (error) {
-      console.error('[StateManager] Failed to load session states:', error);
+      logger.error('[StateManager] Failed to load session states:', error);
     }
     return {};
   }
@@ -215,7 +218,7 @@ export class StateManager {
     try {
       writeFileSync(this.failureFile, JSON.stringify(recentFailures, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to save failure record:', error);
+      logger.error('[StateManager] Failed to save failure record:', error);
     }
 
     return state.failureCount;
@@ -251,7 +254,7 @@ export class StateManager {
         return JSON.parse(content) as FailureRecord[];
       }
     } catch (error) {
-      console.error('[StateManager] Failed to load failures:', error);
+      logger.error('[StateManager] Failed to load failures:', error);
     }
     return [];
   }
@@ -285,7 +288,7 @@ export class StateManager {
     try {
       writeFileSync(this.triggerFile, JSON.stringify(recentTriggers, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to save trigger record:', error);
+      logger.error('[StateManager] Failed to save trigger record:', error);
     }
   }
 
@@ -304,7 +307,7 @@ export class StateManager {
         return JSON.parse(content) as TriggerRecord[];
       }
     } catch (error) {
-      console.error('[StateManager] Failed to load triggers:', error);
+      logger.error('[StateManager] Failed to load triggers:', error);
     }
     return [];
   }
@@ -356,7 +359,7 @@ ${entry.keyContext || 'N/A'}
     try {
       appendFileSync(this.journalFile, content);
     } catch (error) {
-      console.error('[StateManager] Failed to write builder journal:', error);
+      logger.error('[StateManager] Failed to write builder journal:', error);
     }
   }
 
@@ -369,7 +372,7 @@ ${entry.keyContext || 'N/A'}
         return readFileSync(this.journalFile, 'utf-8');
       }
     } catch (error) {
-      console.error('[StateManager] Failed to read builder journal:', error);
+      logger.error('[StateManager] Failed to read builder journal:', error);
     }
     return '';
   }
@@ -397,7 +400,7 @@ ${entry.keyContext || 'N/A'}
     try {
       writeFileSync(this.feedbackFile, JSON.stringify(records, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to save feedback:', error);
+      logger.error('[StateManager] Failed to save feedback:', error);
     }
   }
 
@@ -419,7 +422,7 @@ ${entry.keyContext || 'N/A'}
         return JSON.parse(content) as FeedbackRecord[];
       }
     } catch (error) {
-      console.error('[StateManager] Failed to load feedback:', error);
+      logger.error('[StateManager] Failed to load feedback:', error);
     }
     return [];
   }
@@ -537,7 +540,7 @@ ${entry.keyContext || 'N/A'}
     try {
       writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
-      console.error('[StateManager] Failed to cleanup sessions:', error);
+      logger.error('[StateManager] Failed to cleanup sessions:', error);
     }
 
     return cleaned;

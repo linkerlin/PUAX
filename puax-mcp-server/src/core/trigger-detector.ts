@@ -4,90 +4,28 @@
  * 用于自动识别AI Agent何时需要被激励
  * 
  * 重构: 删除硬编码触发条件，统一从 YAML 加载
+ * 类型定义统一在 types.ts 中
  */
 
 import { ConfigLoader } from './config-loader.js';
+import { getGlobalLogger } from '../utils/logger.js';
 
-// ============================================================================
-// 类型定义
-// ============================================================================
+const logger = getGlobalLogger();
 
-export interface TriggerPattern {
-  zh?: string[];
-  en?: string[];
-}
+// Re-export types from centralized location
+export type {
+  TriggerPattern, TriggerDetection, TriggerDefinition,
+  TriggerCategory, TriggerCatalog, DetectedTrigger,
+  TriggerDetectionResult, ConversationMessage, TaskContext, DetectionOptions
+} from '../types.js';
 
-export interface TriggerDetection {
-  type?: 'regex' | 'counter' | 'pattern' | 'capability_check';
-  threshold?: number;
-  case_sensitive?: boolean;
-  requires_verification?: boolean;
-  same_approach_count?: number;
-  no_new_info?: boolean;
-  available_but_unused?: boolean;
-  min_confidence?: number;
-  requires_context?: boolean;
-  context_window_size?: number;
-  window?: string;
-  no_verification?: boolean;
-  no_followup?: boolean;
-  same_command_threshold?: number;
-}
+// Import types for internal use
+import type {
+  TriggerPattern, TriggerDefinition, TriggerCategory,
+  TriggerCatalog, DetectedTrigger, TriggerDetectionResult,
+  ConversationMessage, TaskContext, DetectionOptions
+} from '../types.js';
 
-export interface TriggerDefinition {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  patterns: TriggerPattern;
-  detection: TriggerDetection;
-  recommended_roles: {
-    primary: string;
-    alternatives: string[];
-    reason: string;
-  };
-}
-export interface TriggerCategory {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-}
-export interface TriggerCatalog {
-  triggers: Record<string, TriggerDefinition>;
-  categories: Record<string, TriggerCategory>;
-}
-export interface DetectedTrigger {
-  id: string;
-  name: string;
-  confidence: number;
-  matched_patterns: string[];
-  severity: string;
-  category: string;
-}
-export interface TriggerDetectionResult {
-  triggers_detected: DetectedTrigger[];
-  summary: {
-    should_trigger: boolean;
-    overall_severity: string;
-    recommended_action: 'immediate_activation' | 'suggest_activation' | 'monitor' | 'none';
-  };
-}
-export interface ConversationMessage {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-}
-export interface TaskContext {
-  current_task?: string;
-  attempt_count?: number;
-  tools_available?: string[];
-  tools_used?: string[];
-}
-export interface DetectionOptions {
-  sensitivity?: 'low' | 'medium' | 'high';
-  language?: 'zh' | 'en' | 'auto';
-}
 // ============================================================================
 // 触发检测器类
 // ============================================================================
@@ -112,7 +50,7 @@ export class TriggerDetector {
   private loadTriggerCatalog(): TriggerCatalog {
     const catalog = this.configLoader.loadTriggerCatalog();
     if (this.configLoader.getLoadErrors().length > 0) {
-      console.error('[TriggerDetector] Config load errors:', this.configLoader.getLoadErrors());
+      logger.error('[TriggerDetector] Config load errors:', this.configLoader.getLoadErrors());
     }
     return catalog;
   }
@@ -212,7 +150,8 @@ export class TriggerDetector {
   /**
    * 获取适合当前语言的模式
    */
-  private getPatternsForLanguage(patterns: TriggerPattern): string[] {
+  private getPatternsForLanguage(patterns?: TriggerPattern): string[] {
+    if (!patterns) return [];
     const lang = this.options.language;
     if (lang === 'zh') {
       return patterns.zh || [];

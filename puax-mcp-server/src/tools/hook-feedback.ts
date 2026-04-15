@@ -11,6 +11,9 @@
 
 import { z } from 'zod';
 import { feedbackSystem } from '../hooks/feedback-system.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // submit_feedback
@@ -53,7 +56,7 @@ export const submitFeedbackTool = {
         message: '反馈已提交，感谢您的评价！'
       };
     } catch (error) {
-      console.error('[submit_feedback] Error:', error);
+      logger.error('[submit_feedback] Error:', error);
       throw new Error(`Failed to submit feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -94,7 +97,7 @@ export const getFeedbackSummaryTool = {
         ...summary
       };
     } catch (error) {
-      console.error('[get_feedback_summary] Error:', error);
+      logger.error('[get_feedback_summary] Error:', error);
       throw new Error(`Failed to get feedback summary: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -120,7 +123,7 @@ export const getImprovementSuggestionsTool = {
         count: suggestions.length
       };
     } catch (error) {
-      console.error('[get_improvement_suggestions] Error:', error);
+      logger.error('[get_improvement_suggestions] Error:', error);
       throw new Error(`Failed to get suggestions: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -151,7 +154,7 @@ export const exportFeedbackTool = {
         exportedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('[export_feedback] Error:', error);
+      logger.error('[export_feedback] Error:', error);
       throw new Error(`Failed to export feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
@@ -181,7 +184,7 @@ export const generatePUALoopReportTool = {
         generatedAt: new Date().toISOString()
       };
     } catch (error) {
-      console.error('[generate_pua_loop_report] Error:', error);
+      logger.error('[generate_pua_loop_report] Error:', error);
       throw new Error(`Failed to generate report: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

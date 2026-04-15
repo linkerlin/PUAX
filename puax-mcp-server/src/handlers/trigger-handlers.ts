@@ -6,6 +6,7 @@
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { promptManager } from '../prompts/index.js';
 import { getGlobalLogger } from '../utils/logger.js';
+import { inferTaskType } from '../utils/role-utils.js';
 import type { ToolResponse, ActivationContext, ActivationOptions, MethodologyOptions } from '../types.js';
 import type { ConversationMessage, TaskContext, DetectionOptions } from '../core/trigger-detector.js';
 
@@ -347,32 +348,4 @@ export async function handleActivateWithContext(args: Record<string, unknown>): 
             `Activation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
     }
-}
-
-function inferTaskType(taskDescription: string): string {
-    const desc = taskDescription.toLowerCase();
-    
-    if (desc.includes('debug') || desc.includes('fix') || desc.includes('error')) {
-        return 'debugging';
-    }
-    if (desc.includes('code') || desc.includes('implement') || desc.includes('develop')) {
-        return 'coding';
-    }
-    if (desc.includes('review') || desc.includes('audit')) {
-        return 'review';
-    }
-    if (desc.includes('write') || desc.includes('document')) {
-        return 'writing';
-    }
-    if (desc.includes('design') || desc.includes('plan')) {
-        return 'planning';
-    }
-    if (desc.includes('urgent') || desc.includes('emergency') || desc.includes('asap')) {
-        return 'emergency';
-    }
-    if (desc.includes('analyze') || desc.includes('research')) {
-        return 'analysis';
-    }
-    
-    return 'debugging'; // Default
 }

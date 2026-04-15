@@ -6,6 +6,9 @@
 
 import { z } from 'zod';
 import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 const QuickDetectInputSchema = z.object({
   sessionId: z.string().default(`quick_${Date.now()}`).describe('会话ID（可选，自动生成）'),
@@ -46,7 +49,7 @@ export const quickDetectTool = {
         metadata: result.metadata
       };
     } catch (error) {
-      console.error('[quick_detect] Error:', error);
+      logger.error('[quick_detect] Error:', error);
       throw new Error(`Quick detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

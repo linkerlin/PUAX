@@ -18,6 +18,9 @@ import {
   type EnhancedTriggerResult 
 } from '../hooks/trigger-detector-enhanced.js';
 import { stateManager } from '../hooks/state-manager.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 输入输出Schema定义
@@ -144,7 +147,7 @@ export const detectTriggerEnhancedTool = {
       // 构建输出
       return buildOutput(result, args.sessionId);
     } catch (error) {
-      console.error('[detect_trigger_enhanced] Error:', error);
+      logger.error('[detect_trigger_enhanced] Error:', error);
       throw new Error(`Trigger detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

@@ -6,50 +6,17 @@
 import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
+import { getGlobalLogger } from '../utils/logger.js';
 
-export interface TriggerPattern {
-  zh?: string[];
-  en?: string[];
-}
+const logger = getGlobalLogger();
 
-export interface TriggerDetection {
-  type: 'regex' | 'semantic' | 'counter' | 'composite';
-  threshold?: number;
-  case_sensitive?: boolean;
-  requires_verification?: boolean;
-  same_approach_count?: number;
-  no_new_info?: boolean;
-  available_but_unused?: boolean;
-  min_confidence: number;
-  requires_context?: boolean;
-  context_window_size?: number;
-  min_length?: number;
-  max_length?: number;
-  available_tools_check?: boolean;
-  guess_patterns?: TriggerPattern;
-  complexity_indicators?: string[];
-  pattern_similarity?: number;
-  same_approach_threshold?: number;
-}
+// Re-export types from centralized location
+export type {
+  TriggerPattern, TriggerDetection, TriggerDefinition, TriggerCatalog
+} from '../types.js';
 
-export interface TriggerDefinition {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  patterns?: TriggerPattern;
-  detection: TriggerDetection;
-  recommended_roles: {
-    primary: string;
-    alternatives: string[];
-    reason: string;
-  };
-}
-
-export interface TriggerCatalog {
-  triggers: Record<string, TriggerDefinition>;
-}
+// Import types for internal use
+import type { TriggerPattern, TriggerDefinition, TriggerCatalog } from '../types.js';
 
 export class TriggerLoader {
   private triggersDir: string;
@@ -91,10 +58,10 @@ export class TriggerLoader {
       }
 
       this.lastLoadTime = now;
-      console.log(`[TriggerLoader] Loaded ${Object.keys(triggers).length} triggers from ${files.length} files`);
+      logger.info(`[TriggerLoader] Loaded ${Object.keys(triggers).length} triggers from ${files.length} files`);
       
     } catch (error) {
-      console.error('[TriggerLoader] Error loading triggers:', error);
+      logger.error('[TriggerLoader] Error loading triggers:', error);
     }
 
     return triggers;

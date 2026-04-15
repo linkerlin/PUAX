@@ -1,4 +1,7 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -106,9 +109,9 @@ export class PuaxClient {
       });
 
       this.isInitialized = true;
-      console.log(`[PuaxClient] Session initialized: ${this.sessionId}`);
+      logger.info(`[PuaxClient] Session initialized: ${this.sessionId}`);
     } catch (error) {
-      console.error('[PuaxClient] Failed to initialize:', error);
+      logger.error('[PuaxClient] Failed to initialize:', error);
       throw error;
     }
   }
@@ -126,9 +129,9 @@ export class PuaxClient {
       });
 
       this.isInitialized = false;
-      console.log(`[PuaxClient] Session ended: ${this.sessionId}`);
+      logger.info(`[PuaxClient] Session ended: ${this.sessionId}`);
     } catch (error) {
-      console.error('[PuaxClient] Failed to end session:', error);
+      logger.error('[PuaxClient] Failed to end session:', error);
     }
   }
 
@@ -159,7 +162,7 @@ export class PuaxClient {
       this.lastCheckTime = Date.now();
       return this.formatSuggestion(result);
     } catch (error) {
-      console.error('[PuaxClient] detect_trigger error:', error);
+      logger.error('[PuaxClient] detect_trigger error:', error);
       return null;
     }
   }
@@ -190,7 +193,7 @@ export class PuaxClient {
 
       return this.formatSuggestion(result);
     } catch (error) {
-      console.error('[PuaxClient] detect_trigger error:', error);
+      logger.error('[PuaxClient] detect_trigger error:', error);
       return null;
     }
   }
@@ -214,7 +217,7 @@ export class PuaxClient {
         ...contextInfo
       });
     } catch (error) {
-      console.error('[PuaxClient] PreCompact error:', error);
+      logger.error('[PuaxClient] PreCompact error:', error);
     }
   }
 
@@ -243,7 +246,7 @@ export class PuaxClient {
 
       return this.formatSuggestion(result);
     } catch (error) {
-      console.error('[PuaxClient] get_role_suggestion error:', error);
+      logger.error('[PuaxClient] get_role_suggestion error:', error);
       return null;
     }
   }
@@ -261,7 +264,7 @@ export class PuaxClient {
 
       return result as PuaxSessionState;
     } catch (error) {
-      console.error('[PuaxClient] get_session_state error:', error);
+      logger.error('[PuaxClient] get_session_state error:', error);
       return null;
     }
   }
@@ -280,7 +283,7 @@ export class PuaxClient {
 
       return true;
     } catch (error) {
-      console.error('[PuaxClient] activate_role error:', error);
+      logger.error('[PuaxClient] activate_role error:', error);
       return false;
     }
   }
@@ -298,7 +301,7 @@ export class PuaxClient {
 
       return result.role ?? null;
     } catch (error) {
-      console.error('[PuaxClient] get_active_role error:', error);
+      logger.error('[PuaxClient] get_active_role error:', error);
       return null;
     }
   }
@@ -420,7 +423,7 @@ export async function quickDetect(
       }
     }
   } catch (error) {
-    console.error('[PuaxClient] quickDetect error:', error);
+    logger.error('[PuaxClient] quickDetect error:', error);
   }
 
   return null;

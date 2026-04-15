@@ -8,6 +8,9 @@ import '../platform-adapters/cursor-adapter.js';
 import '../platform-adapters/vscode-adapter.js';
 import { join } from 'path';
 import { getAllBundledSkills } from '../prompts/prompts-bundle.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -225,20 +228,20 @@ export async function exportPlatform(args: ExportPlatformArgs): Promise<ExportRe
     }
 
     // 加载数据
-    console.log(`[PUAX Export] Loading roles...`);
+    logger.info(`[PUAX Export] Loading roles...`);
     const roles = loadRoles();
-    console.log(`[PUAX Export] Loaded ${roles.length} roles`);
+    logger.info(`[PUAX Export] Loaded ${roles.length} roles`);
 
-    console.log(`[PUAX Export] Loading flavors...`);
+    logger.info(`[PUAX Export] Loading flavors...`);
     const flavors = loadFlavors();
-    console.log(`[PUAX Export] Loaded ${flavors.length} flavors`);
+    logger.info(`[PUAX Export] Loaded ${flavors.length} flavors`);
 
     if (roles.length === 0) {
       result.warnings.push('No roles found to export');
     }
 
     // 执行导出
-    console.log(`[PUAX Export] Exporting to ${args.platform}...`);
+    logger.info(`[PUAX Export] Exporting to ${args.platform}...`);
     const exportResult = await adapter.export(roles, flavors, config);
 
     // 合并结果
@@ -250,9 +253,9 @@ export async function exportPlatform(args: ExportPlatformArgs): Promise<ExportRe
     result.duration = Date.now() - startTime;
 
     if (result.success) {
-      console.log(`[PUAX Export] ✓ Successfully exported ${result.exportedFiles.length} files in ${result.duration}ms`);
+      logger.info(`[PUAX Export] ✓ Successfully exported ${result.exportedFiles.length} files in ${result.duration}ms`);
     } else {
-      console.error(`[PUAX Export] ✗ Export failed with ${result.errors.length} errors`);
+      logger.error(`[PUAX Export] ✗ Export failed with ${result.errors.length} errors`);
     }
 
   } catch (error) {
@@ -301,9 +304,9 @@ export async function handleExportCommand(args: string[]): Promise<void> {
   const langArg = args.find(arg => arg.startsWith('--lang='));
 
   if (!platformArg) {
-    console.error('[PUAX Export] Error: --export flag is required');
-    console.error('Usage: npx puax-mcp-server --export=<platform> --output=<path>');
-    console.error('Supported platforms: cursor, vscode, all');
+    logger.error('[PUAX Export] Error: --export flag is required');
+    logger.error('Usage: npx puax-mcp-server --export=<platform> --output=<path>');
+    logger.error('Supported platforms: cursor, vscode, all');
     process.exit(1);
   }
 
@@ -320,7 +323,7 @@ export async function handleExportCommand(args: string[]): Promise<void> {
   const language = (langArg ? langArg.split('=')[1] : 'all') as 'zh' | 'en' | 'all';
 
   if (platform === 'all') {
-    console.log('[PUAX Export] Exporting to all platforms...');
+    logger.info('[PUAX Export] Exporting to all platforms...');
     const results = await exportAllPlatforms(outputPath, {
       roleFilter,
       flavorFilter,
@@ -328,13 +331,13 @@ export async function handleExportCommand(args: string[]): Promise<void> {
     });
 
     const successCount = results.filter(r => r.success).length;
-    console.log(`\n[PUAX Export] Summary: ${successCount}/${results.length} platforms exported successfully`);
+    logger.info(`\n[PUAX Export] Summary: ${successCount}/${results.length} platforms exported successfully`);
     
     for (const result of results) {
       const status = result.success ? '✓' : '✗';
-      console.log(`  ${status} ${result.platform}: ${result.exportedFiles.length} files`);
+      logger.info(`  ${status} ${result.platform}: ${result.exportedFiles.length} files`);
       if (result.errors.length > 0) {
-        console.log(`    Errors: ${result.errors.join(', ')}`);
+        logger.info(`    Errors: ${result.errors.join(', ')}`);
       }
     }
   } else {
@@ -347,12 +350,12 @@ export async function handleExportCommand(args: string[]): Promise<void> {
     });
 
     if (result.success) {
-      console.log(`\n[PUAX Export] ✓ Success! Exported to ${outputPath}`);
-      console.log(`  Files: ${result.exportedFiles.length}`);
-      console.log(`  Duration: ${result.duration}ms`);
+      logger.info(`\n[PUAX Export] ✓ Success! Exported to ${outputPath}`);
+      logger.info(`  Files: ${result.exportedFiles.length}`);
+      logger.info(`  Duration: ${result.duration}ms`);
     } else {
-      console.error(`\n[PUAX Export] ✗ Failed!`);
-      console.error(`  Errors: ${result.errors.join('\n  ')}`);
+      logger.error(`\n[PUAX Export] ✗ Failed!`);
+      logger.error(`  Errors: ${result.errors.join('\n  ')}`);
       process.exit(1);
     }
   }

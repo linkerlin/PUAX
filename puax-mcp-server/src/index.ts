@@ -2,6 +2,9 @@
 
 import { PuaxMcpServer, ServerConfig, TransportMode } from './server.js';
 import { loadVersion } from './utils/version.js';
+import { getGlobalLogger } from './utils/logger.js';
+
+const logger = getGlobalLogger();
 
 /**
  * 解析命令行参数
@@ -246,14 +249,14 @@ async function main(): Promise<void> {
     try {
         server.run();
     } catch (error) {
-        console.error('\x1b[31m[Fatal Error]\x1b[0m', error instanceof Error ? error.message : error);
+        logger.error('\x1b[31m[Fatal Error]\x1b[0m', error instanceof Error ? error.message : error);
         process.exit(1);
     }
 }
 
 // 捕获未处理的 Promise 错误
 process.on('unhandledRejection', (reason, _promise) => {
-    console.error('\x1b[31m[Unhandled Rejection]\x1b[0m', reason);
+    logger.error('\x1b[31m[Unhandled Rejection]\x1b[0m', reason);
 });
 
 void main();

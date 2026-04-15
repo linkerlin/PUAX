@@ -6,6 +6,9 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { homedir } from 'os';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -126,7 +129,7 @@ export class FeedbackCollector {
       this.loadFeedbacks();
       this.initialized = true;
     } catch (error) {
-      console.warn('[Feedback] Initialization failed:', error);
+      logger.warn('[Feedback] Initialization failed:', error);
     }
   }
 
@@ -165,7 +168,7 @@ export class FeedbackCollector {
         }));
       }
     } catch (error) {
-      console.warn('[Feedback] Load failed:', error);
+      logger.warn('[Feedback] Load failed:', error);
     }
   }
 
@@ -192,7 +195,7 @@ export class FeedbackCollector {
         JSON.stringify(this.sessionFeedbacks, null, 2)
       );
     } catch (error) {
-      console.warn('[Feedback] Save failed:', error);
+      logger.warn('[Feedback] Save failed:', error);
     }
   }
 

@@ -6,6 +6,9 @@
 
 import { z } from 'zod';
 import { RoleRecommender } from '../core/role-recommender';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 输入输出Schema定义
@@ -132,7 +135,7 @@ export const recommendRoleTool = {
       
       return result;
     } catch (error) {
-      console.error('Error in recommend_role:', error);
+      logger.error('Error in recommend_role:', error);
       throw new Error(`Role recommendation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

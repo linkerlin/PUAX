@@ -12,15 +12,15 @@ describe('PuaxError', () => {
 
   describe('constructor', () => {
     it('should create error with code and message', () => {
-      const error = new PuaxError(PuaxErrorCode.config_not_found, 'Configuration file not found');
+      const error = new PuaxError(PuaxErrorCode.CONFIG_NOT_FOUND, 'Configuration file not found');
       expect(error).toBeInstanceOf(PuaxError);
-      expect(error.code).toBe(PuaxErrorCode.config_not_found);
+      expect(error.code).toBe(PuaxErrorCode.CONFIG_NOT_FOUND);
       expect(error.message).toBe('Configuration file not found');
     });
 
     it('should create error with details', () => {
       const details = { key: 'value' };
-      const error = new PuaxError(PuaxErrorCode.business_error, '业务错误', details);
+      const error = new PuaxError(PuaxErrorCode.BUSINESS_ERROR, '业务错误', details);
       expect(error.details).toEqual(details);
     });
   });
@@ -28,30 +28,30 @@ describe('PuaxError', () => {
   describe('static factory methods', () => {
     it('should create config not found error', () => {
       const error = PuaxError.configNotFound('Config missing');
-      expect(error.code).toBe(PuaxErrorCode.config_not_found);
+      expect(error.code).toBe(PuaxErrorCode.CONFIG_NOT_FOUND);
       expect(error.message).toBe('Config missing');
     });
 
     it('should create tool not found error', () => {
       const error = PuaxError.toolNotFound('myTool');
-      expect(error.code).toBe(PuaxErrorCode.tool_not_found);
+      expect(error.code).toBe(PuaxErrorCode.TOOL_NOT_FOUND);
       expect(error.message).toBe('Tool not found: myTool');
     });
 
     it('should create business error', () => {
       const error = PuaxError.businessError('业务错误');
-      expect(error.code).toBe(PuaxErrorCode.business_error);
+      expect(error.code).toBe(PuaxErrorCode.BUSINESS_ERROR);
     });
 
     it('should create session expired error', () => {
       const error = PuaxError.sessionExpired('session123');
-      expect(error.code).toBe(PuaxErrorCode.session_expired);
+      expect(error.code).toBe(PuaxErrorCode.SESSION_EXPIRED);
       expect(error.message).toBe('Session expired: session123');
     });
 
     it('should create role not found error', () => {
       const error = PuaxError.roleNotFound('unknown-role');
-      expect(error.code).toBe(PuaxErrorCode.role_not_found);
+      expect(error.code).toBe(PuaxErrorCode.ROLE_NOT_FOUND);
       expect(error.message).toBe('Role not found: unknown-role');
     });
   });
@@ -119,9 +119,9 @@ describe('PuaxError', () => {
 
   describe('toJSON', () => {
     it('should serialize error to JSON', () => {
-      const error = new PuaxError(PuaxErrorCode.config_not_found, 'Test error');
+      const error = new PuaxError(PuaxErrorCode.CONFIG_NOT_FOUND, 'Test error');
       const json = error.toJSON();
-      expect(json.code).toBe(PuaxErrorCode.config_not_found);
+      expect(json.code).toBe(PuaxErrorCode.CONFIG_NOT_FOUND);
       expect(json.message).toBe('Test error');
     });
   });

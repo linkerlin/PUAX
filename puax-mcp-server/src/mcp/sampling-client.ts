@@ -5,6 +5,9 @@
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 类型定义
@@ -163,7 +166,7 @@ ${role.systemPrompt}
       };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.error('[PUAX Sampling] Error:', errorMessage);
+      logger.error('[PUAX Sampling] Error:', errorMessage);
       
       return {
         accepted: false,

@@ -6,6 +6,9 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 export interface TriggerRoleMapping {
   primary: string;
@@ -74,11 +77,11 @@ export class RoleMappingsLoader {
       this.cache = data;
       this.lastLoadTime = now;
       
-      console.log('[RoleMappingsLoader] Loaded role mappings');
+      logger.info('[RoleMappingsLoader] Loaded role mappings');
       return data;
       
     } catch (error) {
-      console.error('[RoleMappingsLoader] Error loading mappings:', error);
+      logger.error('[RoleMappingsLoader] Error loading mappings:', error);
       // 返回默认空配置
       return {
         trigger_role_mappings: {},
@@ -93,70 +96,65 @@ export class RoleMappingsLoader {
   /**
    * 获取触发条件到角色的映射
    */
-  getTriggerRoleMapping(triggerId: string): Promise<TriggerRoleMapping | undefined> {
-    return Promise.resolve(this.loadMappings().trigger_role_mappings[triggerId]);
+  getTriggerRoleMapping(triggerId: string): TriggerRoleMapping | undefined {
+    return this.loadMappings().trigger_role_mappings[triggerId];
   }
 
   /**
    * 获取任务类型到角色的映射
    */
-  getTaskTypeRoleMapping(taskType: string): Promise<TaskTypeRoleMapping | undefined> {
-    return Promise.resolve(this.loadMappings().task_type_role_mappings[taskType]);
+  getTaskTypeRoleMapping(taskType: string): TaskTypeRoleMapping | undefined {
+    return this.loadMappings().task_type_role_mappings[taskType];
   }
 
   /**
    * 获取失败模式切换建议
    */
-  getFailureModeSwitch(failureMode: string): Promise<FailureModeRoleMapping | undefined> {
-    return Promise.resolve(this.loadMappings().failure_mode_role_mappings[failureMode]);
+  getFailureModeSwitch(failureMode: string): FailureModeRoleMapping | undefined {
+    return this.loadMappings().failure_mode_role_mappings[failureMode];
   }
 
   /**
    * 获取角色元数据
    */
-  getRoleMetadata(roleId: string): Promise<RoleMetadata | undefined> {
-    return Promise.resolve(this.loadMappings().role_metadata[roleId]);
+  getRoleMetadata(roleId: string): RoleMetadata | undefined {
+    return this.loadMappings().role_metadata[roleId];
   }
 
   /**
    * 获取角色组合
    */
-  getRoleCombination(scenario: string): Promise<RoleCombination | undefined> {
-    return Promise.resolve(this.loadMappings().role_combinations[scenario]);
+  getRoleCombination(scenario: string): RoleCombination | undefined {
+    return this.loadMappings().role_combinations[scenario];
   }
 
   /**
    * 按类别获取角色
    */
-  getRolesByCategory(category: string): Promise<string[]> {
+  getRolesByCategory(category: string): string[] {
     const mappings = this.loadMappings();
-    return Promise.resolve(
-      Object.entries(mappings.role_metadata)
-        .filter(([_, meta]) => meta.category === category)
-        .map(([roleId]) => roleId)
-    );
+    return Object.entries(mappings.role_metadata)
+      .filter(([_, meta]) => meta.category === category)
+      .map(([roleId]) => roleId);
   }
 
   /**
    * 按标签获取角色
    */
-  getRolesByTag(tag: string): Promise<string[]> {
+  getRolesByTag(tag: string): string[] {
     const mappings = this.loadMappings();
-    return Promise.resolve(
-      Object.entries(mappings.role_metadata)
-        .filter(([_, meta]) => meta.tags.includes(tag))
-        .map(([roleId]) => roleId)
-    );
+    return Object.entries(mappings.role_metadata)
+      .filter(([_, meta]) => meta.tags.includes(tag))
+      .map(([roleId]) => roleId);
   }
 
   /**
    * 获取适合特定任务的角色
    */
-  getRolesForTask(taskType: string): Promise<string[]> {
-    return this.getTaskTypeRoleMapping(taskType).then(mapping => {
-      if (!mapping) return [];
-      return [mapping.primary, ...mapping.alternatives];
-    });
+  getRolesForTask(taskType: string): string[] {
+    const mapping = this.getTaskTypeRoleMapping(taskType);
+    if (!mapping) return [];
+    return [mapping.primary, ...mapping.alternatives];
   }
 
   /**
@@ -170,15 +168,15 @@ export class RoleMappingsLoader {
   /**
    * 热重载
    */
-  hotReload(): Promise<RoleMappings> {
+  hotReload(): RoleMappings {
     this.clearCache();
-    return Promise.resolve(this.loadMappings());
+    return this.loadMappings();
   }
 
   /**
    * 验证映射配置
    */
-  validateMappings(): Promise<{ valid: boolean; errors: string[] }> {
+  validateMappings(): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
     
     try {
@@ -206,16 +204,16 @@ export class RoleMappingsLoader {
       errors.push(`Failed to load mappings: ${error instanceof Error ? error.message : String(error)}`);
     }
     
-    return Promise.resolve({
+    return {
       valid: errors.length === 0,
       errors
-    });
+    };
   }
 
   /**
    * 获取统计信息
    */
-  getStats(): Promise<{
+  getStats(): {
     totalMappings: number;
     triggerMappings: number;
     taskTypeMappings: number;
@@ -223,14 +221,14 @@ export class RoleMappingsLoader {
     roleMetadataCount: number;
     roleCombinations: number;
     categories: string[];
-  }> {
+  } {
     const mappings = this.loadMappings();
     
     const categories = new Set(
       Object.values(mappings.role_metadata).map(m => m.category)
     );
     
-    return Promise.resolve({
+    return {
       totalMappings: Object.keys(mappings.trigger_role_mappings).length +
         Object.keys(mappings.task_type_role_mappings).length +
         Object.keys(mappings.failure_mode_role_mappings).length,
@@ -240,7 +238,7 @@ export class RoleMappingsLoader {
       roleMetadataCount: Object.keys(mappings.role_metadata).length,
       roleCombinations: Object.keys(mappings.role_combinations).length,
       categories: Array.from(categories)
-    });
+    };
   }
 }
 

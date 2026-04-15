@@ -6,6 +6,9 @@
 
 import { z } from 'zod';
 import { TriggerDetector } from '../core/trigger-detector';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // ============================================================================
 // 输入输出Schema定义
@@ -98,7 +101,7 @@ export const detectTriggerTool = {
       
       return result;
     } catch (error) {
-      console.error('Error in detect_trigger:', error);
+      logger.error('Error in detect_trigger:', error);
       throw new Error(`Trigger detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

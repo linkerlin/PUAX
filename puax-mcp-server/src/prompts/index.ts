@@ -6,6 +6,9 @@ import {
   CATEGORIES,
   CATEGORY_NAMES
 } from './prompts-bundle.js';
+import { getGlobalLogger } from '../utils/logger.js';
+
+const logger = getGlobalLogger();
 
 // Type alias for section parameter
 export type SkillSection = 'full' | 'metadata' | 'capabilities' | 'systemPrompt';
@@ -41,11 +44,11 @@ export class PromptManager {
     this.bundledMode = useBundledMode;
 
     if (this.bundledMode) {
-      console.error('[PromptManager] Running in bundled mode (embedded SKILLs)');
+      logger.error('[PromptManager] Running in bundled mode (embedded SKILLs)');
       const skills = getAllBundledSkills();
-      console.error(`[PromptManager] Loaded ${skills.length} SKILLs from bundle`);
+      logger.error(`[PromptManager] Loaded ${skills.length} SKILLs from bundle`);
     } else {
-      console.error('[PromptManager] Running in filesystem mode (external files) - DEPRECATED');
+      logger.error('[PromptManager] Running in filesystem mode (external files) - DEPRECATED');
     }
   }
 
@@ -53,12 +56,12 @@ export class PromptManager {
     if (this.bundledMode) {
       this.loadSkillsFromBundle();
     } else {
-      console.error('[PromptManager] WARNING: Filesystem mode is deprecated and may be removed in future versions');
+      logger.error('[PromptManager] WARNING: Filesystem mode is deprecated and may be removed in future versions');
     }
   }
 
   private loadSkillsFromBundle(): void {
-    console.error('[PromptManager] Loading SKILLs from bundle...');
+    logger.error('[PromptManager] Loading SKILLs from bundle...');
 
     const bundledSkills = getAllBundledSkills();
 
@@ -87,7 +90,7 @@ export class PromptManager {
       this.promptsCache.set(skill.id, skill.content);
     }
 
-    console.error(`[PromptManager] Successfully loaded ${this.skills.length} SKILLs from bundle`);
+    logger.error(`[PromptManager] Successfully loaded ${this.skills.length} SKILLs from bundle`);
   }
 
   public getAllSkills(): SkillInfo[] {
