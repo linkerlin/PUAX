@@ -23,6 +23,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { Logger } from '../utils/logger.js';
+import { loadVersion } from '../utils/version.js';
 import type { ServerConfig } from '../types.js';
 
 // Import handler modules
@@ -61,7 +62,7 @@ export class PuaxMcpServer {
         this.logger = new Logger(this.config.quiet);
         
         // Read version from package.json
-        this.version = this.loadVersion();
+        this.version = loadVersion();
         
         this.logger.info(`Starting PUAX MCP Server v${this.version}...`);
         
@@ -89,26 +90,6 @@ export class PuaxMcpServer {
         this.setupPromptHandlers();
         this.setupResourceHandlers();
         this.setupErrorHandling();
-    }
-
-    private loadVersion(): string {
-        const paths = [
-            join(__dirname, '..', '..', 'package.json'),
-            join(__dirname, '..', 'package.json'),
-            join(process.cwd(), 'package.json')
-        ];
-        
-        for (const pkgPath of paths) {
-            if (existsSync(pkgPath)) {
-                try {
-                    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-                    return pkg.version || '1.5.0';
-                } catch {
-                    continue;
-                }
-            }
-        }
-        return '1.5.0';
     }
 
     private setupToolHandlers(): void {
@@ -199,10 +180,7 @@ export class PuaxMcpServer {
             );
         }
         
-        const result = handler(args);
-        // Handler may return a Promise or a plain object
-        const resolved = await Promise.resolve(result);
-        return resolved as McpToolResponse;
+        return await handler(args) as McpToolResponse;
     }
 
     private setupPromptHandlers(): void {

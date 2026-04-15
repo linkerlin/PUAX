@@ -9,9 +9,9 @@
  * - 客户端 SDK 集成支持
  */
 
-import { stateManager } from './state-manager.js';
+import type { StateManager, SessionState } from './state-manager.js';
 import { enhancedTriggerDetector, TriggerContext, HookEventType, EnhancedTriggerResult } from './trigger-detector-enhanced.js';
-import { pressureSystem } from './pressure-system.js';
+import type { PressureSystem } from './pressure-system.js';
 
 // ============================================================================
 // 类型定义
@@ -45,12 +45,17 @@ export interface SessionContext {
   conversationHistory: Array<{ role: string; content: string }>;
   lastMessageTime: number;
   lastToolUseTime?: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 }
 
 // ============================================================================
 // Hook 管理器类
 // ============================================================================
+
+export interface HookManagerDeps {
+  stateManager?: StateManager;
+  pressureSystem?: PressureSystem;
+}
 
 export class HookManager {
   private subscriptions: Map<string, HookSubscription> = new Map();
@@ -58,8 +63,10 @@ export class HookManager {
   private checkIntervals: Map<string, NodeJS.Timeout> = new Map();
   private config: HookManagerConfig;
   private isRunning = false;
+  private stateManager: StateManager;
+  private pressureSystem: PressureSystem;
 
-  constructor(config: Partial<HookManagerConfig> = {}) {
+  constructor(config: Partial<HookManagerConfig> = {}, deps?: HookManagerDeps) {
     this.config = {
       autoCheck: {
         enabled: true,
@@ -73,6 +80,9 @@ export class HookManager {
       enableFeedback: true,
       ...config
     };
+    // Lazy import to avoid circular deps; allow injection for testing
+    this.stateManager = deps?.stateManager ?? require('./state-manager.js').stateManager;
+    this.pressureSystem = deps?.pressureSystem ?? require('./pressure-system.js').pressureSystem;
   }
 
   // ============================================================================
@@ -87,7 +97,7 @@ export class HookManager {
     callback: HookCallback,
     filter?: (result: EnhancedTriggerResult) => boolean
   ): string {
-    const id = `sub_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const id = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
     
     this.subscriptions.set(id, {
       id,
@@ -176,7 +186,7 @@ export class HookManager {
   /**
    * 启动会话监控
    */
-  startSession(sessionId: string, initialMetadata: Record<string, any> = {}): void {
+  startSession(sessionId: string, initialMetadata: Record<string, unknown> = {}): void {
     // 初始化会话上下文
     this.sessions.set(sessionId, {
       sessionId,
@@ -186,7 +196,7 @@ export class HookManager {
     });
 
     // 初始化或恢复会话状态
-    const state = stateManager.getSessionState(sessionId);
+    const state = this.stateManager.getSessionState(sessionId);
     
     // 触发 SessionStart 事件
     this.emit('SessionStart', {
@@ -275,7 +285,7 @@ export class HookManager {
   async recordToolUse(
     sessionId: string,
     toolName: string,
-    toolResult: any,
+    toolResult: unknown,
     errorMessage?: string
   ): Promise<EnhancedTriggerResult> {
     const session = this.sessions.get(sessionId);
@@ -354,7 +364,7 @@ export class HookManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const state = stateManager.getSessionState(sessionId);
+    const state = this.stateManager.getSessionState(sessionId);
     const now = Date.now();
 
     // 检查是否需要基于历史触发
@@ -398,7 +408,7 @@ export class HookManager {
   async quickCheck(
     sessionId: string,
     text: string,
-    context?: { toolName?: string; toolResult?: any }
+    context?: { toolName?: string; toolResult?: unknown }
   ): Promise<EnhancedTriggerResult> {
     // 确保会话存在
     if (!this.sessions.has(sessionId)) {
@@ -423,14 +433,14 @@ export class HookManager {
   getSessionStats(sessionId: string): {
     exists: boolean;
     messageCount: number;
-    state: ReturnType<typeof stateManager.getSessionState> | null;
+    state: SessionState | null;
   } {
     const session = this.sessions.get(sessionId);
     
     return {
       exists: !!session,
       messageCount: session?.conversationHistory.length || 0,
-      state: session ? stateManager.getSessionState(sessionId) : null
+      state: session ? this.stateManager.getSessionState(sessionId) : null
     };
   }
 

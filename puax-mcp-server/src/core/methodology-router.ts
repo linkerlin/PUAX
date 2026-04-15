@@ -1,7 +1,13 @@
 /**
  * 方法论智能路由
  * 根据任务类型和失败模式自动选择最优方法论
+ * 
+ * v2: 数据从 methodologies.yaml 加载，实现数据与逻辑分离
  */
+
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import YAML from 'yaml';
 
 // ============================================================================
 // 类型定义
@@ -70,222 +76,97 @@ export interface RoutingResult {
 }
 
 // ============================================================================
-// 方法论定义
+// YAML 数据结构
 // ============================================================================
 
-export const METHODOLOGIES: Record<Methodology, MethodologyDefinition> = {
-  // 辅助方法论定义
-  'pinduoduo-simplify': {
-    id: 'pinduoduo-simplify',
-    name: '拼多多简化法',
-    description: '砍掉一切中间环节，最短决策链',
-    flavor: 'pinduoduo',
-    keywords: ['简化', '砍环节', '最短路径'],
-    suitableTasks: ['building'],
-    effectiveAgainst: ['spinning'],
-    steps: ['识别冗余', '砍掉中间环节', '直达目标'],
-    switchToOnFailure: ['huawei-rca']
-  },
-  'xiaomi-focus': {
-    id: 'xiaomi-focus',
-    name: '小米专注法',
-    description: '专注、极致、口碑、快',
-    flavor: 'xiaomi',
-    keywords: ['专注', '极致', '口碑', '快'],
-    suitableTasks: ['building'],
-    effectiveAgainst: ['poor_quality'],
-    steps: ['专注核心', '做到极致', '快速迭代'],
-    switchToOnFailure: ['netflix-keeper']
-  },
-  'amazon-deep-dive': {
-    id: 'amazon-deep-dive',
-    name: 'Amazon深度挖掘',
-    description: 'Dive Deep 深入细节',
-    flavor: 'amazon',
-    keywords: ['深入', '细节', '数据'],
-    suitableTasks: ['research', 'debugging'],
-    effectiveAgainst: ['not_searching'],
-    steps: ['深入细节', '挖掘根因', '数据验证'],
-    switchToOnFailure: ['bytedance-abtest']
-  },
-  'bytedance-data': {
-    id: 'bytedance-data',
-    name: '字节数据驱动',
-    description: 'Data before intuition',
-    flavor: 'bytedance',
-    keywords: ['数据', '驱动', '验证'],
-    suitableTasks: ['performance'],
-    effectiveAgainst: ['not_searching'],
-    steps: ['收集数据', '分析验证', '决策'],
-    switchToOnFailure: ['baidu-search']
-  },
-  'alibaba-closed-loop': {
-    id: 'alibaba-closed-loop',
-    name: '阿里闭环法',
-    description: '定目标→追过程→拿结果→复盘四步法',
-    flavor: 'alibaba',
-    keywords: ['闭环', '抓手', '颗粒度', '复盘'],
-    suitableTasks: ['deployment', 'planning', 'building'],
-    effectiveAgainst: ['passive_wait', 'unverified_completion'],
-    steps: [
-      '定目标: 明确可量化的目标',
-      '追过程: 监控执行过程',
-      '拿结果: 确保结果达成',
-      '复盘: 总结经验教训'
-    ],
-    switchToOnFailure: ['huawei-rca', 'musk-algorithm']
-  },
+interface MethodologyYamlEntry {
+  name: string;
+  description: string;
+  flavor: string;
+  keywords: string[];
+  suitable_tasks: string[];
+  effective_against: string[];
+  steps: string[];
+  switch_to_on_failure: string[];
+}
 
-  'huawei-rca': {
-    id: 'huawei-rca',
-    name: '华为根因分析',
-    description: 'RCA 5-Why根因 + 蓝军自攻击 + 压强集中',
-    flavor: 'huawei',
-    keywords: ['根因', '5-Why', '蓝军', '力出一孔'],
-    suitableTasks: ['debugging', 'review'],
-    effectiveAgainst: ['spinning', 'poor_quality', 'giving_up'],
-    steps: [
-      '闻味道: 列出所有尝试方案',
-      '揪头发: 逐字读失败信号、主动搜索',
-      '照镜子: 检查是否在重复',
-      '执行新方案: 本质不同的方案',
-      '复盘: 检查同类问题'
-    ],
-    switchToOnFailure: ['musk-algorithm', 'jobs-subtraction']
-  },
+interface RouterYaml {
+  methodology_definitions: Record<string, MethodologyYamlEntry>;
+  task_methodology_map: Record<string, string[]>;
+  failure_switch_chains: Record<string, string[]>;
+}
 
-  'musk-algorithm': {
-    id: 'musk-algorithm',
-    name: 'Musk算法',
-    description: '质疑→删除→简化→加速→自动化',
-    flavor: 'musk',
-    keywords: ['质疑', '删除', '简化', '加速', '自动化'],
-    suitableTasks: ['building', 'performance', 'architecture'],
-    effectiveAgainst: ['spinning', 'over_complication', 'giving_up'],
-    steps: [
-      '质疑: 质疑每一个需求',
-      '删除: 删除不必要的部分',
-      '简化: 优化剩下的部分',
-      '加速: 加快执行速度',
-      '自动化: 实现自动化'
-    ],
-    switchToOnFailure: ['huawei-rca']
-  },
+// ============================================================================
+// 数据加载
+// ============================================================================
 
-  'jobs-subtraction': {
-    id: 'jobs-subtraction',
-    name: 'Jobs减法哲学',
-    description: '减法>加法 + DRI + 像素级完美',
-    flavor: 'jobs',
-    keywords: ['减法', 'DRI', '像素级', '完美'],
-    suitableTasks: ['review', 'architecture'],
-    effectiveAgainst: ['poor_quality', 'over_complication'],
-    steps: [
-      '识别核心: 什么是最重要的',
-      '减法: 删除非核心部分',
-      '专注: 把核心做到极致',
-      '验证: 像素级检查'
-    ],
-    switchToOnFailure: ['netflix-keeper']
-  },
-
-  'baidu-search': {
-    id: 'baidu-search',
-    name: '百度搜索优先',
-    description: '搜索是第一生产力，信息检索先行',
-    flavor: 'baidu',
-    keywords: ['搜索', '信息检索', '基本盘'],
-    suitableTasks: ['research', 'debugging'],
-    effectiveAgainst: ['not_searching', 'spinning'],
-    steps: [
-      '搜索: 多角度搜索问题',
-      '阅读: 读原始材料',
-      '整理: 整理信息',
-      '应用: 应用到实际问题'
-    ],
-    switchToOnFailure: ['bytedance-abtest']
-  },
-
-  'amazon-backwards': {
-    id: 'amazon-backwards',
-    name: 'Amazon逆向工作',
-    description: 'Working Backwards PR/FAQ + 6-Pager',
-    flavor: 'amazon',
-    keywords: ['逆向', 'PR/FAQ', '客户至上'],
-    suitableTasks: ['architecture', 'planning'],
-    effectiveAgainst: ['passive_wait', 'poor_quality'],
-    steps: [
-      '写PR: 从客户需求出发',
-      '写FAQ: 预判问题和答案',
-      '6页文档: 详细方案',
-      '审阅: 模拟审阅流程'
-    ],
-    switchToOnFailure: ['bytedance-abtest', 'alibaba-closed-loop']
-  },
-
-  'bytedance-abtest': {
-    id: 'bytedance-abtest',
-    name: '字节A/B测试',
-    description: 'A/B Test一切 + 数据驱动 + 速度>完美',
-    flavor: 'bytedance',
-    keywords: ['A/B测试', '数据驱动', 'ROI', '速度'],
-    suitableTasks: ['performance', 'building'],
-    effectiveAgainst: ['not_searching', 'unverified_completion'],
-    steps: [
-      '假设: 形成可测试的假设',
-      '实验: 设计A/B测试',
-      '数据: 收集和分析数据',
-      '决策: 基于数据决策'
-    ],
-    switchToOnFailure: ['baidu-search', 'amazon-deep-dive']
-  },
-
-  'netflix-keeper': {
-    id: 'netflix-keeper',
-    name: 'Netflix Keeper测试',
-    description: 'Keeper Test + 4A Feedback',
-    flavor: 'netflix',
-    keywords: ['Keeper Test', '4A反馈', '人才密度'],
-    suitableTasks: ['review', 'planning'],
-    effectiveAgainst: ['giving_up', 'poor_quality'],
-    steps: [
-      '评估: 如果方案是员工，会保留吗',
-      '反馈: 4A反馈（ Aim, Actionable, Accept, Appreciate ）',
-      '决策: 继续投资还是放弃',
-      '执行: 果断执行决策'
-    ],
-    switchToOnFailure: ['huawei-rca', 'musk-algorithm']
+function loadRouterData(): RouterYaml {
+  const yamlPath = join(__dirname, '..', 'data', 'methodologies.yaml');
+  try {
+    const content = readFileSync(yamlPath, 'utf-8');
+    const parsed = YAML.parse(content);
+    return {
+      methodology_definitions: parsed.methodology_definitions || {},
+      task_methodology_map: parsed.task_methodology_map || {},
+      failure_switch_chains: parsed.failure_switch_chains || {}
+    };
+  } catch {
+    return {
+      methodology_definitions: {},
+      task_methodology_map: {},
+      failure_switch_chains: {}
+    };
   }
-};
+}
 
-// ============================================================================
-// 任务类型到方法论的映射
-// ============================================================================
+const yamlData = loadRouterData();
 
-const TASK_METHODLOGY_MAPPING: Record<TaskType, Methodology[]> = {
-  debugging: ['huawei-rca', 'baidu-search', 'alibaba-closed-loop'],
-  building: ['musk-algorithm', 'bytedance-abtest', 'alibaba-closed-loop'],
-  research: ['baidu-search', 'amazon-backwards', 'bytedance-abtest'],
-  architecture: ['amazon-backwards', 'musk-algorithm', 'jobs-subtraction'],
-  performance: ['bytedance-abtest', 'musk-algorithm', 'huawei-rca'],
-  deployment: ['alibaba-closed-loop', 'huawei-rca', 'musk-algorithm'],
-  review: ['jobs-subtraction', 'netflix-keeper', 'huawei-rca'],
-  planning: ['amazon-backwards', 'alibaba-closed-loop', 'netflix-keeper']
-};
+/** 将 YAML 条目转换为 MethodologyDefinition */
+function yamlToDefinition(id: string, entry: MethodologyYamlEntry): MethodologyDefinition {
+  return {
+    id: id as Methodology,
+    name: entry.name,
+    description: entry.description,
+    flavor: entry.flavor,
+    keywords: entry.keywords || [],
+    suitableTasks: (entry.suitable_tasks || []) as TaskType[],
+    effectiveAgainst: (entry.effective_against || []) as FailureMode[],
+    steps: entry.steps || [],
+    switchToOnFailure: (entry.switch_to_on_failure || []) as Methodology[]
+  };
+}
 
-// ============================================================================
-// 失败模式到切换链的映射
-// ============================================================================
+/** 从 YAML 数据构建 METHODOLOGIES 记录 */
+function buildMethodologies(): Record<Methodology, MethodologyDefinition> {
+  const result: Partial<Record<Methodology, MethodologyDefinition>> = {};
+  for (const [id, entry] of Object.entries(yamlData.methodology_definitions)) {
+    result[id as Methodology] = yamlToDefinition(id, entry);
+  }
+  return result as Record<Methodology, MethodologyDefinition>;
+}
 
-const FAILURE_SWITCH_CHAIN: Record<FailureMode, Methodology[]> = {
-  spinning: ['musk-algorithm', 'jobs-subtraction', 'huawei-rca'],
-  giving_up: ['netflix-keeper', 'huawei-rca', 'musk-algorithm'],
-  poor_quality: ['jobs-subtraction', 'netflix-keeper', 'huawei-rca'],
-  not_searching: ['baidu-search', 'amazon-backwards', 'bytedance-abtest'],
-  passive_wait: ['alibaba-closed-loop', 'amazon-backwards', 'musk-algorithm'],
-  unverified_completion: ['bytedance-abtest', 'alibaba-closed-loop', 'netflix-keeper'],
-  over_complication: ['musk-algorithm', 'jobs-subtraction', 'pinduoduo-simplify']
-};
+/** 从 YAML 数据构建任务映射 */
+function buildTaskMapping(): Record<TaskType, Methodology[]> {
+  const result: Partial<Record<TaskType, Methodology[]>> = {};
+  for (const [taskType, methodologies] of Object.entries(yamlData.task_methodology_map)) {
+    result[taskType as TaskType] = (methodologies as string[]) as Methodology[];
+  }
+  return result as Record<TaskType, Methodology[]>;
+}
+
+/** 从 YAML 数据构建失败模式映射 */
+function buildFailureMapping(): Record<FailureMode, Methodology[]> {
+  const result: Partial<Record<FailureMode, Methodology[]>> = {};
+  for (const [failureMode, chain] of Object.entries(yamlData.failure_switch_chains)) {
+    result[failureMode as FailureMode] = (chain as string[]) as Methodology[];
+  }
+  return result as Record<FailureMode, Methodology[]>;
+}
+
+// 初始化数据
+export const METHODOLOGIES = buildMethodologies();
+const TASK_METHODLOGY_MAPPING = buildTaskMapping();
+const FAILURE_SWITCH_CHAIN = buildFailureMapping();
 
 // ============================================================================
 // 方法论路由器
@@ -298,10 +179,10 @@ export class MethodologyRouter {
    * 路由到最优方法论
    */
   route(request: RoutingRequest): RoutingResult {
-    const { taskType, failureMode, attemptCount, previousMethodologies, context } = request;
+    const { taskType, failureMode, attemptCount, previousMethodologies } = request;
 
     // 1. 基于任务类型获取候选方法论
-    const candidates = TASK_METHODLOGY_MAPPING[taskType] || ['alibaba-closed-loop'];
+    const candidates = TASK_METHODLOGY_MAPPING[taskType] || ['alibaba-closed-loop' as Methodology];
 
     // 2. 如果存在失败模式，使用切换链
     let selectedMethodology: Methodology;
@@ -309,19 +190,14 @@ export class MethodologyRouter {
     let switchingChain: Methodology[] | undefined;
 
     if (failureMode && attemptCount >= 3) {
-      // 失败多次，需要切换方法论
       const chain = FAILURE_SWITCH_CHAIN[failureMode];
-      
-      // 找到链中未尝试过的方法论
       const tried = new Set(previousMethodologies || []);
-      selectedMethodology = chain.find(m => !tried.has(m)) || chain[chain.length - 1];
-      
-      reason = `检测到失败模式 "${failureMode}"，已尝试 ${attemptCount} 次，切换到 ${METHODOLOGIES[selectedMethodology].name}`;
+      selectedMethodology = chain?.find(m => !tried.has(m)) || chain?.[chain.length - 1] || candidates[0];
+      reason = `检测到失败模式 "${failureMode}"，已尝试 ${attemptCount} 次，切换到 ${METHODOLOGIES[selectedMethodology]?.name || selectedMethodology}`;
       switchingChain = chain;
     } else {
-      // 基于任务类型选择
       selectedMethodology = candidates[0];
-      reason = `根据任务类型 "${taskType}" 推荐 ${METHODOLOGIES[selectedMethodology].name}`;
+      reason = `根据任务类型 "${taskType}" 推荐 ${METHODOLOGIES[selectedMethodology]?.name || selectedMethodology}`;
     }
 
     // 3. 计算置信度
@@ -334,7 +210,7 @@ export class MethodologyRouter {
 
     // 5. 获取执行步骤
     const definition = METHODOLOGIES[selectedMethodology];
-    const executionSteps = definition.steps;
+    const executionSteps = definition?.steps || [];
 
     return {
       selectedMethodology,
@@ -355,19 +231,18 @@ export class MethodologyRouter {
     failureMode?: FailureMode
   ): number {
     const def = METHODOLOGIES[methodology];
-    let confidence = 0.7;  // 基础置信度
+    if (!def) return 0.5;
 
-    // 任务类型匹配度
+    let confidence = 0.7;
+
     if (def.suitableTasks.includes(taskType)) {
       confidence += 0.15;
     }
 
-    // 失败模式匹配度
     if (failureMode && def.effectiveAgainst.includes(failureMode)) {
       confidence += 0.1;
     }
 
-    // 限制最大置信度
     return Math.min(0.95, confidence);
   }
 
@@ -391,7 +266,7 @@ export class MethodologyRouter {
   recordUsage(sessionId: string, methodology: Methodology): void {
     const history = this.usageHistory.get(sessionId) || [];
     history.push(methodology);
-    this.usageHistory.set(sessionId, history.slice(-10));  // 保留最近10个
+    this.usageHistory.set(sessionId, history.slice(-10));
   }
 
   /**
@@ -412,16 +287,13 @@ export class MethodologyRouter {
     const def = METHODOLOGIES[currentMethodology];
     const history = this.getUsageHistory(sessionId);
     
-    // 在当前方法论的 switchToOnFailure 中找到未尝试的
-    const next = def.switchToOnFailure.find(m => !history.includes(m));
-    
-    // 如果都尝试过了，使用失败模式链
-    if (!next) {
-      const chain = FAILURE_SWITCH_CHAIN[failureMode];
-      return chain.find(m => m !== currentMethodology && !history.includes(m));
+    if (def) {
+      const next = def.switchToOnFailure.find(m => !history.includes(m));
+      if (next) return next;
     }
 
-    return next;
+    const chain = FAILURE_SWITCH_CHAIN[failureMode];
+    return chain?.find(m => m !== currentMethodology && !history.includes(m));
   }
 
   /**
@@ -433,23 +305,21 @@ export class MethodologyRouter {
     failureMode?: FailureMode
   ): string {
     const def = METHODOLOGIES[methodology];
+    if (!def) return `方法论 ${methodology} 未找到定义`;
+
     const lines: string[] = [
       `选择 ${def.name} 的原因：`,
       ''
     ];
 
-    // 任务类型匹配
     if (def.suitableTasks.includes(taskType)) {
       lines.push(`✓ 适合任务类型：${taskType}`);
     }
 
-    // 失败模式匹配
-    if (failureMode && def.effectiveAgainst.includes(failureMode))
-    {
+    if (failureMode && def.effectiveAgainst.includes(failureMode)) {
       lines.push(`✓ 有效解决：${failureMode}`);
     }
 
-    // 核心特点
     lines.push(`✓ 核心方法：${def.steps[0]}`);
     lines.push(`✓ 风味特色：${def.flavor}`);
 

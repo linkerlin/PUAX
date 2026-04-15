@@ -1,31 +1,7 @@
 #!/usr/bin/env node
 
 import { PuaxMcpServer, ServerConfig, TransportMode } from './server.js';
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
-
-/**
- * 读取 package.json 版本号
- */
-function getVersion(): string {
-    const paths = [
-        join(__dirname, '..', 'package.json'),     // build/ -> root
-        join(__dirname, 'package.json'),            // 直接在 root
-        join(process.cwd(), 'package.json')         // 回退到 cwd
-    ];
-    
-    for (const pkgPath of paths) {
-        if (existsSync(pkgPath)) {
-            try {
-                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-                return pkg.version || '1.0.0';
-            } catch {
-                continue;
-            }
-        }
-    }
-    return '1.5.0';
-}
+import { loadVersion } from './utils/version.js';
 
 /**
  * 解析命令行参数
@@ -132,7 +108,7 @@ function isExportCommand(): boolean {
  * 显示帮助信息
  */
 function showHelp(): void {
-    const version = getVersion();
+    const version = loadVersion();
     console.log(`
 PUAX MCP Server v${version}
 
@@ -195,7 +171,7 @@ STDIO 模式:
  * 显示版本号
  */
 function showVersion(): void {
-    console.log(`puax-mcp-server v${getVersion()}`);
+    console.log(`puax-mcp-server v${loadVersion()}`);
 }
 
 /**

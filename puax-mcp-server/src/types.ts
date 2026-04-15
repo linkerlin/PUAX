@@ -19,33 +19,6 @@ export interface ToolResponse {
     }>;
 }
 
-export interface SkillInfo {
-    id: string;
-    name: string;
-    category: string;
-    description: string;
-    tags?: string[];
-    capabilities?: string[];
-    author?: string;
-    version?: string;
-    filePath?: string;
-    content?: string;
-}
-
-export interface RoleInfo extends SkillInfo {}
-
-export interface ActivationResult {
-    success: boolean;
-    role: {
-        id: string;
-        name: string;
-        category: string;
-        capabilities?: string[];
-    };
-    systemPrompt: string;
-    note?: string;
-}
-
 export interface TriggerDetectionContext {
     conversation_history?: Array<{
         role: string;
@@ -84,3 +57,9 @@ export interface ActivationOptions {
     include_methodology?: boolean;
     include_checklist?: boolean;
 }
+
+/** Pressure level type constraint */
+export type PressureLevel = 0 | 1 | 2 | 3 | 4;
+
+/** Re-export SkillInfo from tools.ts as single source of truth */
+export type { SkillInfo, RoleInfo } from './tools.js';

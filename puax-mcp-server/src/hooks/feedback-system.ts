@@ -9,7 +9,7 @@
  * - 反馈历史分析
  */
 
-import { stateManager, FeedbackRecord } from './state-manager.js';
+import type { StateManager, FeedbackRecord, SessionState } from './state-manager.js';
 
 // ============================================================================
 // 类型定义
@@ -67,12 +67,19 @@ export interface ImprovementSuggestion {
 // ============================================================================
 
 export class FeedbackSystem {
+  private stateManager: StateManager;
+
+  constructor(stateManager?: StateManager) {
+    // Lazy import to avoid circular deps; allow injection for testing
+    this.stateManager = stateManager ?? require('./state-manager.js').stateManager;
+  }
+
   /**
    * 收集会话反馈
    */
   collectFeedback(feedback: SessionFeedback): void {
     // 保存到状态管理器
-    stateManager.recordFeedback(feedback.sessionId, {
+    this.stateManager.recordFeedback(feedback.sessionId, {
       pressureLevel: feedback.pressureLevel,
       rating: feedback.rating,
       success: feedback.success,
@@ -91,7 +98,7 @@ export class FeedbackSystem {
     rating: number,
     comments?: string
   ): void {
-    const state = stateManager.getSessionState(sessionId);
+    const state = this.stateManager.getSessionState(sessionId);
     
     this.collectFeedback({
       sessionId,
@@ -107,7 +114,7 @@ export class FeedbackSystem {
    * 获取反馈汇总
    */
   getFeedbackSummary(days: number = 30): FeedbackSummary {
-    const allFeedback = stateManager.getFeedbackHistory();
+    const allFeedback = this.stateManager.getFeedbackHistory();
     const cutoffTime = Date.now() - (days * 24 * 60 * 60 * 1000);
     
     // 过滤最近的数据
@@ -228,13 +235,13 @@ export class FeedbackSystem {
    * 生成会话结束报告
    */
   generateSessionReport(sessionId: string): {
-    session: ReturnType<typeof stateManager.getSessionState>;
+    session: SessionState;
     feedback: FeedbackRecord[];
     summary: string;
     recommendations: string[];
   } | null {
-    const state = stateManager.getSessionState(sessionId);
-    const feedback = stateManager.getFeedbackHistory(sessionId);
+    const state = this.stateManager.getSessionState(sessionId);
+    const feedback = this.stateManager.getFeedbackHistory(sessionId);
 
     if (!state) return null;
 
@@ -253,7 +260,7 @@ export class FeedbackSystem {
    * 导出反馈数据
    */
   exportFeedbackData(format: 'json' | 'csv' = 'json'): string {
-    const allFeedback = stateManager.getFeedbackHistory();
+    const allFeedback = this.stateManager.getFeedbackHistory();
     const allStates = this.getAllSessionStates();
 
     if (format === 'csv') {
@@ -278,9 +285,9 @@ export class FeedbackSystem {
    * 获取 PUA Loop 报告（对标原版 PUA）
    */
   generatePUALoopReport(sessionId: string): string {
-    const state = stateManager.getSessionState(sessionId);
-    const feedback = stateManager.getFeedbackHistory(sessionId);
-    const journal = stateManager.readBuilderJournal();
+    const state = this.stateManager.getSessionState(sessionId);
+    const feedback = this.stateManager.getFeedbackHistory(sessionId);
+    const journal = this.stateManager.readBuilderJournal();
 
     if (!state) return '';
 
@@ -353,7 +360,7 @@ export class FeedbackSystem {
     };
   }
 
-  private buildSessionSummary(state: any, feedback: FeedbackRecord[]): string {
+  private buildSessionSummary(state: SessionState, feedback: FeedbackRecord[]): string {
     const parts: string[] = [
       `Session ${state.sessionId} summary:`,
       `- Duration: ${this.formatDuration(Date.now() - state.startTime)}`,
@@ -371,7 +378,7 @@ export class FeedbackSystem {
     return parts.join('\n');
   }
 
-  private generateSessionRecommendations(state: any, feedback: FeedbackRecord[]): string[] {
+  private generateSessionRecommendations(state: SessionState, feedback: FeedbackRecord[]): string[] {
     const recommendations: string[] = [];
 
     // 基于压力等级的建议
@@ -405,7 +412,7 @@ export class FeedbackSystem {
     return `${minutes}m`;
   }
 
-  private getAllSessionStates(): Record<string, any> {
+  private getAllSessionStates(): Record<string, SessionState> {
     // 访问 stateManager 的私有方法需要通过其他方式
     // 这里简化处理，实际使用时可以暴露相关接口
     return {};

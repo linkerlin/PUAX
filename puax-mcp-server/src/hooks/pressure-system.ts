@@ -10,13 +10,13 @@
  * - L4: 毕业警告，方法论切换 + 结构化报告
  */
 
-import { stateManager } from './state-manager.js';
+import type { StateManager } from './state-manager.js';
 
 // ============================================================================
 // 类型定义
 // ============================================================================
 
-export type PressureLevel = number;
+export type PressureLevel = 0 | 1 | 2 | 3 | 4;
 
 export interface PressureConfig {
   l1Threshold: number;      // 默认: 2次失败
@@ -67,7 +67,14 @@ export const DEFAULT_PRESSURE_CONFIG: PressureConfig = {
 // 压力等级响应模板 (对标 PUA 原版)
 // ============================================================================
 
-export const PRESSURE_RESPONSES: Record<PressureLevel, (context?: any) => PressureResponse> = {
+export interface PressureContext {
+  failureCount?: number;
+  currentFlavor?: string;
+  currentTask?: string;
+  [key: string]: unknown;
+}
+
+export const PRESSURE_RESPONSES: Record<PressureLevel, (context?: PressureContext) => PressureResponse> = {
   0: () => ({
     level: 0,
     title: '正常状态',
@@ -169,9 +176,12 @@ export const PRESSURE_RESPONSES: Record<PressureLevel, (context?: any) => Pressu
 
 export class PressureSystem {
   private config: PressureConfig;
+  private stateManager: StateManager;
 
-  constructor(config: Partial<PressureConfig> = {}) {
+  constructor(config: Partial<PressureConfig> = {}, stateManager?: StateManager) {
     this.config = { ...DEFAULT_PRESSURE_CONFIG, ...config };
+    // Lazy import to avoid circular deps; allow injection for testing
+    this.stateManager = stateManager ?? require('./state-manager.js').stateManager;
   }
 
   /**
@@ -198,20 +208,20 @@ export class PressureSystem {
     }
   ): Promise<EscalationResult> {
     // 记录失败
-    const failureCount = stateManager.recordFailure(sessionId, errorMessage, toolName);
+    const failureCount = this.stateManager.recordFailure(sessionId, errorMessage, toolName);
     
     // 获取当前压力等级
-    const previousLevel = stateManager.getPressureLevel(sessionId);
+    const previousLevel = this.stateManager.getPressureLevel(sessionId) as PressureLevel;
     
     // 计算新压力等级
-    const newLevel = this.calculateLevel(failureCount);
+    const newLevel: PressureLevel = this.calculateLevel(failureCount);
     
     // 检查是否升级
     const isEscalated = newLevel > previousLevel;
     
     // 如果升级，更新状态
     if (isEscalated) {
-      stateManager.setPressureLevel(sessionId, newLevel);
+      this.stateManager.setPressureLevel(sessionId, newLevel);
     }
 
     // 生成响应
@@ -238,10 +248,10 @@ export class PressureSystem {
    */
   handleSuccess(sessionId: string, resetPressure: boolean = true): void {
     if (this.config.resetAfterSuccess) {
-      stateManager.resetFailureCount(sessionId);
+      this.stateManager.resetFailureCount(sessionId);
       
       if (resetPressure) {
-        stateManager.setPressureLevel(sessionId, 0);
+        this.stateManager.setPressureLevel(sessionId, 0);
       }
     }
   }
@@ -250,16 +260,16 @@ export class PressureSystem {
    * 手动设置压力等级
    */
   setLevel(sessionId: string, level: PressureLevel): PressureResponse {
-    stateManager.setPressureLevel(sessionId, level);
+    this.stateManager.setPressureLevel(sessionId, level);
     return PRESSURE_RESPONSES[level]({});
   }
 
   /**
    * 获取当前压力响应
    */
-  getCurrentResponse(sessionId: string, context?: any): PressureResponse {
-    const level = stateManager.getPressureLevel(sessionId);
-    return PRESSURE_RESPONSES[level as PressureLevel](context);
+  getCurrentResponse(sessionId: string, context?: PressureContext): PressureResponse {
+    const level = this.stateManager.getPressureLevel(sessionId) as PressureLevel;
+    return PRESSURE_RESPONSES[level](context);
   }
 
   /**
@@ -354,7 +364,7 @@ export class PressureSystem {
    * 检查冷却时间
    */
   checkCooldown(sessionId: string): { canTrigger: boolean; remainingMs: number } {
-    const state = stateManager.getSessionState(sessionId);
+    const state = this.stateManager.getSessionState(sessionId);
     const now = Date.now();
     
     if (!state.lastTriggerTime) {

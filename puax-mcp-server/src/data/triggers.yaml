@@ -165,8 +165,8 @@ triggers:
       type: regex
       case_sensitive: false
     recommended_roles:
-      primary: military-scout
-      alternatives: [silicon-steward, shaman-sun-tzu, silicon-codex, theme-hacker]
+      primary: silicon-steward
+      alternatives: [military-scout, shaman-sun-tzu, silicon-codex, theme-hacker]
       reason: "需要先主动调查，并把缺失输入压缩成供给协议"
 
   # --------------------------------------------------------------------------
