@@ -104,11 +104,11 @@ function loadRouterData(): RouterYaml {
   const yamlPath = join(__dirname, '..', 'data', 'methodologies.yaml');
   try {
     const content = readFileSync(yamlPath, 'utf-8');
-    const parsed = YAML.parse(content);
+    const parsed = YAML.parse(content) as Record<string, unknown>;
     return {
-      methodology_definitions: parsed.methodology_definitions || {},
-      task_methodology_map: parsed.task_methodology_map || {},
-      failure_switch_chains: parsed.failure_switch_chains || {}
+      methodology_definitions: (parsed.methodology_definitions ?? {}) as Record<string, MethodologyYamlEntry>,
+      task_methodology_map: (parsed.task_methodology_map ?? {}) as Record<string, string[]>,
+      failure_switch_chains: (parsed.failure_switch_chains ?? {}) as Record<string, string[]>
     };
   } catch {
     return {
@@ -149,7 +149,7 @@ function buildMethodologies(): Record<Methodology, MethodologyDefinition> {
 function buildTaskMapping(): Record<TaskType, Methodology[]> {
   const result: Partial<Record<TaskType, Methodology[]>> = {};
   for (const [taskType, methodologies] of Object.entries(yamlData.task_methodology_map)) {
-    result[taskType as TaskType] = (methodologies as string[]) as Methodology[];
+    result[taskType as TaskType] = (methodologies) as Methodology[];
   }
   return result as Record<TaskType, Methodology[]>;
 }
@@ -158,7 +158,7 @@ function buildTaskMapping(): Record<TaskType, Methodology[]> {
 function buildFailureMapping(): Record<FailureMode, Methodology[]> {
   const result: Partial<Record<FailureMode, Methodology[]>> = {};
   for (const [failureMode, chain] of Object.entries(yamlData.failure_switch_chains)) {
-    result[failureMode as FailureMode] = (chain as string[]) as Methodology[];
+    result[failureMode as FailureMode] = (chain) as Methodology[];
   }
   return result as Record<FailureMode, Methodology[]>;
 }

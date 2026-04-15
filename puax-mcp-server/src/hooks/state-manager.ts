@@ -181,7 +181,7 @@ export class StateManager {
     try {
       if (existsSync(this.stateFile)) {
         const content = readFileSync(this.stateFile, 'utf-8');
-        return JSON.parse(content);
+        return JSON.parse(content) as Record<string, SessionState>;
       }
     } catch (error) {
       console.error('[StateManager] Failed to load session states:', error);
@@ -248,7 +248,7 @@ export class StateManager {
     try {
       if (existsSync(this.failureFile)) {
         const content = readFileSync(this.failureFile, 'utf-8');
-        return JSON.parse(content);
+        return JSON.parse(content) as FailureRecord[];
       }
     } catch (error) {
       console.error('[StateManager] Failed to load failures:', error);
@@ -301,7 +301,7 @@ export class StateManager {
     try {
       if (existsSync(this.triggerFile)) {
         const content = readFileSync(this.triggerFile, 'utf-8');
-        return JSON.parse(content);
+        return JSON.parse(content) as TriggerRecord[];
       }
     } catch (error) {
       console.error('[StateManager] Failed to load triggers:', error);
@@ -416,7 +416,7 @@ ${entry.keyContext || 'N/A'}
     try {
       if (existsSync(this.feedbackFile)) {
         const content = readFileSync(this.feedbackFile, 'utf-8');
-        return JSON.parse(content);
+        return JSON.parse(content) as FeedbackRecord[];
       }
     } catch (error) {
       console.error('[StateManager] Failed to load feedback:', error);

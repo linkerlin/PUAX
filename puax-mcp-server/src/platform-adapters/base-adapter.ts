@@ -3,7 +3,7 @@
  * 定义所有平台适配器的通用接口和行为
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 
 // ============================================================================
@@ -191,7 +191,7 @@ export abstract class PlatformAdapter {
       result.success = false;
     }
 
-    return result;
+    return await Promise.resolve(result);
   }
 
   /**

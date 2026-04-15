@@ -4,7 +4,7 @@
 
 import { VSCodeAdapter } from '../vscode-adapter.js';
 import { RoleExportData, FlavorExportData, PlatformExportConfig } from '../base-adapter.js';
-import { existsSync, mkdirSync, rmSync, readdirSync } from 'fs';
+import { existsSync, rmSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 describe('VSCodeAdapter', () => {
@@ -174,7 +174,7 @@ describe('VSCodeAdapter', () => {
         { ...mockRole, id: 'shaman-jobs', name: '乔布斯', taskTypes: ['design'] }
       ];
 
-      // @ts-ignore - 访问私有方法进行测试
+      // @ts-expect-error - 访问私有方法进行测试
       const mainContent = adapter.generateMainInstructions(roles);
 
       expect(mainContent).toContain('# PUAX - AI Agent 激励系统');
@@ -192,7 +192,7 @@ describe('VSCodeAdapter', () => {
         taskTypes: ['debugging']
       }));
 
-      // @ts-ignore
+      // @ts-expect-error - 访问私有方法进行测试
       const mainContent = adapter.generateMainInstructions(manyRoles);
       
       // 检查是否只显示了前10个
@@ -238,7 +238,7 @@ describe('VSCodeAdapter', () => {
       await adapter.export([mockRole], [], config);
 
       const promptPath = join(testOutputPath, 'prompts', 'military-warrior.prompt.md');
-      const promptContent = require('fs').readFileSync(promptPath, 'utf-8');
+      const promptContent = readFileSync(promptPath, 'utf-8');
 
       expect(promptContent).toContain('/puax:military-warrior');
       expect(promptContent).toContain('## 快速使用');

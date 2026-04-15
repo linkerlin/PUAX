@@ -10,6 +10,8 @@
  */
 
 import type { StateManager, FeedbackRecord, SessionState } from './state-manager.js';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import { stateManager as defaultStateManager } from './state-manager.js';
 
 // ============================================================================
 // 类型定义
@@ -70,8 +72,7 @@ export class FeedbackSystem {
   private stateManager: StateManager;
 
   constructor(stateManager?: StateManager) {
-    // Lazy import to avoid circular deps; allow injection for testing
-    this.stateManager = stateManager ?? require('./state-manager.js').stateManager;
+    this.stateManager = stateManager ?? defaultStateManager;
   }
 
   /**

@@ -55,8 +55,8 @@ describe('PUAX Hook System v3.1.0', () => {
       expect(active).toContain(testSessionId);
       expect(active).toContain(`${testSessionId}_2`);
       
-      hookManager.endSession(testSessionId);
-      hookManager.endSession(`${testSessionId}_2`);
+      void hookManager.endSession(testSessionId);
+      void hookManager.endSession(`${testSessionId}_2`);
     });
 
     test('should subscribe and receive events', async () => {
@@ -74,7 +74,7 @@ describe('PUAX Hook System v3.1.0', () => {
       expect(receivedTrigger).toBe(true);
       expect(hookManager.unsubscribe(subId)).toBe(true);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should subscribe to all events', async () => {
@@ -117,7 +117,7 @@ describe('PUAX Hook System v3.1.0', () => {
       await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
       expect(highSeverityTriggered).toBe(true);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should record conversation history', async () => {
@@ -129,7 +129,7 @@ describe('PUAX Hook System v3.1.0', () => {
       const stats = hookManager.getSessionStats(testSessionId);
       expect(stats.messageCount).toBe(2);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should handle quickCheck for text', async () => {
@@ -138,7 +138,7 @@ describe('PUAX Hook System v3.1.0', () => {
       expect(result.triggered).toBe(true);
       expect(result.triggerType).toBe('userFrustration');
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should handle quickCheck for tool use', async () => {
@@ -155,7 +155,7 @@ describe('PUAX Hook System v3.1.0', () => {
       expect(result.triggered).toBe(true);
       expect(result.triggerType).toBe('bashFailure');
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should handle PreCompact event', async () => {
@@ -175,7 +175,7 @@ describe('PUAX Hook System v3.1.0', () => {
       
       expect(preCompactTriggered).toBe(true);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should start and stop correctly', () => {
@@ -551,7 +551,7 @@ describe('PUAX Hook System v3.1.0', () => {
       
       expect(failures2).toBeGreaterThan(failures1);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
 
     test('should restore state for existing session', () => {
@@ -565,7 +565,7 @@ describe('PUAX Hook System v3.1.0', () => {
       const state = stateManager.getSessionState(testSessionId);
       expect(state.failureCount).toBeGreaterThan(0);
       
-      hookManager.endSession(testSessionId);
+      void hookManager.endSession(testSessionId);
     });
   });
 

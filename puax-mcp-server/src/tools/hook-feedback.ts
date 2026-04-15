@@ -35,7 +35,7 @@ export const submitFeedbackTool = {
   
   inputSchema: SubmitFeedbackInputSchema,
   
-  handler: async (args: z.infer<typeof SubmitFeedbackInputSchema>) => {
+  handler: (args: z.infer<typeof SubmitFeedbackInputSchema>) => {
     try {
       feedbackSystem.collectFeedback({
         sessionId: args.sessionId,
@@ -74,7 +74,7 @@ export const getFeedbackSummaryTool = {
   
   inputSchema: GetFeedbackSummaryInputSchema,
   
-  handler: async (args: z.infer<typeof GetFeedbackSummaryInputSchema>) => {
+  handler: (args: z.infer<typeof GetFeedbackSummaryInputSchema>) => {
     try {
       if (args.sessionId) {
         // 获取单个会话的报告
@@ -110,7 +110,7 @@ export const getImprovementSuggestionsTool = {
   
   inputSchema: z.object({}),
   
-  handler: async () => {
+  handler: () => {
     try {
       const suggestions = feedbackSystem.generateImprovementSuggestions();
 
@@ -141,7 +141,7 @@ export const exportFeedbackTool = {
   
   inputSchema: ExportFeedbackInputSchema,
   
-  handler: async (args: z.infer<typeof ExportFeedbackInputSchema>) => {
+  handler: (args: z.infer<typeof ExportFeedbackInputSchema>) => {
     try {
       const data = feedbackSystem.exportFeedbackData(args.format);
 
@@ -171,7 +171,7 @@ export const generatePUALoopReportTool = {
   
   inputSchema: GenerateReportInputSchema,
   
-  handler: async (args: z.infer<typeof GenerateReportInputSchema>) => {
+  handler: (args: z.infer<typeof GenerateReportInputSchema>) => {
     try {
       const report = feedbackSystem.generatePUALoopReport(args.sessionId);
 

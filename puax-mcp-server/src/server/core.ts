@@ -20,8 +20,6 @@ import {
 import { Tools } from '../tools.js';
 import { promptManager } from '../prompts/index.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
 import { Logger } from '../utils/logger.js';
 import { loadVersion } from '../utils/version.js';
 import type { ServerConfig } from '../types.js';
@@ -94,7 +92,7 @@ export class PuaxMcpServer {
 
     private setupToolHandlers(): void {
         // List tools handler
-        this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+        this.server.setRequestHandler(ListToolsRequestSchema, () => ({
             tools: Tools
         }));
 
@@ -107,15 +105,15 @@ export class PuaxMcpServer {
                 switch (name) {
                     // SKILL tools
                     case 'list_skills':
-                        return await handleListSkills(safeArgs) as McpToolResponse;
+                        return handleListSkills(safeArgs) as McpToolResponse;
                     case 'get_skill':
-                        return await handleGetSkill(safeArgs) as McpToolResponse;
+                        return handleGetSkill(safeArgs) as McpToolResponse;
                     case 'search_skills':
-                        return await handleSearchSkills(safeArgs) as McpToolResponse;
+                        return handleSearchSkills(safeArgs) as McpToolResponse;
                     case 'activate_skill':
-                        return await handleActivateSkill(safeArgs) as McpToolResponse;
+                        return handleActivateSkill(safeArgs) as McpToolResponse;
                     case 'get_categories':
-                        return await handleGetCategories(safeArgs) as McpToolResponse;
+                        return handleGetCategories(safeArgs) as McpToolResponse;
                     
                     // Auto-trigger tools
                     case 'detect_trigger':
@@ -129,13 +127,13 @@ export class PuaxMcpServer {
                     
                     // Legacy role tools
                     case 'list_roles':
-                        return await handleListRoles(safeArgs) as McpToolResponse;
+                        return handleListRoles(safeArgs) as McpToolResponse;
                     case 'get_role':
-                        return await handleGetRole(safeArgs) as McpToolResponse;
+                        return handleGetRole(safeArgs) as McpToolResponse;
                     case 'search_roles':
-                        return await handleSearchRoles(safeArgs) as McpToolResponse;
+                        return handleSearchRoles(safeArgs) as McpToolResponse;
                     case 'activate_role':
-                        return await handleActivateRole(safeArgs) as McpToolResponse;
+                        return handleActivateRole(safeArgs) as McpToolResponse;
                     
                     // Hook System tools
                     case 'puax_start_session':
@@ -150,7 +148,7 @@ export class PuaxMcpServer {
                     case 'puax_generate_pua_loop_report':
                     case 'puax_export_feedback':
                     case 'puax_get_pressure_level':
-                        return await this.handleHookTool(name, safeArgs) as McpToolResponse;
+                        return await this.handleHookTool(name, safeArgs);
                     
                     default:
                         throw new McpError(
@@ -184,11 +182,11 @@ export class PuaxMcpServer {
     }
 
     private setupPromptHandlers(): void {
-        this.server.setRequestHandler(ListPromptsRequestSchema, async () => ({
+        this.server.setRequestHandler(ListPromptsRequestSchema, () => ({
             prompts: promptManager.listPrompts()
         }));
 
-        this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+        this.server.setRequestHandler(GetPromptRequestSchema, (request) => {
             const { name, arguments: args } = request.params;
             
             const result = promptManager.getPrompt(name, args);
@@ -204,7 +202,7 @@ export class PuaxMcpServer {
     }
 
     private setupResourceHandlers(): void {
-        this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+        this.server.setRequestHandler(ListResourcesRequestSchema, () => {
             const resources = promptManager.getAllSkills().map(skill => ({
                 uri: `puax://skills/${skill.id}`,
                 description: `${skill.name} - ${skill.category}`,
@@ -214,7 +212,7 @@ export class PuaxMcpServer {
             return { resources };
         });
 
-        this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+        this.server.setRequestHandler(ReadResourceRequestSchema, (request) => {
             const { uri } = request.params;
             const match = uri.match(/^puax:\/\/skills\/(.+)$/);
             
@@ -252,25 +250,27 @@ export class PuaxMcpServer {
         };
     }
 
-    public async run(): Promise<void> {
-        await promptManager.initialize();
+    public run(): void {
+        promptManager.initialize();
         
         const skillCount = promptManager.getAllSkills().length;
         this.logger.info(`Loaded ${skillCount} SKILLs from bundle`);
         
         if (this.config.transport === 'stdio') {
-            await this.runStdioMode();
+            void this.runStdioMode();
         } else {
-            await this.runHttpMode();
+            this.runHttpMode();
         }
     }
 
-    private async runHttpMode(): Promise<void> {
-        this.httpServer = createServer(this.handleRequest.bind(this));
+    private runHttpMode(): void {
+        this.httpServer = createServer((req, res) => {
+            void this.handleRequest(req, res);
+        });
         
         this.httpServer.on('error', (error: NodeJS.ErrnoException) => {
             if (error.code === 'EADDRINUSE') {
-                const { port, host } = this.config;
+                const { port } = this.config;
                 this.logger.error('');
                 this.logger.error(`Port ${port} is already in use!`);
                 this.logger.warn('Options:');

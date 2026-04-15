@@ -235,8 +235,7 @@ export class EnhancedTriggerDetector extends TriggerDetector {
    * 检测未验证断言
    */
   private detectUnverifiedClaim(
-    messages: ConversationMessage[],
-    context?: TaskContext
+    messages: ConversationMessage[]
   ): DetectedTrigger | null {
     const claimPatterns = /(肯定|一定|绝对|无疑|显然|definitely|certainly|absolutely|must be)/i;
     
@@ -342,18 +341,18 @@ export class EnhancedTriggerDetector extends TriggerDetector {
   /**
    * 增强版检测入口
    */
-  async detectEnhanced(
+  detectEnhanced(
     messages: ConversationMessage[],
     context?: TaskContext
-  ): Promise<TriggerDetectionResult> {
+  ): TriggerDetectionResult {
     // 首先调用基础检测
-    const baseResult = await this.detect(messages, context);
+    const baseResult = this.detect(messages, context);
     
     // 执行增强检测
     const enhancedTriggers: DetectedTrigger[] = [
       this.detectToolUnderuse(messages, context),
       this.detectLowQuality(messages),
-      this.detectUnverifiedClaim(messages, context),
+      this.detectUnverifiedClaim(messages),
       this.detectEdgeCaseIgnored(messages),
       this.detectOverComplication(messages)
     ].filter((t): t is DetectedTrigger => t !== null);

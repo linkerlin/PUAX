@@ -464,7 +464,6 @@ export class AgentTeamManager {
       risks.push('时间紧急可能导致质量下降');
     }
 
-    const template = TEAM_TEMPLATES[templateId];
     const team = this.createTeamFromTemplate(templateId, '推荐项目');
 
     return {
@@ -498,7 +497,7 @@ export class AgentTeamManager {
   /**
    * 选择 Leader 角色
    */
-  private selectLeaderRole(level: RoleLevel, context: string): AgentRole {
+  private selectLeaderRole(level: RoleLevel, _context: string): AgentRole {
     const leaders: Record<RoleLevel, AgentRole[]> = {
       p7: [
         {

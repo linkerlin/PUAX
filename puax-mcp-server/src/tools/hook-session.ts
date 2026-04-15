@@ -19,7 +19,7 @@ import { feedbackSystem } from '../hooks/feedback-system.js';
 
 const StartSessionInputSchema = z.object({
   sessionId: z.string().describe('会话ID'),
-  metadata: z.record(z.any()).optional().describe('初始元数据'),
+  metadata: z.record(z.unknown()).optional().describe('初始元数据'),
   autoCheck: z.boolean().default(true).describe('是否启用自动检查')
 });
 
@@ -29,7 +29,7 @@ export const startSessionTool = {
   
   inputSchema: StartSessionInputSchema,
   
-  handler: async (args: z.infer<typeof StartSessionInputSchema>) => {
+  handler: (args: z.infer<typeof StartSessionInputSchema>) => {
     try {
       // 启动会话监控
       hookManager.startSession(args.sessionId, args.metadata);
@@ -126,7 +126,7 @@ export const getSessionStateTool = {
   
   inputSchema: GetSessionStateInputSchema,
   
-  handler: async (args: z.infer<typeof GetSessionStateInputSchema>) => {
+  handler: (args: z.infer<typeof GetSessionStateInputSchema>) => {
     try {
       const state = stateManager.getSessionState(args.sessionId);
       const triggerHistory = stateManager.getTriggerHistory(args.sessionId);
@@ -172,7 +172,7 @@ export const resetSessionTool = {
   
   inputSchema: ResetSessionInputSchema,
   
-  handler: async (args: z.infer<typeof ResetSessionInputSchema>) => {
+  handler: (args: z.infer<typeof ResetSessionInputSchema>) => {
     try {
       const state = stateManager.getSessionState(args.sessionId);
 

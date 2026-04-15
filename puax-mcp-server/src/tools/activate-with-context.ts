@@ -110,12 +110,20 @@ export const activateWithContextTool = {
     }
   ],
 
-  handler: async (args: z.infer<typeof ActivateWithContextInputSchema>) => {
+  handler: (args: z.infer<typeof ActivateWithContextInputSchema>) => {
     const startTime = Date.now();
     
     try {
       const { context, options = {} } = args as { 
-        context: any; 
+        context: {
+          conversation_history: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>;
+          task_context?: {
+            current_task?: string;
+            attempt_count: number;
+            tools_available: string[];
+            tools_used: string[];
+          };
+        }; 
         options: {
           auto_detect?: boolean;
           user_confirmation?: boolean;
@@ -132,7 +140,7 @@ export const activateWithContextTool = {
       
       if (options.auto_detect) {
         const detector = new TriggerDetector();
-        const detectionResult = await detector.detect(
+        const detectionResult = detector.detect(
           context.conversation_history,
           context.task_context
         );
@@ -167,7 +175,7 @@ export const activateWithContextTool = {
       const recommendationStart = Date.now();
       const recommender = new RoleRecommender();
       
-      const recommendation = await recommender.recommend({
+      const recommendation = recommender.recommend({
         detected_triggers: detectedTriggers.length > 0 
           ? detectedTriggers 
           : [options.fallback_role || 'military-commander'],

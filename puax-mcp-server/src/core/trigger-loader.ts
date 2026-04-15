@@ -64,7 +64,7 @@ export class TriggerLoader {
   /**
    * 从目录加载所有触发条件
    */
-  async loadAllTriggers(): Promise<Record<string, TriggerDefinition>> {
+  loadAllTriggers(): Record<string, TriggerDefinition> {
     const now = Date.now();
     
     // 检查缓存是否有效
@@ -103,21 +103,21 @@ export class TriggerLoader {
   /**
    * 获取单个触发条件
    */
-  async getTrigger(id: string): Promise<TriggerDefinition | undefined> {
+  getTrigger(id: string): Promise<TriggerDefinition | undefined> {
     if (this.cache.has(id)) {
-      return this.cache.get(id);
+      return Promise.resolve(this.cache.get(id));
     }
 
-    const allTriggers = await this.loadAllTriggers();
-    return allTriggers[id];
+    const allTriggers = this.loadAllTriggers();
+    return Promise.resolve(allTriggers[id]);
   }
 
   /**
    * 按类别获取触发条件
    */
-  async getTriggersByCategory(category: string): Promise<TriggerDefinition[]> {
-    const allTriggers = await this.loadAllTriggers();
-    return Object.values(allTriggers).filter(t => t.category === category);
+  getTriggersByCategory(category: string): Promise<TriggerDefinition[]> {
+    const allTriggers = this.loadAllTriggers();
+    return Promise.resolve(Object.values(allTriggers).filter(t => t.category === category));
   }
 
   /**
@@ -131,9 +131,9 @@ export class TriggerLoader {
   /**
    * 热重载（用于开发环境）
    */
-  async hotReload(): Promise<Record<string, TriggerDefinition>> {
+  hotReload(): Promise<Record<string, TriggerDefinition>> {
     this.clearCache();
-    return this.loadAllTriggers();
+    return Promise.resolve(this.loadAllTriggers());
   }
 
   /**
@@ -168,21 +168,21 @@ export class TriggerLoader {
   /**
    * 获取所有类别
    */
-  async getCategories(): Promise<string[]> {
-    const allTriggers = await this.loadAllTriggers();
+  getCategories(): Promise<string[]> {
+    const allTriggers = this.loadAllTriggers();
     const categories = new Set(Object.values(allTriggers).map(t => t.category));
-    return Array.from(categories);
+    return Promise.resolve(Array.from(categories));
   }
 
   /**
    * 获取触发条件统计
    */
-  async getStats(): Promise<{
+  getStats(): Promise<{
     total: number;
     byCategory: Record<string, number>;
     bySeverity: Record<string, number>;
   }> {
-    const allTriggers = await this.loadAllTriggers();
+    const allTriggers = this.loadAllTriggers();
     const triggers = Object.values(allTriggers);
 
     const byCategory: Record<string, number> = {};
@@ -193,11 +193,11 @@ export class TriggerLoader {
       bySeverity[trigger.severity] = (bySeverity[trigger.severity] || 0) + 1;
     }
 
-    return {
+    return Promise.resolve({
       total: triggers.length,
       byCategory,
       bySeverity
-    };
+    });
   }
 }
 

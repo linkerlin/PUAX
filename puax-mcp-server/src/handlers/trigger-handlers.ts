@@ -54,7 +54,7 @@ export async function handleDetectTrigger(args: Record<string, unknown>): Promis
             tools_used: (args.task_context as Record<string, unknown>).tools_used as string[]
         } : undefined;
         
-        const result = await detector.detect(conversationHistory, taskContext);
+        const result = detector.detect(conversationHistory, taskContext);
 
         return {
             content: [
@@ -88,7 +88,7 @@ export async function handleRecommendRole(args: Record<string, unknown>): Promis
             attempt_count: (rawTaskContext.attempt_count as number) || 0
         };
         
-        const result = await recommender.recommend({
+        const result = recommender.recommend({
             detected_triggers: (args.detected_triggers as string[]) || [],
             task_context: taskContext,
             user_preferences: args.user_preferences as {
@@ -220,7 +220,7 @@ export async function handleActivateWithContext(args: Record<string, unknown>): 
                 attempt_count: context.task_context.attempt_count
             } : undefined;
             
-            const detectionResult = await detector.detect(conversationHistory, taskContext);
+            const detectionResult = detector.detect(conversationHistory, taskContext);
             
             detectedTriggers = detectionResult.triggers_detected.map(t => t.id);
             shouldActivate = detectionResult.summary.should_trigger;
@@ -262,7 +262,7 @@ export async function handleActivateWithContext(args: Record<string, unknown>): 
         // Infer task type from task description
         const taskType = inferTaskType(context?.task_context?.current_task || '');
         
-        const recommendation = await recommender.recommend({
+        const recommendation = recommender.recommend({
             detected_triggers: detectedTriggers.length > 0 
                 ? detectedTriggers 
                 : [options.fallback_role || 'military-commander'],

@@ -14,7 +14,7 @@ export class CodeBuddyAdapter extends PlatformAdapter {
   /**
    * 导出角色为 SKILL.md 格式
    */
-  exportRole(role: RoleExportData, config: PlatformExportConfig): string {
+  exportRole(role: RoleExportData, _config: PlatformExportConfig): string {
     return `---
 name: ${role.id}
 description: "${role.description}"
@@ -48,7 +48,7 @@ ${role.systemPrompt}
   /**
    * CodeBuddy 使用独立风味文件
    */
-  exportFlavor(flavor: FlavorExportData, config: PlatformExportConfig): string {
+  exportFlavor(flavor: FlavorExportData, _config: PlatformExportConfig): string {
     return `---
 name: flavor-${flavor.id}
 description: "${flavor.name} 风味叠加"
@@ -71,7 +71,7 @@ ${flavor.keywords.map(k => `- ${k}`).join('\n')}
   /**
    * 生成 CodeBuddy 配置
    */
-  generateConfig(roles: RoleExportData[], config: PlatformExportConfig): string {
+  generateConfig(roles: RoleExportData[], _config: PlatformExportConfig): string {
     const configObj = {
       name: 'PUAX for CodeBuddy',
       version: '2.0.0',

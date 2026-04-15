@@ -1,23 +1,3 @@
-/**
- * PUAX Client SDK
- * 简化客户端集成，提供自动化 Hook 调用
- * 
- * 使用示例:
- * ```typescript
- * const client = new PuaxClient({
- *   mcpClient: mcpClientInstance,
- *   sessionId: 'my-session'
- * });
- * 
- * // 自动检测
- * await client.onUserMessage('为什么还不行？');
- * await client.onToolUse('Bash', { exit_code: 1 });
- * 
- * // 获取建议
- * const suggestion = await client.getRoleSuggestion();
- * ```
- */
-
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 
 // ============================================================================
@@ -61,6 +41,26 @@ export interface PuaxFeedback {
   success: boolean;
   rating: number;  // 1-5
   comments?: string;
+}
+
+interface McpTextContent {
+  type: 'text';
+  text: string;
+}
+
+interface McpToolResult {
+  content: McpTextContent[];
+}
+
+interface TriggerResult {
+  triggered: boolean;
+  triggerType?: string;
+  confidence: number;
+  pressureLevel?: number;
+  recommendedRole?: { id: string; name: string; description?: string };
+  injectionPrompt?: string;
+  pressureResponse?: { message?: string };
+  severity?: string;
 }
 
 // ============================================================================
@@ -169,7 +169,7 @@ export class PuaxClient {
    */
   async onToolUse(
     toolName: string,
-    toolResult: any,
+    toolResult: unknown,
     errorMessage?: string
   ): Promise<PuaxSuggestion | null> {
     if (!this.isInitialized) await this.initialize();
@@ -221,7 +221,7 @@ export class PuaxClient {
   /**
    * 助手消息事件（仅记录，不触发检测）
    */
-  onAssistantMessage(message: string): void {
+  onAssistantMessage(_message: string): void {
     // 可以选择发送到 server 用于上下文分析
     // 当前版本仅本地记录
   }
@@ -294,9 +294,9 @@ export class PuaxClient {
     try {
       const result = await this.callTool('get_active_role', {
         sessionId: this.sessionId
-      });
+      }) as { role?: { id: string; name: string } };
 
-      return result.role || null;
+      return result.role ?? null;
     } catch (error) {
       console.error('[PuaxClient] get_active_role error:', error);
       return null;
@@ -323,18 +323,18 @@ export class PuaxClient {
     return now - this.lastCheckTime >= this.config.cooldownMs;
   }
 
-  private async callTool(toolName: string, args: Record<string, any>): Promise<any> {
+  private async callTool(toolName: string, args: Record<string, unknown>): Promise<unknown> {
     const result = await this.mcpClient.callTool({
       name: `puax_${toolName}`,
       arguments: args
-    });
+    }) as McpToolResult;
 
-    const content = result.content as any;
+    const content = result.content;
     if (content && content.length > 0) {
-      const textContent = content.find((c: any) => c.type === 'text');
+      const textContent = content.find(c => c.type === 'text');
       if (textContent && textContent.text) {
         try {
-          return JSON.parse(textContent.text);
+          return JSON.parse(textContent.text) as unknown;
         } catch {
           return textContent.text;
         }
@@ -344,31 +344,32 @@ export class PuaxClient {
     return result;
   }
 
-  private formatSuggestion(result: any): PuaxSuggestion | null {
-    if (!result || !result.triggered) {
+  private formatSuggestion(result: unknown): PuaxSuggestion | null {
+    const data = result as TriggerResult;
+    if (!data || !data.triggered) {
       return {
         shouldTrigger: false,
-        confidence: result?.confidence || 0,
+        confidence: data?.confidence ?? 0,
         action: 'none',
         reason: 'No trigger detected'
       };
     }
 
     let action: PuaxSuggestion['action'] = 'suggest';
-    if (result.severity === 'critical') action = 'immediate';
-    else if (result.severity === 'high') action = 'immediate';
-    else if (result.severity === 'medium') action = 'suggest';
+    if (data.severity === 'critical') action = 'immediate';
+    else if (data.severity === 'high') action = 'immediate';
+    else if (data.severity === 'medium') action = 'suggest';
     else action = 'monitor';
 
     return {
       shouldTrigger: true,
-      triggerType: result.triggerType,
-      confidence: result.confidence,
-      pressureLevel: result.pressureLevel,
-      recommendedRole: result.recommendedRole,
-      injectionPrompt: result.injectionPrompt,
+      triggerType: data.triggerType,
+      confidence: data.confidence,
+      pressureLevel: data.pressureLevel,
+      recommendedRole: data.recommendedRole,
+      injectionPrompt: data.injectionPrompt,
       action,
-      reason: result.pressureResponse?.message || 'Trigger detected'
+      reason: data.pressureResponse?.message ?? 'Trigger detected'
     };
   }
 }
@@ -392,7 +393,7 @@ export async function quickDetect(
   text: string,
   options: {
     sessionId?: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
   } = {}
 ): Promise<PuaxSuggestion | null> {
   const sessionId = options.sessionId || `quick_${Date.now()}`;
@@ -405,14 +406,14 @@ export async function quickDetect(
         text,
         ...options.context
       }
-    });
+    }) as McpToolResult;
 
-    const content = result.content as any;
+    const content = result.content;
     if (content && content.length > 0) {
-      const textContent = content.find((c: any) => c.type === 'text');
+      const textContent = content.find(c => c.type === 'text');
       if (textContent && textContent.text) {
         try {
-          return JSON.parse(textContent.text);
+          return JSON.parse(textContent.text) as PuaxSuggestion;
         } catch {
           return null;
         }

@@ -106,7 +106,7 @@ export const getRoleWithMethodologyTool = {
     }
   ],
 
-  handler: async (args: z.infer<typeof GetRoleWithMethodologyInputSchema>) => {
+  handler: (args: z.infer<typeof GetRoleWithMethodologyInputSchema>) => {
     try {
       const { role_id, options = {} } = args as {
         role_id: string;

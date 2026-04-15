@@ -19,7 +19,7 @@ export class CursorAdapter extends PlatformAdapter {
   /**
    * 导出角色为 .mdc 格式
    */
-  exportRole(role: RoleExportData, config: PlatformExportConfig): string {
+  exportRole(role: RoleExportData, _config: PlatformExportConfig): string {
     const flavorOverlay = this.buildFlavorOverlay(role.compatibleFlavors);
     
     return `---
@@ -63,7 +63,7 @@ ${flavorOverlay}
   /**
    * Cursor 不直接支持风味文件，将风味叠加到角色中
    */
-  exportFlavor(flavor: FlavorExportData, config: PlatformExportConfig): string {
+  exportFlavor(flavor: FlavorExportData, _config: PlatformExportConfig): string {
     // Cursor 使用 flavor 作为旁白叠加
     return `---
 description: "PUAX Flavor: ${flavor.name}"
@@ -89,7 +89,7 @@ ${flavor.rhetoric.emphasis.map(e => `- **${e}**`).join('\n')}
   /**
    * 生成 Cursor 配置
    */
-  generateConfig(roles: RoleExportData[], config: PlatformExportConfig): string {
+  generateConfig(roles: RoleExportData[], _config: PlatformExportConfig): string {
     const configObj = {
       name: 'PUAX for Cursor',
       version: '2.0.0',

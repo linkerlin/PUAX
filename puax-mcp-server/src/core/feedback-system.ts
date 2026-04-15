@@ -138,8 +138,8 @@ export class FeedbackCollector {
       // 加载角色反馈
       const rolePath = join(this.dataDir, 'role-feedbacks.json');
       if (existsSync(rolePath)) {
-        const data = JSON.parse(readFileSync(rolePath, 'utf-8'));
-        this.roleFeedbacks = data.map((f: any) => ({
+        const data = JSON.parse(readFileSync(rolePath, 'utf-8')) as Array<RoleFeedback & { timestamp: string | number | Date }>;
+        this.roleFeedbacks = data.map(f => ({
           ...f,
           timestamp: new Date(f.timestamp)
         }));
@@ -148,8 +148,8 @@ export class FeedbackCollector {
       // 加载触发器反馈
       const triggerPath = join(this.dataDir, 'trigger-feedbacks.json');
       if (existsSync(triggerPath)) {
-        const data = JSON.parse(readFileSync(triggerPath, 'utf-8'));
-        this.triggerFeedbacks = data.map((f: any) => ({
+        const data = JSON.parse(readFileSync(triggerPath, 'utf-8')) as Array<TriggerFeedback & { timestamp: string | number | Date }>;
+        this.triggerFeedbacks = data.map(f => ({
           ...f,
           timestamp: new Date(f.timestamp)
         }));
@@ -158,8 +158,8 @@ export class FeedbackCollector {
       // 加载会话反馈
       const sessionPath = join(this.dataDir, 'session-feedbacks.json');
       if (existsSync(sessionPath)) {
-        const data = JSON.parse(readFileSync(sessionPath, 'utf-8'));
-        this.sessionFeedbacks = data.map((f: any) => ({
+        const data = JSON.parse(readFileSync(sessionPath, 'utf-8')) as Array<SessionFeedback & { timestamp: string | number | Date }>;
+        this.sessionFeedbacks = data.map(f => ({
           ...f,
           timestamp: new Date(f.timestamp)
         }));

@@ -130,14 +130,14 @@ export class TriggerDetector {
   /**
    * 检测触发条件
    */
-  async detect(
+  detect(
     conversationHistory: ConversationMessage[],
     taskContext?: TaskContext
-  ): Promise<TriggerDetectionResult> {
+  ): TriggerDetectionResult {
     const detectedTriggers: DetectedTrigger[] = [];
     // 分析每条消息
     for (const message of conversationHistory) {
-      const triggers = await this.analyzeMessage(message, taskContext);
+      const triggers = this.analyzeMessage(message);
       detectedTriggers.push(...triggers);
     }
     // 基于任务上下文检测
@@ -158,14 +158,13 @@ export class TriggerDetector {
   /**
    * 分析单条消息
    */
-  private async analyzeMessage(
-    message: ConversationMessage,
-    taskContext?: TaskContext
-  ): Promise<DetectedTrigger[]> {
+  private analyzeMessage(
+    message: ConversationMessage
+  ): DetectedTrigger[] {
     const detected: DetectedTrigger[] = [];
     const content = message.content;
-    for (const [key, trigger] of Object.entries(this.catalog.triggers)) {
-      const detection = this.checkTrigger(trigger, content, message.role, taskContext);
+    for (const [, trigger] of Object.entries(this.catalog.triggers)) {
+      const detection = this.checkTrigger(trigger, content, message.role);
       if (detection) {
         detected.push(detection);
       }
@@ -178,8 +177,7 @@ export class TriggerDetector {
   private checkTrigger(
     trigger: TriggerDefinition,
     content: string,
-    role: string,
-    taskContext?: TaskContext
+    role: string
   ): DetectedTrigger | null {
     const patterns = this.getPatternsForLanguage(trigger.patterns);
     const matchedPatterns: string[] = [];
@@ -317,8 +315,8 @@ export class TriggerDetector {
     // 计算总体严重程度
     const severityScores: Record<string, number> = { low: 1, medium: 2, high: 3, critical: 4 };
     const maxSeverity = triggers.reduce((max, t) => {
-      const score = severityScores[t.severity as keyof typeof severityScores] || 0;
-      const maxScore = severityScores[max as keyof typeof severityScores] || 0;
+      const score = severityScores[t.severity] || 0;
+      const maxScore = severityScores[max] || 0;
       return score > maxScore ? t.severity : max;
     }, triggers[0].severity);
     // 确定推荐行动

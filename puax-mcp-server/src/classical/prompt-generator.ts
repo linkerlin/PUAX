@@ -15,7 +15,6 @@ import {
   BEHAVIORAL_GUIDANCE,
   MECHANISMS,
   METAPHOR_MAPPINGS,
-  EXPRESSION_STYLES,
   KNOWLEDGE_RELATIONS,
   CONTEXTUAL_SETTINGS,
   TRIGGER_PATTERNS,
@@ -52,7 +51,6 @@ export function generateClassicalPrompt(
   const behavior = BEHAVIORAL_GUIDANCE[strategy.behavioralGuidance];
   const mechanism = MECHANISMS[strategy.mechanism];
   const metaphor = METAPHOR_MAPPINGS[strategy.metaphorMapping];
-  const style = EXPRESSION_STYLES.find(s => s.id === strategy.expressionStyle) || EXPRESSION_STYLES[1];
   const knowledge = KNOWLEDGE_RELATIONS[strategy.knowledgeRelation];
   const setting = CONTEXTUAL_SETTINGS[strategy.contextualSetting];
   const trigger = TRIGGER_PATTERNS[strategy.triggerPattern];

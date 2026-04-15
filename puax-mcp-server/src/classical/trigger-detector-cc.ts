@@ -196,12 +196,12 @@ export class ClassicalTriggerDetector extends TriggerDetector {
   /**
    * 融合检测：现代 + 文言文
    */
-  async detect(
+  detect(
     conversationHistory: ConversationMessage[],
     taskContext?: TaskContext
-  ): Promise<TriggerDetectionResult> {
+  ): TriggerDetectionResult {
     // 获取基础检测结果
-    const baseResult = await super.detect(conversationHistory, taskContext);
+    const baseResult = super.detect(conversationHistory, taskContext);
     
     if (!this.classicalOptions.enableClassicalMode) {
       return baseResult;

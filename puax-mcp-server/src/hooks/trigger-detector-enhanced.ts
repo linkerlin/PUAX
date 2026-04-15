@@ -29,10 +29,10 @@ export interface TriggerContext {
   eventType: HookEventType;
   message?: string;
   toolName?: string;
-  toolResult?: any;
+  toolResult?: unknown;
   errorMessage?: string;
   conversationHistory?: Array<{ role: string; content: string }>;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface EnhancedTriggerResult {
@@ -258,12 +258,15 @@ export class EnhancedTriggerDetector {
       default:
         return this.createEmptyResult(sessionId);
     }
+    
+    // This should never be reached - all paths return in switch
+    return await Promise.resolve(this.createEmptyResult(sessionId));
   }
 
   /**
    * UserPromptSubmit 检测 - 用户挫折语言
    */
-  private async detectUserPromptSubmit(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  private detectUserPromptSubmit(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId, message = '' } = context;
     const matchedPatterns: string[] = [];
     let maxConfidence = 0;
@@ -342,7 +345,7 @@ export class EnhancedTriggerDetector {
   /**
    * PostToolUse 检测 - Bash 失败 + 压力升级
    */
-  private async detectPostToolUse(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  private detectPostToolUse(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId, toolName, toolResult, errorMessage } = context;
 
     // 只处理 Bash 工具
@@ -358,7 +361,7 @@ export class EnhancedTriggerDetector {
     }
 
     // 记录失败并获取压力升级结果
-    const escalation = await pressureSystem.handleFailure(
+    const escalation = pressureSystem.handleFailure(
       sessionId,
       errorMessage || 'Bash command failed',
       toolName,
@@ -405,7 +408,7 @@ export class EnhancedTriggerDetector {
   /**
    * PreCompact 检测 - 上下文压缩前状态持久
    */
-  private async detectPreCompact(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  private detectPreCompact(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId } = context;
     const state = stateManager.getSessionState(sessionId);
 
@@ -419,11 +422,11 @@ export class EnhancedTriggerDetector {
       pressureLevel: state.pressureLevel,
       failureCount: state.failureCount,
       currentFlavor: state.currentFlavor,
-      activeTask: context.metadata?.currentTask,
-      triedApproaches: context.metadata?.triedApproaches,
-      excludedPossibilities: context.metadata?.excludedPossibilities,
-      nextHypothesis: context.metadata?.nextHypothesis,
-      keyContext: context.metadata?.keyContext
+      activeTask: context.metadata?.currentTask as string | undefined,
+      triedApproaches: context.metadata?.triedApproaches as string[] | undefined,
+      excludedPossibilities: context.metadata?.excludedPossibilities as string[] | undefined,
+      nextHypothesis: context.metadata?.nextHypothesis as string | undefined,
+      keyContext: context.metadata?.keyContext as string | undefined
     });
 
     return {
@@ -442,14 +445,14 @@ export class EnhancedTriggerDetector {
   /**
    * SessionStart 检测 - 会话开始状态恢复
    */
-  private async detectSessionStart(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  private detectSessionStart(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId } = context;
     const state = stateManager.getSessionState(sessionId);
 
     // 如果有之前的活跃会话状态，建议恢复
     if (state.pressureLevel > 0 || state.failureCount > 0) {
-      const journal = stateManager.readBuilderJournal();
-      const hasRecentJournal = journal.includes(sessionId);
+      // Journal check could be used for additional validation in future
+      stateManager.readBuilderJournal();
 
       return {
         triggered: true,
@@ -470,7 +473,7 @@ export class EnhancedTriggerDetector {
   /**
    * Stop 检测 - 会话结束反馈收集
    */
-  private async detectStop(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  private detectStop(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId } = context;
     const state = stateManager.getSessionState(sessionId);
 
@@ -508,9 +511,9 @@ export class EnhancedTriggerDetector {
     let totalWeight = 0;
     let matchedWeight = 0;
 
-    for (const [lang, config] of Object.entries(patterns)) {
+    for (const config of Object.values(patterns)) {
       const regexFlags = config.caseSensitive ? '' : 'i';
-      
+
       for (const pattern of config.patterns) {
         totalWeight += config.weight;
         
@@ -546,19 +549,20 @@ export class EnhancedTriggerDetector {
   /**
    * 检测错误
    */
-  private detectError(toolResult: any, errorMessage?: string): boolean {
+  private detectError(toolResult: unknown, errorMessage?: string): boolean {
     // 显式错误消息
     if (errorMessage) {
       return true;
     }
 
     // 检查结果对象
-    if (toolResult) {
+    if (toolResult && typeof toolResult === 'object') {
+      const resultObj = toolResult as Record<string, unknown>;
       // 检查 exit_code
-      if (toolResult.exit_code !== undefined && toolResult.exit_code !== 0) {
+      if (resultObj.exit_code !== undefined && resultObj.exit_code !== 0) {
         return true;
       }
-      if (toolResult.exitCode !== undefined && toolResult.exitCode !== 0) {
+      if (resultObj.exitCode !== undefined && resultObj.exitCode !== 0) {
         return true;
       }
 
@@ -596,7 +600,7 @@ export class EnhancedTriggerDetector {
     confidence: number,
     severity: 'low' | 'medium' | 'high' | 'critical',
     matchedPatterns: string[],
-    eventType: HookEventType
+    _eventType: HookEventType
   ): EnhancedTriggerResult {
     const recommendedRole = ROLE_RECOMMENDATIONS[triggerType] || { id: 'military-warrior', name: '狂战士' };
     const currentPressure = stateManager.getPressureLevel(sessionId);

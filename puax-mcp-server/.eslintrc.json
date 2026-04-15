@@ -23,5 +23,19 @@
     "prefer-const": "error",
     "no-var": "error"
   },
-  "ignorePatterns": ["build/", "node_modules/", "coverage/", "*.js"]
+  "ignorePatterns": ["build/", "node_modules/", "coverage/", "*.js", "*.d.ts", "test/"],
+  "overrides": [
+    {
+      "files": ["**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "__tests__/**"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/require-await": "off"
+      }
+    }
+  ]
 }

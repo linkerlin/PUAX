@@ -7,10 +7,9 @@ import {
   RoleExportData, 
   FlavorExportData, 
   PlatformExportConfig,
-  AdapterRegistry,
-  ExportResult
+  AdapterRegistry
 } from '../base-adapter.js';
-import { readFileSync, existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
+import { existsSync, rmSync } from 'fs';
 import { join } from 'path';
 
 // 测试用的具体适配器实现
@@ -19,15 +18,15 @@ class TestAdapter extends PlatformAdapter {
     super('test-platform', ['zh', 'en', 'ja']);
   }
 
-  exportRole(role: RoleExportData, config: PlatformExportConfig): string {
+  exportRole(role: RoleExportData, _config: PlatformExportConfig): string {
     return `# Test Role: ${role.name}\n${role.systemPrompt}`;
   }
 
-  exportFlavor(flavor: FlavorExportData, config: PlatformExportConfig): string {
+  exportFlavor(flavor: FlavorExportData, _config: PlatformExportConfig): string {
     return `# Test Flavor: ${flavor.name}`;
   }
 
-  generateConfig(roles: RoleExportData[], config: PlatformExportConfig): string {
+  generateConfig(roles: RoleExportData[], _config: PlatformExportConfig): string {
     return JSON.stringify({ platform: 'test', roleCount: roles.length });
   }
 

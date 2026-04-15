@@ -23,15 +23,17 @@ function parseArgs(): ServerConfig & { help?: boolean; version?: boolean } {
                 config.version = true;
                 break;
             case '-p':
-            case '--port':
+            case '--port': {
                 const portVal = args[++i];
                 if (portVal) config.port = parseInt(portVal, 10);
                 break;
+            }
             case '-H':
-            case '--host':
+            case '--host': {
                 const hostVal = args[++i];
                 if (hostVal) config.host = hostVal;
                 break;
+            }
             case '-q':
             case '--quiet':
                 config.quiet = true;
@@ -40,12 +42,13 @@ function parseArgs(): ServerConfig & { help?: boolean; version?: boolean } {
                 config.transport = 'stdio';
                 break;
             case '-t':
-            case '--transport':
+            case '--transport': {
                 const transportVal = args[++i];
                 if (transportVal === 'stdio' || transportVal === 'http') {
                     config.transport = transportVal as TransportMode;
                 }
                 break;
+            }
             default:
                 // 支持 --port=8080 格式
                 if (arg.startsWith('--port=')) {
@@ -241,7 +244,7 @@ async function main(): Promise<void> {
     const server = new PuaxMcpServer(config);
     
     try {
-        await server.run();
+        server.run();
     } catch (error) {
         console.error('\x1b[31m[Fatal Error]\x1b[0m', error instanceof Error ? error.message : error);
         process.exit(1);
@@ -249,8 +252,8 @@ async function main(): Promise<void> {
 }
 
 // 捕获未处理的 Promise 错误
-process.on('unhandledRejection', (reason, promise) => {
+process.on('unhandledRejection', (reason, _promise) => {
     console.error('\x1b[31m[Unhandled Rejection]\x1b[0m', reason);
 });
 
-main();
+void main();

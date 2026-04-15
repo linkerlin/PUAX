@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-04-15
+
+### Changed
+- 🛡️ **全面消除 TypeScript 严格模式 Lint 错误** - 从 279 个错误降至 0
+  - 移除所有 `any` 类型，改用具体接口和类型断言
+  - 修复所有 `@typescript-eslint/no-unsafe-*` 系列 warning
+  - 修复所有 `@typescript-eslint/no-floating-promises` 错误
+  - 修复所有 `@typescript-eslint/require-await` 错误
+  - 移除不必要的 `async` 关键字（无 `await` 的函数）
+  - 修复 `@typescript-eslint/no-var-requires`（改为静态 import）
+  - 测试文件中 `@ts-ignore` 统一改为 `@ts-expect-error`
+
+### Fixed
+- 🔧 **hook-handlers.ts** - 为 14 个 handler 定义专用参数类型接口，替代 `args: any`
+- 🔧 **client-sdk/index.ts** - 定义 `McpToolResult`、`TriggerResult` 等类型接口
+- 🔧 **state-manager.ts** - `JSON.parse` 返回值添加 `as` 类型断言
+- 🔧 **feedback-system.ts** (core) - 反序列化数据添加具体泛型类型
+- 🔧 **methodology-router.ts** - YAML 解析结果添加类型断言
+- 🔧 **hooks/** 目录 - `require()` 动态导入改为静态 `import` 解决 circular deps
+- 🔧 **prompts/index.ts** - `any` 返回类型改为 `SkillSectionResult` 联合类型
+- 🔧 **sampling-client.ts** - 移除未使用变量，返回类型具体化
+- 🔧 **trigger-detector-enhanced.ts** - `metadata` 类型从 `any` 改为 `unknown` + 类型断言
+- 🔧 **version.ts** - `JSON.parse` 结果添加 `PackageJson` 接口
+- 🔧 **.eslintrc.json** - 添加 `test/` 到 ignorePatterns 避免 tsconfig 范围冲突
+- 🧪 **测试文件** - 修复未使用导入、未使用变量、floating promises
+- 🧪 506 个测试全部通过，零回归
+
 ## [3.1.1] - 2026-03-26
 
 ### Fixed

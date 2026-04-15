@@ -2,7 +2,7 @@
 
 > 🚀 为 AI Agent 提供**角色选择、切换和激活**功能的专业 MCP 服务器
 
-**版本**: 3.1.2 | **传输**: HTTP (Streamable HTTP) / STDIO | **端口**: 2333 (HTTP模式)
+**版本**: 3.2.0 | **传输**: HTTP (Streamable HTTP) / STDIO | **端口**: 2333 (HTTP模式)
 **内置角色**: 50个精选SKILL | **触发条件**: 16种 | **Hook System**: v3.1.0
 
 ---
@@ -220,7 +220,7 @@ curl http://localhost:2333/health
 {
   "status": "ok",
   "service": "puax-mcp-server",
-  "version": "3.1.2",
+  "version": "3.2.0",
   "activeSessions": 0
 }
 ```
@@ -234,7 +234,12 @@ curl http://localhost:2333/health
 
 ## 📝 更新日志
 
-### v3.1.2 (2026-03-26)
+### v3.2.0 (2026-04-15)
+- 全面消除 TypeScript 严格模式 Lint 错误（279→0）
+- 移除所有 `any` 类型，改用具体接口和类型断言
+- 44 个文件重构，506 个测试全部通过
+
+### v3.1.1 (2026-03-26)
 - 修复 5 个角色验证失败
 - 标准化 5 步法和 7 项检查清单
 - 清理 git 仓库

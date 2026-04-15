@@ -17,7 +17,6 @@ import {
   HookEventType,
   type EnhancedTriggerResult 
 } from '../hooks/trigger-detector-enhanced.js';
-import { hookManager } from '../hooks/hook-manager.js';
 import { stateManager } from '../hooks/state-manager.js';
 
 // ============================================================================
@@ -34,7 +33,7 @@ const DetectTriggerInputSchema = z.object({
   message: z.string().optional().describe('用户消息内容（UserPromptSubmit时使用）'),
   
   toolName: z.string().optional().describe('工具名称（PostToolUse时使用）'),
-  toolResult: z.any().optional().describe('工具返回结果（PostToolUse时使用）'),
+  toolResult: z.unknown().optional().describe('工具返回结果（PostToolUse时使用）'),
   errorMessage: z.string().optional().describe('错误消息'),
   
   conversationHistory: z.array(z.object({
@@ -42,7 +41,7 @@ const DetectTriggerInputSchema = z.object({
     content: z.string()
   })).optional().describe('对话历史记录'),
   
-  metadata: z.record(z.any()).optional().describe('额外的上下文信息')
+  metadata: z.record(z.unknown()).optional().describe('额外的上下文信息')
 });
 
 const DetectTriggerOutputSchema = z.object({

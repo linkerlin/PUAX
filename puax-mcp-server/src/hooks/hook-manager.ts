@@ -10,7 +10,9 @@
  */
 
 import type { StateManager, SessionState } from './state-manager.js';
+import { stateManager as defaultStateManager } from './state-manager.js';
 import { enhancedTriggerDetector, TriggerContext, HookEventType, EnhancedTriggerResult } from './trigger-detector-enhanced.js';
+import { pressureSystem as defaultPressureSystem } from './pressure-system.js';
 import type { PressureSystem } from './pressure-system.js';
 
 // ============================================================================
@@ -80,9 +82,8 @@ export class HookManager {
       enableFeedback: true,
       ...config
     };
-    // Lazy import to avoid circular deps; allow injection for testing
-    this.stateManager = deps?.stateManager ?? require('./state-manager.js').stateManager;
-    this.pressureSystem = deps?.pressureSystem ?? require('./pressure-system.js').pressureSystem;
+    this.stateManager = deps?.stateManager ?? defaultStateManager;
+    this.pressureSystem = deps?.pressureSystem ?? defaultPressureSystem;
   }
 
   // ============================================================================
@@ -199,7 +200,7 @@ export class HookManager {
     const state = this.stateManager.getSessionState(sessionId);
     
     // 触发 SessionStart 事件
-    this.emit('SessionStart', {
+    void this.emit('SessionStart', {
       sessionId,
       metadata: {
         ...initialMetadata,
@@ -219,7 +220,7 @@ export class HookManager {
   /**
    * 结束会话
    */
-  async endSession(sessionId: string, metadata: Record<string, any> = {}): Promise<void> {
+  async endSession(sessionId: string, metadata: Record<string, unknown> = {}): Promise<void> {
     // 停止自动检查
     this.stopAutoCheck(sessionId);
 
@@ -339,8 +340,8 @@ export class HookManager {
     // 清除已有的检查
     this.stopAutoCheck(sessionId);
 
-    const interval = setInterval(async () => {
-      await this.performAutoCheck(sessionId);
+    const interval = setInterval(() => {
+      void this.performAutoCheck(sessionId);
     }, this.config.autoCheck.intervalMs);
 
     this.checkIntervals.set(sessionId, interval);

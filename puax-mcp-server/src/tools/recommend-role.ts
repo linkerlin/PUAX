@@ -120,10 +120,10 @@ export const recommendRoleTool = {
     }
   ],
 
-  handler: async (args: z.infer<typeof RecommendRoleInputSchema>) => {
+  handler: (args: z.infer<typeof RecommendRoleInputSchema>) => {
     try {
       const recommender = new RoleRecommender();
-      const result = await recommender.recommend({
+      const result = recommender.recommend({
         detected_triggers: args.detected_triggers,
         task_context: args.task_context,
         user_preferences: args.user_preferences,

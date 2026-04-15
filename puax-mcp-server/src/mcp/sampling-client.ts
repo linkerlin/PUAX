@@ -5,12 +5,6 @@
  */
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import {
-  CreateMessageRequest,
-  CreateMessageResult,
-  TextContent,
-  ImageContent
-} from '@modelcontextprotocol/sdk/types.js';
 
 // ============================================================================
 // 类型定义
@@ -83,47 +77,15 @@ export class SamplingClient {
    */
   private buildSamplingRequest(
     triggerRequest: SamplingTriggerRequest
-  ): any {
-    const { triggerType, confidence, context, recommendedRole } = triggerRequest;
-    const triggerDisplayName = this.getTriggerDisplayName(triggerType);
-    
-    // 根据触发类型构建不同的提示词
-    const triggerMessages: Record<string, string> = {
-      consecutive_failures: `检测到${triggerDisplayName} (${context.attemptCount} 次)，建议激活 ${recommendedRole.name} 角色进行攻坚。`,
-      giving_up: `检测到${triggerDisplayName}，建议激活 ${recommendedRole.name} 角色重新建立信心。`,
-      user_frustration: `检测到${triggerDisplayName}情绪，建议激活 ${recommendedRole.name} 角色安抚或强力推进。`,
-      surface_fix: `检测到${triggerDisplayName}行为，建议激活 ${recommendedRole.name} 角色进行深度分析。`,
-      passive_wait: `检测到${triggerDisplayName}行为，建议激活 ${recommendedRole.name} 角色主动推进。`
-    };
+  ): { systemPrompt: string } {
+    const { triggerType, recommendedRole } = triggerRequest;
 
-    const triggerMessage = triggerMessages[triggerType] || `建议激活 ${recommendedRole.name} 角色。`;
-
-    // 构建 MCP Sampling 请求参数
-    const messageRequest: any = {
-      messages: [
-        {
-          role: 'assistant',
-          content: {
-            type: 'text',
-            text: `[PUAX Auto-Trigger] 置信度: ${(confidence * 100).toFixed(1)}%\n${triggerMessage}`
-          }
-        }
-      ],
-      modelPreferences: {
-        hints: [{ name: 'claude' }, { name: 'gpt' }],
-        costPriority: 0.3,
-        speedPriority: 0.7,
-        intelligencePriority: 0.8
-      },
-      maxTokens: this.config.maxTokensPerRequest,
-      temperature: this.config.defaultTemperature,
-      includeContext: 'thisServer'
+    // 构建 MCP Sampling 请求参数并添加系统提示词注入
+    const systemPrompt = this.buildSystemPromptInjection(recommendedRole, triggerType);
+    
+    return {
+      systemPrompt
     };
-    
-    // 添加系统提示词注入
-    messageRequest.systemPrompt = this.buildSystemPromptInjection(recommendedRole, triggerType);
-    
-    return messageRequest;
   }
 
   /**
@@ -160,9 +122,9 @@ ${role.systemPrompt}
   /**
    * 执行采样请求（主动触发）
    */
-  async executeSampling(
+  executeSampling(
     request: SamplingTriggerRequest
-  ): Promise<SamplingResponse> {
+  ): SamplingResponse {
     const startTime = Date.now();
     
     // 检查冷却时间

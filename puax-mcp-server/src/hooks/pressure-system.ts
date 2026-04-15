@@ -11,6 +11,7 @@
  */
 
 import type { StateManager } from './state-manager.js';
+import { stateManager as defaultStateManager } from './state-manager.js';
 
 // ============================================================================
 // 类型定义
@@ -124,7 +125,7 @@ export const PRESSURE_RESPONSES: Record<PressureLevel, (context?: PressureContex
     }
   }),
 
-  3: (context) => ({
+  3: (_context) => ({
     level: 3,
     title: '绩效回顾',
     icon: '⛔',
@@ -145,7 +146,7 @@ export const PRESSURE_RESPONSES: Record<PressureLevel, (context?: PressureContex
     }
   }),
 
-  4: (context) => ({
+  4: (_context) => ({
     level: 4,
     title: '毕业警告 + 强制方法论切换',
     icon: '🚨',
@@ -181,7 +182,7 @@ export class PressureSystem {
   constructor(config: Partial<PressureConfig> = {}, stateManager?: StateManager) {
     this.config = { ...DEFAULT_PRESSURE_CONFIG, ...config };
     // Lazy import to avoid circular deps; allow injection for testing
-    this.stateManager = stateManager ?? require('./state-manager.js').stateManager;
+    this.stateManager = stateManager ?? defaultStateManager;
   }
 
   /**
@@ -198,7 +199,7 @@ export class PressureSystem {
   /**
    * 处理失败事件，返回压力升级结果
    */
-  async handleFailure(
+  handleFailure(
     sessionId: string,
     errorMessage: string,
     toolName?: string,
@@ -206,7 +207,7 @@ export class PressureSystem {
       currentFlavor?: string;
       currentTask?: string;
     }
-  ): Promise<EscalationResult> {
+  ): EscalationResult {
     // 记录失败
     const failureCount = this.stateManager.recordFailure(sessionId, errorMessage, toolName);
     

@@ -88,10 +88,10 @@ export const detectTriggerTool = {
     }
   ],
 
-  handler: async (args: z.infer<typeof DetectTriggerInputSchema>) => {
+  handler: (args: z.infer<typeof DetectTriggerInputSchema>) => {
     try {
       const detector = new TriggerDetector(args.options);
-      const result = await detector.detect(
+      const result = detector.detect(
         args.conversation_history,
         args.task_context
       );

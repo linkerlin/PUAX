@@ -21,9 +21,7 @@ export class VSCodeAdapter extends PlatformAdapter {
   /**
    * 导出角色为 Markdown 格式
    */
-  exportRole(role: RoleExportData, config: PlatformExportConfig): string {
-    const lang = config.language || 'zh';
-    
+  exportRole(role: RoleExportData, _config: PlatformExportConfig): string {
     return `# PUAX Role: ${role.name}
 
 ## 描述
@@ -47,7 +45,7 @@ ${role.systemPrompt}
   /**
    * 导出风味
    */
-  exportFlavor(flavor: FlavorExportData, config: PlatformExportConfig): string {
+  exportFlavor(flavor: FlavorExportData, _config: PlatformExportConfig): string {
     return `# ${flavor.name} 风味指南
 
 ${flavor.description}
@@ -76,10 +74,7 @@ ${flavor.rhetoric.emphasis.map(e => `- **${e}**`).join('\n')}
   /**
    * 生成 VSCode Copilot 配置
    */
-  generateConfig(roles: RoleExportData[], config: PlatformExportConfig): string {
-    // 生成主 instructions 文件
-    const mainInstructions = this.generateMainInstructions(roles);
-    
+  generateConfig(roles: RoleExportData[], _config: PlatformExportConfig): string {
     // 生成 prompts 配置
     const promptsConfig = {
       version: '2.0.0',
@@ -218,7 +213,7 @@ ${roles.slice(0, 10).map(r => `| ${r.name} | ${r.taskTypes[0] || '通用'} | /pu
       result.success = false;
     }
 
-    return result;
+    return await Promise.resolve(result);
   }
 
   /**

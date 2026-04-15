@@ -15,13 +15,13 @@ function toSkillSection(section: string | undefined): SkillSection {
     return 'full';
 }
 
-export async function handleListSkills(args: Record<string, unknown>): Promise<ToolResponse> {
+export function handleListSkills(args: Record<string, unknown>): ToolResponse {
     const category = (args?.category as string) || 'all';
     const includeCapabilities = (args?.includeCapabilities as boolean) || false;
 
     // 如果还没加载技能，先加载
     if (promptManager.getAllSkills().length === 0) {
-        await promptManager.initialize();
+        promptManager.initialize();
     }
 
     const skills = promptManager.getSkillsByCategory(category);
@@ -124,7 +124,7 @@ export function handleGetSkill(args: Record<string, unknown>): ToolResponse {
     };
 }
 
-export async function handleSearchSkills(args: Record<string, unknown>): Promise<ToolResponse> {
+export function handleSearchSkills(args: Record<string, unknown>): ToolResponse {
     const keyword = args?.keyword as string;
 
     if (!keyword) {
@@ -160,7 +160,7 @@ export async function handleSearchSkills(args: Record<string, unknown>): Promise
 export function handleActivateSkill(args: Record<string, unknown>): ToolResponse {
     const skillId = args?.skillId as string;
     const task = args?.task as string | undefined;
-    const customParams = args?.customParams as Record<string, unknown> | undefined;
+    const customParams = args?.customParams as Record<string, string> | undefined;
 
     if (!skillId) {
         throw new McpError(

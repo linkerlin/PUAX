@@ -5,14 +5,14 @@
  */
 
 import { z } from 'zod';
-import { enhancedTriggerDetector, TRIGGER_PATTERNS, ROLE_RECOMMENDATIONS } from '../hooks/trigger-detector-enhanced.js';
+import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
 
 const QuickDetectInputSchema = z.object({
   sessionId: z.string().default(`quick_${Date.now()}`).describe('会话ID（可选，自动生成）'),
   text: z.string().describe('要检测的文本'),
   context: z.object({
     toolName: z.string().optional(),
-    toolResult: z.any().optional(),
+    toolResult: z.unknown().optional(),
     errorMessage: z.string().optional()
   }).optional().describe('额外的上下文')
 });

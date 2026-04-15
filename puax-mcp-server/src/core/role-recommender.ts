@@ -296,7 +296,7 @@ export class RoleRecommender {
   /**
    * 推荐角色
    */
-  async recommend(request: RecommendationRequest): Promise<RoleRecommendation> {
+  recommend(request: RecommendationRequest): RoleRecommendation {
     // 检查缓存
     const cacheKey = this.generateCacheKey(request);
     const cached = this.getFromCache(cacheKey);

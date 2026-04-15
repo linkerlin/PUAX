@@ -16,13 +16,13 @@ function toSkillSection(section: string | undefined): SkillSection {
     return 'full';
 }
 
-export async function handleListRoles(args: Record<string, unknown>): Promise<ToolResponse> {
+export function handleListRoles(args: Record<string, unknown>): ToolResponse {
     const category = (args?.category as string) || 'all';
     const includeCapabilities = (args?.includeCapabilities as boolean) || false;
 
     // 如果还没加载角色，先加载
     if (promptManager.getAllRoles().length === 0) {
-        await promptManager.initialize();
+        promptManager.initialize();
     }
 
     const roles = promptManager.getRolesByCategory(category);
@@ -117,7 +117,7 @@ export function handleGetRole(args: Record<string, unknown>): ToolResponse {
     };
 }
 
-export async function handleSearchRoles(args: Record<string, unknown>): Promise<ToolResponse> {
+export function handleSearchRoles(args: Record<string, unknown>): ToolResponse {
     const keyword = args?.keyword as string;
 
     if (!keyword) {
@@ -153,7 +153,7 @@ export async function handleSearchRoles(args: Record<string, unknown>): Promise<
 export function handleActivateRole(args: Record<string, unknown>): ToolResponse {
     const roleId = args?.roleId as string;
     const task = args?.task as string | undefined;
-    const customParams = args?.customParams as Record<string, unknown> | undefined;
+    const customParams = args?.customParams as Record<string, string> | undefined;
 
     if (!roleId) {
         throw new McpError(

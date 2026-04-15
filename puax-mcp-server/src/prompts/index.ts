@@ -2,9 +2,6 @@ import { SkillInfo } from '../tools.js';
 import {
   getAllBundledSkills,
   getBundledSkillById,
-  getBundledSkillsByCategory,
-  searchBundledSkills,
-  getSkillCategories,
   BundledSkill,
   CATEGORIES,
   CATEGORY_NAMES
@@ -12,6 +9,27 @@ import {
 
 // Type alias for section parameter
 export type SkillSection = 'full' | 'metadata' | 'capabilities' | 'systemPrompt';
+
+export interface SkillSectionResult {
+  id: string;
+  name: string;
+  category?: string;
+  description?: string;
+  tags?: string[];
+  author?: string;
+  version?: string;
+  capabilities?: string[];
+  howToUse?: string;
+  inputFormat?: string;
+  outputFormat?: string;
+  exampleUsage?: string;
+  content?: string;
+  filePath?: string;
+  triggerConditions?: string[];
+  taskTypes?: string[];
+  compatibleFlavors?: string[];
+  metadata?: Record<string, unknown>;
+}
 
 export class PromptManager {
   private skills: SkillInfo[] = [];
@@ -31,7 +49,7 @@ export class PromptManager {
     }
   }
 
-  public async initialize(): Promise<void> {
+  public initialize(): void {
     if (this.bundledMode) {
       this.loadSkillsFromBundle();
     } else {
@@ -111,7 +129,7 @@ export class PromptManager {
     );
   }
 
-  public activateSkill(skillId: string, task?: string, customParams?: Record<string, any>): string | null {
+  public activateSkill(skillId: string, task?: string, customParams?: Record<string, string>): string | null {
     const prompt = this.getPromptContent(skillId);
     if (!prompt) {
       return null;
@@ -166,7 +184,7 @@ export class PromptManager {
     return skill?.capabilities || null;
   }
 
-  public getSkillBySection(skillId: string, section: SkillSection): any | null {
+  public getSkillBySection(skillId: string, section: SkillSection): SkillSectionResult | BundledSkill | null {
     const skill = this.getBundledSkill(skillId);
     if (!skill) return null;
 
@@ -204,7 +222,7 @@ export class PromptManager {
     }
   }
 
-  public listPrompts(): any[] {
+  public listPrompts(): Array<{ name: string; description: string; arguments: Array<{ name: string; description: string; required: boolean }> }> {
     return this.skills.map(skill => ({
       name: skill.id,
       description: `${skill.name} - ${skill.description}`,
@@ -218,7 +236,7 @@ export class PromptManager {
     }));
   }
 
-  public getPrompt(name: string, args?: Record<string, string>): { description?: string; messages: any[] } | null {
+  public getPrompt(name: string, args?: Record<string, string>): { description?: string; messages: Array<{ role: 'user'; content: { type: 'text'; text: string } }> } | null {
     const skill = this.getSkillById(name);
     if (!skill) {
       return null;
@@ -267,7 +285,7 @@ export class PromptManager {
     return this.searchSkills(keyword);
   }
 
-  public activateRole(roleId: string, task?: string, customParams?: Record<string, any>): string | null {
+  public activateRole(roleId: string, task?: string, customParams?: Record<string, string>): string | null {
     return this.activateSkill(roleId, task, customParams);
   }
 }
