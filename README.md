@@ -54,7 +54,7 @@ npx puax-mcp-server
 | **状态持久化** | 跨会话状态保存到 `~/.puax/` |
 | **压力等级** | L1-L4 四级压力递增机制 |
 | **反馈收集** | 会话结束时的成功率评估 |
-| **PUA 循环报告** | 生成详细的干预效果报告 |
+| **循环报告** | 生成详细的干预效果报告 |
 
 已验证状态：
 - 五类 Hook 事件 `UserPromptSubmit`、`PostToolUse`、`PreCompact`、`SessionStart`、`Stop` 可正常触发
