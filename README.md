@@ -1,4 +1,4 @@
-# PUAX 3.1 - AI Agent 激励系统
+# PUAX 3.2 - AI Agent 激励系统
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-3.2.0-blue.svg" alt="Version">
