@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.10.1] - 2026-07-04
+
+### Fixed
+- `--version` 不再因顶层 import 触发 PromptManager 初始化（无多余日志）
+- `loadVersion()` 固定从包根 `package.json` 读取版本，移除易误导的 `3.2.0` fallback
+
+### Note
+- 若在本仓库目录内 `npx puax-mcp-server@x.y.z` 仍显示旧版，请检查 `~/.node_modules` 全局旧安装，或改用 `node build/index.js --version`
+
 ## [3.10.0] - 2026-07-04
 
 ### Added

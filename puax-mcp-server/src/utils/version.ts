@@ -3,36 +3,32 @@
  * Single source of truth for version loading
  */
 
-import { readFileSync, existsSync } from 'fs';
-import { join } from 'path';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
-const FALLBACK_VERSION = '3.2.0';
-
-/**
- * Load version from package.json
- * Searches multiple possible locations to handle different deployment scenarios
- */
 interface PackageJson {
+    name?: string;
     version?: string;
 }
 
-export function loadVersion(): string {
-    const paths = [
-        join(__dirname, '..', '..', 'package.json'),  // build/src/ -> root
-        join(__dirname, '..', 'package.json'),         // build/ -> root
-        join(__dirname, 'package.json'),               // direct in root
-        join(process.cwd(), 'package.json')            // fallback to cwd
-    ];
+const PACKAGE_JSON_PATH = join(__dirname, '..', '..', 'package.json');
 
-    for (const pkgPath of paths) {
-        if (existsSync(pkgPath)) {
-            try {
-                const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8')) as PackageJson;
-                return pkg.version ?? FALLBACK_VERSION;
-            } catch {
-                continue;
-            }
+/**
+ * Load version from package.json at the package root (build/utils -> root).
+ */
+export function loadVersion(): string {
+    try {
+        const pkg = JSON.parse(readFileSync(PACKAGE_JSON_PATH, 'utf-8')) as PackageJson;
+        if (pkg.name === 'puax-mcp-server' && pkg.version) {
+            return pkg.version;
         }
+    } catch {
+        // fall through
     }
-    return FALLBACK_VERSION;
+
+    if (process.env.npm_package_version) {
+        return process.env.npm_package_version;
+    }
+
+    return '0.0.0-dev';
 }

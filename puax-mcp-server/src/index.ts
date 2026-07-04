@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { PuaxMcpServer, ServerConfig, TransportMode } from './server.js';
+import type { ServerConfig, TransportMode } from './types.js';
 import { loadVersion } from './utils/version.js';
 import { getGlobalLogger } from './utils/logger.js';
 
@@ -243,7 +243,8 @@ async function main(): Promise<void> {
         transport: cliConfig.transport ?? envConfig.transport ?? 'http'
     };
     
-    // 创建并启动服务器
+    // 延迟加载，避免 --version / --help 触发 PromptManager 初始化
+    const { PuaxMcpServer } = await import('./server.js');
     const server = new PuaxMcpServer(config);
     
     try {

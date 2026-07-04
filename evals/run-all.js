@@ -44,6 +44,7 @@ run('协议合规 Jest', () => {
 run('CHANGELOG 含 v3.8', () => {
   const changelog = readFileSync(join(MCP, 'CHANGELOG.md'), 'utf-8');
   if (!changelog.includes('3.10.0')) throw new Error('CHANGELOG 缺少 3.10.0');
+  if (!changelog.includes('3.10.1')) throw new Error('CHANGELOG 缺少 3.10.1');
 });
 
 run('方法论指南已生成', () => {
