@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * MCP Tools 统一导出
- * PUAX v3.2.0 - 单一工具层（tools/ + handlers/ 已合并）
+ * PUAX v3.7.1 - 单一工具层（handlers/ 已并入 tools/）
  *
  * 每个工具定义包含:
  * - name: MCP 工具名称 (snake_case)
@@ -27,8 +27,10 @@ import type { SkillSection } from '../prompts/index.js';
 // 工具 Schema 定义
 // ============================================================================
 
+const SKILL_CATEGORIES = ['all', 'shaman', 'military', 'p10', 'silicon', 'sillytavern', 'theme', 'self-motivation', 'special', 'custom'] as const;
+
 const ListSkillsInputSchema = z.object({
-  category: z.enum(['all', 'shaman', 'military', 'p10', 'silicon', 'sillytavern', 'theme', 'self-motivation', 'special'])
+  category: z.enum(SKILL_CATEGORIES)
     .default('all').describe('按类别筛选技能'),
   includeCapabilities: z.boolean().default(false).describe('返回 capabilities 数组')
 });
@@ -52,7 +54,7 @@ const ActivateSkillInputSchema = z.object({
 const GetCategoriesInputSchema = z.object({});
 
 const ListRolesInputSchema = z.object({
-  category: z.enum(['all', 'shaman', 'military', 'p10', 'silicon', 'sillytavern', 'theme', 'self-motivation', 'special'])
+  category: z.enum(SKILL_CATEGORIES)
     .default('all').describe('按类别筛选角色'),
   includeCapabilities: z.boolean().default(false).describe('返回 capabilities 数组')
 });
@@ -273,6 +275,17 @@ export { recommendRoleTool } from './recommend-role.js';
 export { startSessionTool, endSessionTool, getSessionStateTool, resetSessionTool, hookSessionTools } from './hook-session.js';
 export { submitFeedbackTool, getFeedbackSummaryTool, getImprovementSuggestionsTool, exportFeedbackTool, generatePUALoopReportTool, hookFeedbackTools } from './hook-feedback.js';
 export { quickDetectTool } from './quick-detect.js';
+export { switchOnFailureTool } from './switch-on-failure.js';
+export { checkDiagnosisTool } from './check-diagnosis.js';
+export { confidenceCheckTool } from './confidence-check.js';
+export { defineContractTool } from './define-contract.js';
+export { verifyCompletionTool } from './verify-completion.js';
+export { evolutionTools, getEvolutionBaselineTool, recordEvolutionTool } from './evolution.js';
+export { handleBreakthroughTool } from './handle-breakthrough.js';
+export { qualityCompassTool } from './quality-compass.js';
+export { updateReasoningStateTool } from './update-reasoning-state.js';
+export { orchestrateTeamTool } from './orchestrate-team.js';
+export { listPlatformsTool } from './list-platforms.js';
 export { exportPlatform, exportAllPlatforms, handleExportCommand } from './export-platform.js';
 
 // ============================================================================
@@ -286,6 +299,20 @@ import { recommendRoleTool } from './recommend-role.js';
 import { hookSessionTools } from './hook-session.js';
 import { hookFeedbackTools } from './hook-feedback.js';
 import { quickDetectTool } from './quick-detect.js';
+import { switchOnFailureTool } from './switch-on-failure.js';
+import { checkDiagnosisTool } from './check-diagnosis.js';
+import { confidenceCheckTool } from './confidence-check.js';
+import { defineContractTool } from './define-contract.js';
+import { verifyCompletionTool } from './verify-completion.js';
+import { evolutionTools } from './evolution.js';
+import { handleBreakthroughTool } from './handle-breakthrough.js';
+import { qualityCompassTool } from './quality-compass.js';
+import { updateReasoningStateTool } from './update-reasoning-state.js';
+import { orchestrateTeamTool } from './orchestrate-team.js';
+import { listPlatformsTool } from './list-platforms.js';
+import { customRoleTools } from './custom-role.js';
+import { observabilityTools } from './usage-stats.js';
+import { buildHookToolHandlers, type ToolHandler } from './registry.js';
 
 /**
  * 统一工具列表（单一工具层）
@@ -308,6 +335,27 @@ export const allTools = [
   getRoleWithMethodologyTool,
   recommendRoleTool,
 
+  // v3.3 行为有效性闭环
+  switchOnFailureTool,
+  checkDiagnosisTool,
+  confidenceCheckTool,
+
+  // v3.4 深度与留存
+  defineContractTool,
+  verifyCompletionTool,
+  ...evolutionTools,
+  handleBreakthroughTool,
+  qualityCompassTool,
+  updateReasoningStateTool,
+  orchestrateTeamTool,
+  listPlatformsTool,
+
+  // v3.9 自定义角色
+  ...customRoleTools,
+
+  // v3.10 可观测性 + 使用统计
+  ...observabilityTools,
+
   // Legacy Role 工具
   ListRolesTool,
   GetRoleTool,
@@ -325,3 +373,11 @@ export const allTools = [
 export const Tools = allTools;
 
 export default allTools;
+
+export { buildToolHandlerMap, normalizeToolResponse } from './registry.js';
+export type { ToolHandler, McpToolResponse } from './registry.js';
+
+/** @deprecated 使用 buildToolHandlerMap(allTools) */
+export const hookToolHandlers = buildHookToolHandlers(
+  allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
+);

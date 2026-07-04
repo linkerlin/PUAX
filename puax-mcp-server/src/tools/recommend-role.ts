@@ -5,12 +5,11 @@
  */
 
 import { z } from 'zod';
-import { RoleRecommender } from '../core/role-recommender';
+import { getRoleRecommender } from '../core/service-registry.js';
+import { usageStatsCollector } from '../core/usage-stats.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
-
-// ============================================================================
 // 输入输出Schema定义
 // ============================================================================
 
@@ -75,6 +74,19 @@ const RecommendRoleOutputSchema = z.object({
   metadata: z.object({
     identified_failure_mode: z.string().optional(),
     calculation_breakdown: z.record(z.number()),
+    score_explanation: z.object({
+      formula: z.string(),
+      weights: z.record(z.number()),
+      dimensions: z.array(z.object({
+        dimension: z.string(),
+        label: z.string(),
+        raw_score: z.number(),
+        weight: z.number(),
+        weighted_points: z.number(),
+        note: z.string(),
+      })),
+      total_score: z.number(),
+    }).optional(),
     algorithm_version: z.string(),
     cache_hit: z.boolean()
   })
@@ -125,13 +137,15 @@ export const recommendRoleTool = {
 
   handler: (args: z.infer<typeof RecommendRoleInputSchema>) => {
     try {
-      const recommender = new RoleRecommender();
+      const recommender = getRoleRecommender();
       const result = recommender.recommend({
         detected_triggers: args.detected_triggers,
         task_context: args.task_context,
         user_preferences: args.user_preferences,
         session_history: args.session_history
       });
+
+      usageStatsCollector.recordRoleRecommended(result.primary.role_id);
       
       return result;
     } catch (error) {

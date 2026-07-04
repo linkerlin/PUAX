@@ -115,7 +115,7 @@ function isExportCommand(): boolean {
  */
 function showHelp(): void {
     const version = loadVersion();
-    console.log(`
+    logger.write(`
 PUAX MCP Server v${version}
 
 为 AI Agent 提供 PUAX 角色选择、切换和激活功能的 MCP 服务器
@@ -177,7 +177,7 @@ STDIO 模式:
  * 显示版本号
  */
 function showVersion(): void {
-    console.log(`puax-mcp-server v${loadVersion()}`);
+    logger.write(`puax-mcp-server v${loadVersion()}`);
 }
 
 /**
@@ -189,17 +189,17 @@ async function showPlatforms(): Promise<void> {
     await import('./platform-adapters/vscode-adapter.js');
     
     const platforms = globalAdapterRegistry.getSupportedPlatforms();
-    console.log('\n支持的平台:');
+    logger.write('\n支持的平台:');
     for (const platform of platforms) {
         const adapter = globalAdapterRegistry.get(platform);
         if (adapter) {
             const langs = ['zh', 'en'].filter(l => adapter.supportsLanguage(l)).join(', ');
-            console.log(`  - ${platform} (支持语言: ${langs})`);
+            logger.write(`  - ${platform} (支持语言: ${langs})`);
         }
     }
-    console.log('\n使用示例:');
-    console.log('  puax-mcp-server --export=cursor --output=./.cursor/rules');
-    console.log('  puax-mcp-server --export=all --output=./puax-export\n');
+    logger.write('\n使用示例:');
+    logger.write('  puax-mcp-server --export=cursor --output=./.cursor/rules');
+    logger.write('  puax-mcp-server --export=all --output=./puax-export\n');
 }
 
 /**

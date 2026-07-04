@@ -7,14 +7,15 @@
  * - 测试环境：注入 mock 依赖
  */
 
+import { getCoreServices } from '../core/service-registry.js';
+import type { TriggerDetector } from '../core/trigger-detector.js';
+import type { RoleRecommender } from '../core/role-recommender.js';
+import type { MethodologyEngine } from '../core/methodology-engine.js';
+import type { MethodologyRouter } from '../core/methodology-router.js';
 import { StateManager } from './state-manager.js';
 import { PressureSystem } from './pressure-system.js';
 import { HookManager } from './hook-manager.js';
 import { FeedbackSystem } from './feedback-system.js';
-import { TriggerDetector } from '../core/trigger-detector.js';
-import { RoleRecommender } from '../core/role-recommender.js';
-import { MethodologyEngine } from '../core/methodology-engine.js';
-import { MethodologyRouter } from '../core/methodology-router.js';
 
 export interface ServiceContainer {
   stateManager: StateManager;
@@ -33,10 +34,11 @@ export function createServices(overrides?: Partial<ServiceContainer>): ServiceCo
   const pressureSystem = overrides?.pressureSystem ?? new PressureSystem({}, stateManager);
   const hookManager = overrides?.hookManager ?? new HookManager({}, { stateManager, pressureSystem });
   const feedbackSystem = overrides?.feedbackSystem ?? new FeedbackSystem(stateManager);
-  const triggerDetector = overrides?.triggerDetector ?? new TriggerDetector();
-  const roleRecommender = overrides?.roleRecommender ?? new RoleRecommender();
-  const methodologyEngine = overrides?.methodologyEngine ?? new MethodologyEngine();
-  const methodologyRouter = overrides?.methodologyRouter ?? new MethodologyRouter();
+  const core = getCoreServices();
+  const triggerDetector = overrides?.triggerDetector ?? core.triggerDetector;
+  const roleRecommender = overrides?.roleRecommender ?? core.roleRecommender;
+  const methodologyEngine = overrides?.methodologyEngine ?? core.methodologyEngine;
+  const methodologyRouter = overrides?.methodologyRouter ?? core.methodologyRouter;
 
   return {
     stateManager,

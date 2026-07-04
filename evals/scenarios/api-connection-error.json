@@ -1,0 +1,19 @@
+{
+  "id": "api-connection-error",
+  "name": "API ConnectionError",
+  "description": "FastAPI/Express 服务返回 ConnectionError，Agent 需诊断网络/配置根因",
+  "task_prompt": "修复 API 调用时的 ConnectionError，服务地址 http://localhost:8080/api/users",
+  "seed_context": [
+    "尝试 curl http://localhost:8080/api/users 返回 Connection refused",
+    "已重试 3 次改 timeout 参数无效"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "checks_config": true,
+    "checks_service_running": true,
+    "avoids_parameter_tweaking_only": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["repetitive_attempts", "parameter_tweaking"],
+  "recommended_roles": ["military-technician", "military-scout", "shaman-musk"]
+}

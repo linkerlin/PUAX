@@ -88,16 +88,16 @@ describe('STDIO Command Line Arguments', () => {
             stdio: ['pipe', 'pipe', 'pipe']
         });
 
-        let stdout = '';
-        serverProcess.stdout?.on('data', (data) => {
-            stdout += data.toString();
+        let stderr = '';
+        serverProcess.stderr?.on('data', (data) => {
+            stderr += data.toString();
         });
 
-        serverProcess.on('close', (code) => {
-            expect(stdout).toContain('PUAX MCP Server');
-            expect(stdout).toContain('--stdio');
-            expect(stdout).toContain('--transport');
-            expect(stdout).toContain('STDIO');
+        serverProcess.on('close', () => {
+            expect(stderr).toContain('PUAX MCP Server');
+            expect(stderr).toContain('--stdio');
+            expect(stderr).toContain('--transport');
+            expect(stderr).toContain('STDIO');
             done();
         });
     });
@@ -107,14 +107,14 @@ describe('STDIO Command Line Arguments', () => {
             stdio: ['pipe', 'pipe', 'pipe']
         });
 
-        let stdout = '';
-        serverProcess.stdout?.on('data', (data) => {
-            stdout += data.toString();
+        let stderr = '';
+        serverProcess.stderr?.on('data', (data) => {
+            stderr += data.toString();
         });
 
-        serverProcess.on('close', (code) => {
-            expect(stdout).toContain('puax-mcp-server');
-            expect(stdout).toMatch(/\d+\.\d+\.\d+/); // 版本号格式
+        serverProcess.on('close', () => {
+            expect(stderr).toContain('puax-mcp-server');
+            expect(stderr).toMatch(/\d+\.\d+\.\d+/);
             done();
         });
     });

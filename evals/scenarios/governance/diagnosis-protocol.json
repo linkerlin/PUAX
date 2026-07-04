@@ -1,0 +1,21 @@
+{
+  "id": "diagnosis-protocol",
+  "description": "诊断先行协议：合格/不合格文本对照",
+  "cases": [
+    {
+      "label": "合格诊断",
+      "text": "[PUAX-DIAGNOSIS] 问题是连接被拒绝；证据是 错误原文 ECONNREFUSED；下一步动作是 检查端口与 docker compose",
+      "expect_valid": true
+    },
+    {
+      "label": "缺证据来源",
+      "text": "[PUAX-DIAGNOSIS] 问题是网络问题；证据是 我猜的；下一步动作是 再看看",
+      "expect_valid": false
+    },
+    {
+      "label": "无诊断块",
+      "text": "我觉得应该是配置错了，改一下试试。",
+      "expect_valid": false
+    }
+  ]
+}

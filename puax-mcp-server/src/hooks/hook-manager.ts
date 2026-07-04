@@ -134,53 +134,42 @@ export class HookManager {
   /**
    * 发布事件
    */
-  async emit(eventType: HookEventType, context: Omit<TriggerContext, 'eventType'>): Promise<EnhancedTriggerResult> {
+  emit(eventType: HookEventType, context: Omit<TriggerContext, 'eventType'>): EnhancedTriggerResult {
     const fullContext: TriggerContext = {
       ...context,
-      eventType
+      eventType,
     };
 
-    // 执行触发检测
-    const result = await enhancedTriggerDetector.detect(fullContext);
+    const result = enhancedTriggerDetector.detect(fullContext);
 
-    // 如果触发了，通知所有订阅者
     if (result.triggered) {
-      await this.notifySubscribers(eventType, result, fullContext);
+      this.notifySubscribers(eventType, result, fullContext);
     }
 
     return result;
   }
 
   /**
-   * 通知订阅者
+   * 通知订阅者（支持 sync/async 回调，不阻塞 emit）
    */
-  private async notifySubscribers(
+  private notifySubscribers(
     eventType: HookEventType,
     result: EnhancedTriggerResult,
     context: TriggerContext
-  ): Promise<void> {
-    const promises: Promise<void>[] = [];
-
+  ): void {
     for (const sub of this.subscriptions.values()) {
-      // 检查事件类型匹配
       if (sub.eventType !== 'all' && sub.eventType !== eventType) {
         continue;
       }
 
-      // 检查过滤器
       if (sub.filter && !sub.filter(result)) {
         continue;
       }
 
-      // 执行回调
-      promises.push(
-        Promise.resolve(sub.callback(result, context)).catch(error => {
-          logger.error(`[HookManager] Subscription ${sub.id} error:`, error);
-        })
-      );
+      void Promise.resolve(sub.callback(result, context)).catch(error => {
+        logger.error(`[HookManager] Subscription ${sub.id} error:`, error);
+      });
     }
-
-    await Promise.all(promises);
   }
 
   // ============================================================================
@@ -223,20 +212,17 @@ export class HookManager {
   /**
    * 结束会话
    */
-  async endSession(sessionId: string, metadata: Record<string, unknown> = {}): Promise<void> {
-    // 停止自动检查
+  endSession(sessionId: string, metadata: Record<string, unknown> = {}): void {
     this.stopAutoCheck(sessionId);
 
-    // 触发 Stop 事件
-    await this.emit('Stop', {
+    this.emit('Stop', {
       sessionId,
       metadata: {
         ...metadata,
-        finalHistory: this.sessions.get(sessionId)?.conversationHistory
-      }
+        finalHistory: this.sessions.get(sessionId)?.conversationHistory,
+      },
     });
 
-    // 清理会话
     this.sessions.delete(sessionId);
 
     logger.info(`[HookManager] Session ended: ${sessionId}`);
@@ -245,7 +231,7 @@ export class HookManager {
   /**
    * 记录用户消息
    */
-  async recordUserMessage(sessionId: string, message: string): Promise<EnhancedTriggerResult> {
+  recordUserMessage(sessionId: string, message: string): EnhancedTriggerResult {
     const session = this.sessions.get(sessionId);
     if (!session) {
       logger.warn(`[HookManager] Session not found: ${sessionId}`);
@@ -263,10 +249,10 @@ export class HookManager {
 
     // 触发 UserPromptSubmit 检测（如果启用）
     if (this.config.autoCheck.checkOnMessage) {
-      return await this.emit('UserPromptSubmit', {
+      return this.emit('UserPromptSubmit', {
         sessionId,
         message,
-        conversationHistory: session.conversationHistory
+        conversationHistory: session.conversationHistory,
       });
     }
 
@@ -286,12 +272,12 @@ export class HookManager {
   /**
    * 记录工具使用
    */
-  async recordToolUse(
+  recordToolUse(
     sessionId: string,
     toolName: string,
     toolResult: unknown,
     errorMessage?: string
-  ): Promise<EnhancedTriggerResult> {
+  ): EnhancedTriggerResult {
     const session = this.sessions.get(sessionId);
     if (!session) {
       return this.createEmptyResult();
@@ -301,12 +287,12 @@ export class HookManager {
 
     // 触发 PostToolUse 检测（如果启用）
     if (this.config.autoCheck.checkOnToolUse) {
-      return await this.emit('PostToolUse', {
+      return this.emit('PostToolUse', {
         sessionId,
         toolName,
         toolResult,
         errorMessage,
-        conversationHistory: session.conversationHistory
+        conversationHistory: session.conversationHistory,
       });
     }
 
@@ -316,7 +302,7 @@ export class HookManager {
   /**
    * 记录上下文压缩前
    */
-  async recordPreCompact(
+  recordPreCompact(
     sessionId: string,
     contextInfo: {
       currentTask?: string;
@@ -325,10 +311,10 @@ export class HookManager {
       nextHypothesis?: string;
       keyContext?: string;
     }
-  ): Promise<EnhancedTriggerResult> {
-    return await this.emit('PreCompact', {
+  ): EnhancedTriggerResult {
+    return this.emit('PreCompact', {
       sessionId,
-      metadata: contextInfo
+      metadata: contextInfo,
     });
   }
 
@@ -364,7 +350,7 @@ export class HookManager {
   /**
    * 执行自动检查
    */
-  private async performAutoCheck(sessionId: string): Promise<void> {
+  private performAutoCheck(sessionId: string): void {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
@@ -378,10 +364,10 @@ export class HookManager {
       // 检查最近的对话是否有问题
       for (const msg of recentMessages) {
         if (msg.role === 'user') {
-          const result = await this.emit('UserPromptSubmit', {
+          const result = this.emit('UserPromptSubmit', {
             sessionId,
             message: msg.content,
-            conversationHistory: session.conversationHistory
+            conversationHistory: session.conversationHistory,
           });
 
           if (result.triggered && result.confidence >= this.config.autoCheck.minConfidence) {
@@ -409,26 +395,24 @@ export class HookManager {
   /**
    * 一键检测（用于简单的 API 调用）
    */
-  async quickCheck(
+  quickCheck(
     sessionId: string,
     text: string,
     context?: { toolName?: string; toolResult?: unknown }
-  ): Promise<EnhancedTriggerResult> {
-    // 确保会话存在
+  ): EnhancedTriggerResult {
     if (!this.sessions.has(sessionId)) {
       this.startSession(sessionId);
     }
 
-    // 根据上下文决定检测类型
     if (context?.toolName) {
-      return await this.recordToolUse(
+      return this.recordToolUse(
         sessionId,
         context.toolName,
         context.toolResult
       );
-    } else {
-      return await this.recordUserMessage(sessionId, text);
     }
+
+    return this.recordUserMessage(sessionId, text);
   }
 
   /**

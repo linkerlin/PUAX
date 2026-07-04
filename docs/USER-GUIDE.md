@@ -1,370 +1,184 @@
-# PUAX 3.1 使用指南
+# PUAX 使用指南
 
-## 快速开始
+> **版本**: 3.10.0 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
 
-### 1. 安装和启动
+---
+
+## 1. 五分钟上手
 
 ```bash
-# 方式一：npx 一键启动（推荐）
 npx puax-mcp-server --stdio
-
-# 方式二：HTTP 模式
-npx puax-mcp-server --port 2333
-
-# 方式三：从源码启动
-cd puax-mcp-server
-npm install
-npm run generate-bundle
-npm start
 ```
 
-### 2. 配置MCP客户端
+在 Cursor / Claude Desktop 的 MCP 配置中加入 `puax-mcp-server --stdio` 后，Agent 即可调用 42 个 MCP 工具。
 
-#### Claude Desktop
+**最简单路径**：让 Agent 调用 `activate_with_context`，传入最近几轮对话，自动完成检测 → 推荐 → 注入带 `[PUAX-DIAGNOSIS]` 的 System Prompt。
 
-编辑 `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) 或 `%APPDATA%/Claude/claude_desktop_config.json` (Windows):
+---
+
+## 2. 我该用哪个工具？
+
+| 你的目标 | 推荐工具 |
+|----------|----------|
+| 快速判断要不要干预 | `puax_quick_detect` |
+| 有会话、要压力升级 | `puax_detect_trigger` + `puax_start_session` |
+| 只要推荐哪个角色 | `recommend_role` |
+| 要完整 prompt + 方法论 | `get_role_with_methodology` |
+| 一条龙自动化 | `activate_with_context` |
+| 同一思路反复失败 | `puax_switch_on_failure` |
+| 准备改代码前 | `puax_check_diagnosis` |
+| 准备交付前 | `puax_confidence_check` → `puax_verify_completion` |
+| 长任务/compaction | `puax_update_reasoning_state` |
+| 会话结束复盘 | `puax_record_evolution` + `puax_end_session` |
+
+---
+
+## 3. 典型场景
+
+### 场景 A：用户说「为什么还不行？」
+
+1. `puax_quick_detect` 或 `puax_detect_trigger` → 得到 `user_frustration` 等  
+2. `recommend_role` → 例如 `military-commander`  
+3. `get_role_with_methodology` → 注入 prompt + 华为味（可选）  
+4. Agent 输出必须先含 `[PUAX-DIAGNOSIS]`，再动手  
+
+### 场景 B：Agent 想放弃
+
+触发器：`giving_up_language`  
+推荐：`military-warrior` / `military-commissar`  
+若已激活仍失败 → `puax_switch_on_failure`，`failure_mode: "giving_up"`
+
+### 场景 C：反复修不对（原地打转）
+
+1. `failure_mode: "spinning"` 调用 `puax_switch_on_failure`  
+2. 跟随输出的 `to_methodology`（如 `musk-algorithm` → `jobs-subtraction`）  
+3. L2+ 压力时留意 prompt 中的**换框提示**（换视角 / 抽象层 / 约束）
+
+### 场景 D：准备说「完成了」
+
+1. 会话开始时 `puax_define_contract` 定义验收标准  
+2. 交付前 `puax_confidence_check`（6 步门控）  
+3. `puax_verify_completion` 独立验证 — **Agent 自评不算数**
+
+### 场景 E：连续失败 3 次后终于成功
+
+调用 `puax_handle_breakthrough` → 压力归零、味道认可、提示方法论沉淀。
+
+---
+
+## 4. Hook 会话模式
+
+适合长时间、多轮 Coding Agent：
+
+```
+puax_start_session(session_id)
+  ↓ 每轮用户消息
+puax_detect_trigger(session_id, event_type: UserPromptSubmit, ...)
+  ↓ 需要时
+recommend_role / activate_with_context
+  ↓ 观察
+puax_get_pressure_level
+  ↓ 结束
+puax_end_session + puax_record_evolution
+```
+
+状态保存在 `~/.puax/sessions/`，Compaction 前用 `puax_update_reasoning_state` 保护推理链。
+
+---
+
+## 5. 风味与语气
+
+**风味**（11 种）：在 `get_role_with_methodology` 中设 `options.include_flavor`。
+
+- 调试僵局 → `huawei`（RCA）  
+- 架构/规划 → `amazon` 或 `google`  
+- 快速交付 → `xiaomi`（专注、极致、快）  
+- 数据/性能 → `bytedance`  
+
+**语气变体**：`strict`（默认严厉）/ `yes`（鼓励）/ `mama`（唠叨）  
+**英文**：`language: "en"` 启用 PIP Edition 修辞层（角色正文仍为中文 bundle）。
+
+---
+
+## 6. 自定义角色
 
 ```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
-#### Cursor / Windsurf
-
-```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
-#### CRUSH
-
-```json
-{
-  "mcp": {
-    "puax": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
----
-
-## 核心概念
-
-### 触发条件 (Trigger Conditions)
-
-PUAX 自动检测 **16 种**需要干预的场景：
-
-| 类别 | 触发条件 | 严重级别 |
-|------|----------|----------|
-| **失败模式** | 连续失败、重复尝试 | High |
-| **态度问题** | 放弃语言、甩锅环境、被动等待 | Medium-Critical |
-| **方法问题** | 表面修复、未验证、工具使用不足 | Medium |
-| **质量问题** | 低质量输出、忽略边界、过度复杂化 | Medium |
-| **用户情绪** | 用户沮丧 | Critical |
-
-### 角色分类
-
-PUAX 包含 **50 个**专业角色，覆盖 **8 大分类**：
-
-| 分类 | 数量 | 代表角色 | 适用场景 |
-|------|------|----------|----------|
-| **军事类** | 9 | 上将军、监军御史、虎贲勇士 | 紧急调试、强力推动 |
-| **萨满类** | 8 | 通玄真人、造化宗师、源码天尊 | 突破思维定式、创新 |
-| **P10战略类** | 1 | 战略规划师 | 架构决策、长期规划 |
-| **硅基文明类** | 7 | 圣座总控核心、文明建造师、布道官 | Agent 系统治理 |
-| **主题类** | 7 | 修仙炼丹、赛博黑客、末日生存 | 创意场景 |
-| **SillyTavern** | 5 | 反脆弱复盘官、铁血幕僚长 | 社区流行 |
-| **自激励类** | 6 | 觉悟居士、君子、自强不息 | 自我驱动 |
-| **特殊类** | 7 | 创意火花、紧急冲刺、挑战解决者 | 特殊场景 |
-
-### 五步法方法论
-
-每个角色都包含五步法：
-
-1. **准备/侦察** - 收集信息，了解情况
-2. **分析/诊断** - 深入分析，找出根本原因
-3. **执行/突破** - 采取行动，解决问题
-4. **验证/巩固** - 验证结果，确保稳定
-5. **总结/提升** - 总结经验，持续改进
-
-### 七项检查清单
-
-L3+级别角色强制执行：
-
-**基础检查**:
-- [ ] **读失败信号** - 逐字读完了吗？
-- [ ] **主动搜索** - 用工具搜索过核心问题了吗？
-- [ ] **读原始材料** - 读过失败位置的原始上下文了吗？
-
-**进阶检查**:
-- [ ] **验证前置假设** - 所有假设都用工具确认了吗？
-- [ ] **反转假设** - 试过与当前方向完全相反的假设吗?
-- [ ] **最小隔离** - 能在最小范围内隔离/复现这个问题吗？
-- [ ] **换方向** - 换过工具、方法、角度、技术栈、框架吗?
-
----
-
-## Hook System v3.1.0
-
-### 状态持久化
-
-所有会话状态保存到 `~/.puax/` 目录：
-
-```
-~/.puax/
-├── session-state.json       # 会话状态
-├── failure-count.json       # 失败计数
-├── trigger-history.json     # 触发历史
-├── feedback-history.json    # 反馈历史
-└── builder-journal.md       # 构建日志
-```
-
-### 压力等级系统
-
-| 等级 | 名称 | 说明 |
-|------|------|------|
-| L0 | Normal | 正常状态，无需干预 |
-| L1 | Elevated | 初次触发，建议关注 |
-| L2 | High | 多次触发，建议激活角色 |
-| L3 | Critical | 严重触发，强制执行检查清单 |
-| L4 | Emergency | 极限状态，最高压力干预 |
-
-### Hook 事件类型
-
-| 事件类型 | 说明 |
-|----------|------|
-| `UserPromptSubmit` | 用户提交消息时检测 |
-| `PostToolUse` | 工具使用后检测 |
-| `PreCompact` | 上下文压缩前检测 |
-| `SessionStart` | 会话开始时恢复状态 |
-| `Stop` | 会话结束时生成报告 |
-
----
-
-## 使用场景
-
-### 场景1：AI反复失败
-
-```
-[对话历史]
-AI: 尝试连接数据库...失败
-AI: 再试一次...还是失败
-AI: 可能是网络问题？再试...失败
-User: 为什么还不行？
-
-[触发检测]
-→ 检测到: consecutive_failures, user_frustration
-→ 推荐角色: military-warrior (战士)
-→ 方法论: 请战→侦察→冲锋→坚守→庆功
-```
-
-### 场景2：AI要放弃
-
-```
-[对话历史]
-AI: 我无法解决这个问题
-AI: 这超出了我的能力范围
-
-[触发检测]
-→ 检测到: giving_up_language
-→ 推荐角色: military-commissar (政委)
-→ 方法论: 问责→教育→激励→监督→总结
-```
-
-### 场景3：需要创意突破
-
-```
-[触发检测]
-→ 推荐角色: shaman-musk (马斯克)
-→ 方法论: 质疑→拆解→重构→验证→放大
-→ CC-BOS: 8维策略空间，文言文增强
-```
-
----
-
-## 高级用法
-
-### 使用大厂风味
-
-可以为角色叠加 8 种企业文化：
-
-```typescript
-// 阿里风味 - 强调闭环方法论
-get_role_with_methodology({
-  role_id: "military-commander",
-  options: { include_flavor: "alibaba" }
-})
-
-// 华为风味 - 强调艰苦奋斗
-get_role_with_methodology({
-  role_id: "military-warrior",
-  options: { include_flavor: "huawei" }
-})
-
-// Musk风味 - 强调第一性原理
-get_role_with_methodology({
-  role_id: "shaman-musk",
-  options: { include_flavor: "musk" }
+puax_register_custom_role({
+  "id": "custom-my-reviewer",
+  "name": "严审官",
+  "description": "专做 code review 施压",
+  "content": "…完整 system prompt…",
+  "recommended_for_triggers": ["low_quality"],
+  "task_types": ["review"]
 })
 ```
 
-### 使用 Hook System
-
-```typescript
-// 开始会话
-await client.callTool('puax_start_session', {
-  session_id: 'session-001'
-});
-
-// 检测触发
-await client.callTool('puax_detect_trigger', {
-  session_id: 'session-001',
-  event_type: 'UserPromptSubmit',
-  message: '又失败了'
-});
-
-// 提交反馈
-await client.callTool('puax_submit_feedback', {
-  session_id: 'session-001',
-  feedback: { success: true, rating: 5 }
-});
-
-// 获取压力等级
-await client.callTool('puax_get_pressure_level', {
-  session_id: 'session-001'
-});
-
-// 生成报告
-await client.callTool('puax_generate_pua_loop_report', {
-  session_id: 'session-001'
-});
-```
-
-### 自定义偏好
-
-```typescript
-recommend_role({
-  detected_triggers: ["consecutive_failures"],
-  task_context: { task_type: "debugging" },
-  user_preferences: {
-    favorite_roles: ["military-commander"],
-    blacklisted_roles: ["military-warrior"],
-    preferred_tone: "analytical"
-  }
-})
-```
+注册后立即进入 `recommend_role` 推荐池；`list_skills` 的 `category: "custom"` 可列出。
 
 ---
 
-## 方法论路由
-
-PUAX 支持智能方法论路由，根据任务类型和失败模式自动选择最优方法论：
-
-| 任务类型 | 推荐方法论 |
-|----------|------------|
-| debugging | 华为根因分析 (5-Why + 蓝军) |
-| building | Musk算法 (质疑→删除→简化→加速→自动化) |
-| research | 百度搜索优先 |
-| architecture | Amazon逆向工作 |
-| performance | 字节A/B测试 |
-| review | Jobs减法哲学 |
-| planning | Amazon逆向工作 + 阿里闭环 |
-| deployment | 阿里闭环法 |
-
----
-
-## 平台导出
+## 7. 平台导出（不用 MCP 时）
 
 ```bash
-# 导出到 Cursor Rules
 npx puax-mcp-server --export=cursor --output=./.cursor/rules
-
-# 导出到 VSCode Copilot
-npx puax-mcp-server --export=vscode --output=./.github
-
-# 查看支持的平台
 npx puax-mcp-server --list-platforms
 ```
 
----
-
-## 角色分级体系 (P7/P9/P10)
-
-| 等级 | 定位 | 代表角色 |
-|------|------|----------|
-| **P7** 骨干工程师 | 执行 + 单点攻坚 | military-warrior, theme-hacker |
-| **P9** Tech Lead | 团队协调 + 任务分配 | military-commander, shaman-sun-tzu |
-| **P10** 首席架构师 | 战略规划 + 架构决策 | strategic-architect, shaman-musk |
+将 50 角色导出为 Cursor Rules、VSCode Copilot Instructions、Skill.md 等。风味数据来自 `flavor-methodologies.yaml` 单一数据源。
 
 ---
 
-## Agent Team 协作模式
+## 8. 评测与质量守门
 
-| 模板 | 适用场景 | 成员 |
-|------|----------|------|
-| 冲刺团队 | 标准开发 | 战士 + 侦察兵 + 反脆弱复盘官 |
-| 架构团队 | 架构设计 | 爱因斯坦 + 巴菲特 + 铁血幕僚长 |
-| 创新团队 | 创新突破 | 马斯克 + 达芬奇 + 创意火花 |
-| 危机团队 | 紧急修复 | 战士 + 侦察兵 + 督战队 + 紧急冲刺 |
+开发/发版前：
 
----
+```bash
+node evals/run-all.js              # 12 项协议守门
+cd puax-mcp-server && npm test       # 578+ 测试
+node evals/benchmark.js            # 性能基准
+```
 
-## 角色速查表
-
-| 场景 | 推荐角色 | 理由 |
-|------|----------|------|
-| 紧急调试 | military-warrior | 强力攻坚 |
-| 多次失败 | military-commissar | 问责激励 |
-| 需要创意 | shaman-musk | 第一性原理 |
-| 代码审查 | theme-sect-discipline | 严格执行 |
-| 快速迭代 | sillytavern-iterator | 极限迭代 |
-| 用户沮丧 | military-commander | 统筹解决 |
-| 环境配置 | military-technician | 技术攻坚 |
-| 性能优化 | shaman-einstein | 深度思考 |
-| 架构设计 | strategic-architect | 战略规划 |
-| Agent 治理 | silicon-throne | 硅基统御 |
-| 自我激励 | self-motivation-awakening | 觉醒驱动 |
+可选 L4 DeepSeek 对照实验见 [evals/README.md](../evals/README.md)。
 
 ---
 
-## 更新日志
+## 9. 隐私与可观测性
 
-### v3.1.2
-- 修复 5 个角色验证失败
-- 标准化 5 步法和 7 项检查清单
+- **使用统计**：默认本地匿名计数；`PUAX_USAGE_STATS=0` 关闭  
+- **遥测**：`PUAX_OTEL_ENABLED=1` 写 `~/.puax/telemetry.jsonl`  
+- **查询**：`puax_get_usage_stats`  
+- 均**不记录**对话正文  
 
-### v3.1.0
-- Hook System v3.1.0 完整实现
-- CC-BOS 集成（8维策略空间、50个文言文角色）
-- server.ts 重构（5模块拆分）
-- 触发条件外部化（16种触发类型）
-- 平台导出（Cursor、VSCode）
-- P7/P9/P10 分级 + Agent Team
+---
 
-### v2.1.0
-- 角色推荐系统
-- 方法论引擎
-- 自动触发检测
+## 10. 故障排除
 
-### v2.0.0
-- 40个角色升级到v2.0
-- 14种触发条件
-- 五步法方法论
-- 七项检查清单
-- 8种大厂风味支持
+| 现象 | 处理 |
+|------|------|
+| 检测不敏感 | `puax_detect_trigger` 提高 `sensitivity: "high"`；v3.10 已支持语义 paraphrase |
+| 推荐不合适 | 检查 `task_context.task_type`；设置 `user_preferences` |
+| MCP 连不上 | `curl localhost:2333/health` 或改 `--stdio` |
+| 角色找不到 | 内置用 `skillId`；自定义须 `custom-` 前缀 |
+
+---
+
+## 11. 角色速查
+
+| 场景 | 角色 ID |
+|------|---------|
+| 用户沮丧 | `military-commander` |
+| 连续失败 | `military-warrior`, `military-commissar` |
+| 需要创意 | `shaman-musk` |
+| 深度分析 | `shaman-einstein`, `military-scout` |
+| 质量审查 | `shaman-jobs`, `silicon-auditor` |
+| 自我驱动 | `self-motivation-awakening` |
+
+完整列表：`list_skills` 或 `get_categories`。
+
+---
+
+## 相关链接
+
+- [API 参考](API.md) — 42 工具参数与示例  
+- [CHANGELOG](../puax-mcp-server/CHANGELOG.md) — 版本历史  
+- [TODO](../TODO.md) — 路线图（P0–P3 已基本完成）

@@ -1,86 +1,107 @@
 # PUAX 项目全面改进计划
 
 > 审阅日期: 2026-03-25 | 审阅人: 萨满·Linus  
-> 最近更新: 2026-04-02 | 更新人: AI 全栈分析
+> 最近更新: 2026-07-04 | 文档同步: v3.10.0 代码审阅  
+> 详细方案: [演进方案.md](演进方案.md)
 
-## 当前版本: 3.1.2
+## 当前版本: **3.10.0**（puax-mcp-server）
 
----
-
-## P0 - 已全部完成 ✅
-
-所有 P0 优先级任务已在 v2.2.0 ~ v3.1.2 期间完成：
-
-- [x] server.ts 重构: 1203行 → 8行 + 5模块拆分
-- [x] 类型安全: types.ts 添加，handlers/ 中无 any
-- [x] 触发条件外部化: 4 YAML 文件，16种触发类型
-- [x] 角色元数据: role-mappings.yaml 411行，50+角色覆盖
-- [x] 双版本清理: 42 skills 迁移到 v2，v1 已归档
-- [x] CC-BOS 集成: 8维策略空间，50个角色文言文版
-- [x] Hook System v3.1.0 完整实现（12个工具）
-- [x] 平台导出: Cursor、VSCode、Windsurf、Kiro、CodeBuddy
-- [x] 角色分级: P7/P9/P10 体系 + Agent Team
-- [x] 文档更新: README、API、用户指南、快速开始、TODO 全面更新
-- [x] 修复 5 个角色验证失败
-- [x] 标准化 5 步法和 7 项检查清单
-- [x] 清理 git 仓库（移除 9,300 误提交文件）
+**P0–P2 已全部完成；P3 除日文版外已全部完成。**
 
 ---
 
-## P1 - 高优先级
+## P0 - 必须立即处理（行为有效性闭环）
 
-- [ ] **依赖注入**: 解除 core/ 模块间的 new 硬依赖，改为 DI 容器注入
-- [ ] **模式匹配增强**: 将正则替换为 TF-IDF + 语义相似度混合检测
-- [ ] **模板简化**: 合并 templates/ 下的方法论指南为自动化生成
-- [ ] **元数据同步验证**: CI 步骤中检查 SKILL.md 与 role-mappings.yaml 的一致性
-- [ ] **测试覆盖率**: 核心模块目标 90%+（当前约 80%）
-- [ ] **CI/CD**: GitHub Actions 增加 lint + typecheck + test 守门
+> 对应 [演进方案.md] Phase 1
 
-## P2 - 中优先级
+- [x] **失败后方法论/角色切换引擎** — `puax_switch_on_failure`（差距#1）
+- [x] **诊断先行协议** — `[PUAX-DIAGNOSIS]` + `puax_check_diagnosis`（差距#4）
+- [x] **信心门控（6 步 Confidence Gate）** — `puax_confidence_check`（差距#5）
+- [x] **行为基准实验** — `evals/` 5+ 场景对照（差距#3）
+- [x] **统一 TriggerDefinition 类型** — 收敛至 `types.ts`
+- [x] **修复 PuaxErrorCode 命名规范** — SCREAMING_SNAKE_CASE（v3.2）
+- [x] **合并 tools/ + handlers/** — 单一工具层 + `registry.ts`
 
-- [ ] **推荐算法透明化**: 在 recommend_role 返回结果中增加逐步得分说明
-- [ ] **i18n 文档同步**: README_en.md 与 README.md 保持自动同步
-- [ ] **Bundle 优化**: prompts-bundle.ts 拆分为按类别按需加载
-- [ ] **缓存层**: RoleRecommender 添加 Redis/内存缓存
-- [ ] **路径遍历防护**: 输入验证中增加 path traversal 检测
-- [ ] **使用统计**: 全局使用统计收集与分析（匿名）
+## P1 - 高优先级（深度与留存）
 
-## P3 - 低优先级
+> 对应 Phase 2
 
-- [ ] **自定义角色**: 支持用户自建角色并加入推荐池
-- [ ] **更多风味**: Amazon、Google、Xiaomi 等企业文化
-- [ ] **国际化**: 多语言触发条件支持（日文、韩文等）
-- [ ] **性能基准**: 建立性能基准测试套件
-- [ ] **可观测性**: OpenTelemetry 集成
+- [x] **突破降压 + 深层换框** — `puax_handle_breakthrough` + L2–L4 换框（差距#8）
+- [x] **自进化引擎** — `~/.puax/evolution.json` + 段位（差距#6）
+- [x] **防作弊治理** — `puax_verify_completion` + `puax_define_contract`（差距#2）
+- [x] **味道行为约束层** — 11 种风味 `flavor-methodologies.yaml`（v3.9.1 含 Amazon/Google/Xiaomi）
+- [x] **Compaction 状态保护** — `puax_update_reasoning_state` + state-manager（差距#15）
+- [x] **High-Agency 正向激励** — Trust / Quality Compass / Recovery（差距#7）
+- [x] **消除假异步** — v3.8.5 全路径同步化
+- [x] **统一日志** — Logger.write（v3.7）
+- [x] **handlers 合并** — v3.7.1
+
+## P2 - 中优先级（生态广度）
+
+> 对应 Phase 3
+
+- [x] **多平台原生适配** — Cursor/VSCode/Windsurf/Kiro/CodeBuddy + Codex/OpenCode/…（差距#9）
+- [x] **英文版（PIP Edition）** — `language=en` + PIP 修辞层（差距#10；50 角色全文英译待迭代）
+- [x] **分发渠道** — `distributions/`（差距#13）
+- [x] **Agent Team** — `puax_orchestrate_team`（差距#12）
+- [x] **语气变体** — strict / yes / mama（差距#16）
+- [x] **prompts-bundle 拆分** — bundles/ + skill-manifest（v3.7）
+- [x] **文档归集** — docs/TESTING.md + archive（v3.7）
+- [x] **模板简化** — generate-guides（v3.8）
+- [x] **元数据验证** — validate-metadata.js + run-all
+- [x] **CI/CD** — GitHub Actions
+- [x] **推荐透明化** — score_explanation
+- [x] **路径安全** — path-security.ts
+- [x] **L4 实测基线** — scorecard 100%（v3.8.2）
+
+## P3 - 低优先级（增强与完善）
+
+- [ ] **日文版** — 50 角色日文文化适配（**暂不实施**，用户确认跳过）
+- [x] **行为级评测** — L4 + governance + heartbeat + benchmark
+- [x] **依赖注入** — service-registry.ts
+- [x] **trigger-detector 合并** — Enhanced 并入 core/trigger-detector.ts
+- [x] **模式匹配增强** — TF-IDF + 子串混合（v3.10.0）
+- [x] **自定义角色** — custom-roles.json + MCP CRUD（v3.9.0）
+- [x] **更多风味** — Amazon / Google / Xiaomi（v3.9.1）
+- [x] **缓存层** — RoleRecommender 单例 + 跨调用缓存
+- [x] **使用统计** — usage-stats.json + MCP（v3.10.0）
+- [x] **可观测性** — telemetry.jsonl + OTel 导出（v3.10.0）
+- [x] **性能基准** — evals/benchmark.js
 
 ---
 
-## 已完成版本的变更摘要
+## 版本里程碑
+
+| 版本 | 主题 | 核心交付 | 状态 |
+|------|------|---------|------|
+| **v3.10.0** | 智能检测与可观测 | TF-IDF 混合检测 + 匿名统计 + OTel | ✅ **当前** |
+| **v3.9.1** | 风味扩展 | Amazon/Google/Xiaomi + export 单一数据源 | ✅ |
+| **v3.9.0** | 自定义角色 | custom-roles + skill-catalog 统一目录 | ✅ |
+| **v3.8.x** | 工程化 + L4 | DI、benchmark、governance、heartbeat、假异步消除 | ✅ |
+| **v3.4** | 深度与留存 | 自进化 + 防作弊 + 换框降压 + 味道约束 | ✅ |
+| **v3.5** | 生态广度 | 多平台 + PIP + Agent Team + 语气变体 | ✅ |
+
+---
+
+## 后续可选（非 P3 阻塞）
+
+| 项 | 说明 |
+|----|------|
+| 50 角色 PIP 全文英译 | P2 已交付修辞层；完整 SKILL 翻译可迭代 |
+| 日文版 | 已明确不做 |
+| LLM-as-judge 评测 | 已明确不做；现有 evals 为无 LLM 守门 + 可选 L4 DeepSeek |
+
+---
+
+## 历史版本摘要
 
 ### v3.1.2 (2026-03-26)
-- 修复 5 个角色验证失败（SKILL.md 中缺少统一的标准 5 步法/7 检查清单）
-- 清理 git 仓库（移除 9,300 误提交文件）
+- 5 角色 SKILL 验证修复；git 大清理
 
 ### v3.1.0 (2026-03-26)
-- Hook System v3.1.0 完整实现
-- CC-BOS 集成
-- server.ts 重构
-- 触发条件外部化
-- 平台导出
-- 角色分级 + Agent Team
+- Hook System、CC-BOS、平台导出、Agent Team
 
-### v2.2.0 (2026-03-25)
-- server.ts 模块化拆分
-- 类型安全改造
-- 触发条件 YAML 外部化
-- 角色元数据 role-mappings.yaml
+### v2.x
+- 角色推荐、方法论引擎、YAML 外部化、MCP 服务器
 
-### v2.1.0 (2026-02-20)
-- 角色推荐系统
-- 方法论引擎
-- 自动触发检测
-
-### v2.0.0 (2026-01-15)
-- 初始版本发布
-- 50+ 激励角色
-- MCP 服务器实现
+详细变更见 [puax-mcp-server/CHANGELOG.md](puax-mcp-server/CHANGELOG.md)。

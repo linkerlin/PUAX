@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { hookManager } from '../hooks/hook-manager.js';
 import { stateManager } from '../hooks/state-manager.js';
 import { feedbackSystem } from '../hooks/feedback-system.js';
+import { evolutionEngine } from '../core/evolution-engine.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -39,7 +40,9 @@ export const startSessionTool = {
       
       // 获取恢复的状态
       const state = stateManager.getSessionState(args.sessionId);
-      const isRestored = state.failureCount > 0 || state.pressureLevel > 0;
+      const compaction = stateManager.getCompactionRestoreContext(args.sessionId);
+      const evolution = evolutionEngine.getBaselineReminder();
+      const isRestored = state.failureCount > 0 || state.pressureLevel > 0 || compaction.should_restore;
 
       return {
         success: true,
@@ -47,12 +50,26 @@ export const startSessionTool = {
         state: {
           pressureLevel: state.pressureLevel,
           failureCount: state.failureCount,
-          triggerCount: state.triggerCount
+          triggerCount: state.triggerCount,
+          peakPressureLevel: state.peakPressureLevel,
+          triedApproaches: state.triedApproaches,
+          excludedPossibilities: state.excludedPossibilities,
+          nextHypothesis: state.nextHypothesis,
         },
         restored: isRestored,
-        message: isRestored 
-          ? `会话已恢复。上次压力等级: L${state.pressureLevel}, 失败计数: ${state.failureCount}`
-          : '新会话已启动'
+        compaction_restore: compaction.should_restore ? {
+          context: compaction.context,
+          elapsed_minutes: compaction.elapsed_minutes,
+        } : null,
+        evolution_baseline: {
+          rank: evolution.rank,
+          message: evolution.message,
+          baseline: evolution.baseline,
+          internalized: evolution.internalized,
+        },
+        message: isRestored
+          ? `会话已恢复。压力 L${state.pressureLevel}，失败 ${state.failureCount} 次。${compaction.should_restore ? '已注入断点上下文。' : ''}`
+          : `新会话已启动。段位：${evolution.rank}。`
       };
     } catch (error) {
       logger.error('[start_session] Error:', error);
@@ -81,7 +98,7 @@ export const endSessionTool = {
   
   inputSchema: EndSessionInputSchema,
   
-  handler: async (args: z.infer<typeof EndSessionInputSchema>) => {
+  handler: (args: z.infer<typeof EndSessionInputSchema>) => {
     try {
       // 收集反馈
       if (args.feedback) {
@@ -94,7 +111,7 @@ export const endSessionTool = {
       }
 
       // 结束会话
-      await hookManager.endSession(args.sessionId);
+      hookManager.endSession(args.sessionId);
 
       // 生成报告
       let report = null;
@@ -142,11 +159,16 @@ export const getSessionStateTool = {
           startTime: state.startTime,
           lastActivity: state.lastActivity,
           pressureLevel: state.pressureLevel,
+          peakPressureLevel: state.peakPressureLevel,
           failureCount: state.failureCount,
           triggerCount: state.triggerCount,
           activeRole: state.activeRole,
           currentFlavor: state.currentFlavor,
-          lastTriggerTime: state.lastTriggerTime
+          lastTriggerTime: state.lastTriggerTime,
+          triedApproaches: state.triedApproaches,
+          excludedPossibilities: state.excludedPossibilities,
+          nextHypothesis: state.nextHypothesis,
+          activeTask: state.activeTask,
         },
         triggerHistory: triggerHistory.slice(-5),  // 最近5条
         feedbackHistory: feedbackHistory,
@@ -210,6 +232,54 @@ export const resetSessionTool = {
 };
 
 // ============================================================================
+// get_pressure_level
+// ============================================================================
+
+const GetPressureLevelInputSchema = z.object({
+  sessionId: z.string().describe('会话ID'),
+});
+
+function getPressureName(level: number): string {
+  const names: Record<number, string> = {
+    0: 'Normal',
+    1: 'Elevated',
+    2: 'High',
+    3: 'Critical',
+    4: 'Emergency'
+  };
+  return names[level] || 'Unknown';
+}
+
+function getNextThreshold(level: number): string {
+  const thresholds: Record<number, string> = {
+    0: 'First trigger will escalate to L1',
+    1: 'Additional triggers may escalate to L2',
+    2: 'Additional triggers may escalate to L3',
+    3: 'Additional triggers may escalate to L4 (Maximum)'
+  };
+  return thresholds[level] || 'Maximum level reached';
+}
+
+export const getPressureLevelTool = {
+  name: 'puax_get_pressure_level',
+  description: '获取会话当前压力等级（L0-L4）及升级阈值说明。',
+
+  inputSchema: GetPressureLevelInputSchema,
+
+  handler: (args: z.infer<typeof GetPressureLevelInputSchema>) => {
+    const state = stateManager.getSessionState(args.sessionId);
+    return {
+      session_id: args.sessionId,
+      pressure_level: state.pressureLevel,
+      pressure_name: getPressureName(state.pressureLevel),
+      failure_count: state.failureCount,
+      trigger_count: state.triggerCount,
+      next_escalation_threshold: getNextThreshold(state.pressureLevel)
+    };
+  }
+};
+
+// ============================================================================
 // 导出
 // ============================================================================
 
@@ -217,10 +287,12 @@ export const hookSessionTools = [
   startSessionTool,
   endSessionTool,
   getSessionStateTool,
-  resetSessionTool
+  resetSessionTool,
+  getPressureLevelTool
 ];
 
 export type StartSessionInput = z.infer<typeof StartSessionInputSchema>;
 export type EndSessionInput = z.infer<typeof EndSessionInputSchema>;
 export type GetSessionStateInput = z.infer<typeof GetSessionStateInputSchema>;
 export type ResetSessionInput = z.infer<typeof ResetSessionInputSchema>;
+export type GetPressureLevelInput = z.infer<typeof GetPressureLevelInputSchema>;

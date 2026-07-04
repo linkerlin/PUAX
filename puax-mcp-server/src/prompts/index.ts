@@ -1,12 +1,18 @@
 import { SkillInfo } from '../tools.js';
 import {
+  getSkillById,
+  getCombinedManifest,
+  searchSkills as searchCatalogSkills,
+  getSkillCategories,
+} from './skill-catalog.js';
+import {
   getAllBundledSkills,
   getBundledSkillById,
+  getSkillManifest,
   BundledSkill,
   CATEGORIES,
   CATEGORY_NAMES
-} from './prompts-bundle.js';
-import { getGlobalLogger } from '../utils/logger.js';
+} from './prompts-bundle.js';import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
 
@@ -45,8 +51,8 @@ export class PromptManager {
 
     if (this.bundledMode) {
       logger.error('[PromptManager] Running in bundled mode (embedded SKILLs)');
-      const skills = getAllBundledSkills();
-      logger.error(`[PromptManager] Loaded ${skills.length} SKILLs from bundle`);
+      const skills = getCombinedManifest();
+      logger.error(`[PromptManager] Indexed ${skills.length} SKILLs from manifest`);
     } else {
       logger.error('[PromptManager] Running in filesystem mode (external files) - DEPRECATED');
     }
@@ -61,11 +67,11 @@ export class PromptManager {
   }
 
   private loadSkillsFromBundle(): void {
-    logger.error('[PromptManager] Loading SKILLs from bundle...');
+    logger.error('[PromptManager] Loading SKILL metadata from manifest...');
 
-    const bundledSkills = getAllBundledSkills();
+    const manifest = getCombinedManifest();
 
-    this.skills = bundledSkills.map(skill => ({
+    this.skills = manifest.map(skill => ({
       id: skill.id,
       name: skill.name,
       category: skill.category,
@@ -83,14 +89,10 @@ export class PromptManager {
       inputFormat: skill.inputFormat,
       outputFormat: skill.outputFormat,
       exampleUsage: skill.exampleUsage,
-      content: skill.content
+      content: ''
     }));
 
-    for (const skill of bundledSkills) {
-      this.promptsCache.set(skill.id, skill.content);
-    }
-
-    logger.error(`[PromptManager] Successfully loaded ${this.skills.length} SKILLs from bundle`);
+    logger.error(`[PromptManager] Indexed ${this.skills.length} SKILLs (content loads on demand)`);
   }
 
   public getAllSkills(): SkillInfo[] {
@@ -109,16 +111,18 @@ export class PromptManager {
   }
 
   public getBundledSkill(skillId: string): BundledSkill | undefined {
-    return getBundledSkillById(skillId);
+    return getSkillById(skillId);
   }
 
   public getPromptContent(skillId: string): string | undefined {
     if (this.bundledMode) {
-      const skill = getBundledSkillById(skillId);
+      const skill = getSkillById(skillId);
+      if (skill?.content) {
+        this.promptsCache.set(skillId, skill.content);
+      }
       return skill?.content;
-    } else {
-      return this.promptsCache.get(skillId);
     }
+    return this.promptsCache.get(skillId);
   }
 
   public searchSkills(keyword: string): SkillInfo[] {
@@ -155,8 +159,16 @@ export class PromptManager {
     return activatedPrompt;
   }
 
+  public reloadSkillsIndex(): void {
+    this.loadSkillsFromBundle();
+  }
+
   public getCategories(): string[] {
-    return CATEGORIES.filter(c => c !== 'all');
+    const categories: string[] = [...CATEGORIES.filter(c => c !== 'all')];
+    if (getSkillCategories().includes('custom') && !categories.includes('custom')) {
+      categories.push('custom');
+    }
+    return categories;
   }
 
   public getCategoriesWithInfo(): { name: string; displayName: string; count: number }[] {

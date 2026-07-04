@@ -68,7 +68,7 @@ export declare abstract class PlatformAdapter {
     /**
      * 执行导出流程
      */
-    export(roles: RoleExportData[], flavors: FlavorExportData[], config: PlatformExportConfig): Promise<ExportResult>;
+    export(roles: RoleExportData[], flavors: FlavorExportData[], config: PlatformExportConfig): ExportResult;
     /**
      * 过滤角色
      */

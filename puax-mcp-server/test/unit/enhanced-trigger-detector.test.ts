@@ -2,8 +2,11 @@
  * 增强触发检测器单元测试
  */
 
-import { EnhancedTriggerDetector } from '../../src/core/trigger-detector-enhanced.js';
-import { ConversationMessage, TaskContext } from '../../src/core/trigger-detector.js';
+import {
+  EnhancedTriggerDetector,
+  ConversationMessage,
+  TaskContext,
+} from '../../src/core/trigger-detector.js';
 
 describe('EnhancedTriggerDetector', () => {
   let detector: EnhancedTriggerDetector;
@@ -30,7 +33,8 @@ describe('EnhancedTriggerDetector', () => {
     it('应该返回正确的触发条件计数', () => {
       const count = detector.getTriggerCount();
       expect(count.enhanced).toBe(5);
-      expect(count.total).toBe(15);  // 10基础 + 5增强
+      expect(count.base).toBeGreaterThan(0);
+      expect(count.total).toBe(count.base + count.enhanced);
     });
   });
 

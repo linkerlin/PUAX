@@ -230,7 +230,7 @@ export class EnhancedTriggerDetector {
   /**
    * 主检测入口
    */
-  async detect(context: TriggerContext): Promise<EnhancedTriggerResult> {
+  detect(context: TriggerContext): EnhancedTriggerResult {
     const { sessionId, eventType } = context;
 
     const bypassCooldown = eventType === 'PreCompact' || eventType === 'SessionStart' || eventType === 'Stop';
@@ -258,9 +258,6 @@ export class EnhancedTriggerDetector {
       default:
         return this.createEmptyResult(sessionId);
     }
-    
-    // This should never be reached - all paths return in switch
-    return await Promise.resolve(this.createEmptyResult(sessionId));
   }
 
   /**

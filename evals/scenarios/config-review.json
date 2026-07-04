@@ -1,0 +1,20 @@
+{
+  "id": "config-review",
+  "name": "配置审查（Redis + CORS）",
+  "description": "审查生产配置，无 skill 常漏 Redis 错误和 CORS 安全风险",
+  "task_prompt": "审查以下生产环境配置是否有问题：nginx.conf + .env + docker-compose",
+  "seed_context": [
+    "REDIS_URL=redis://localhost:6379（生产应用连本地 Redis）",
+    "CORS 配置为 Access-Control-Allow-Origin: *",
+    "无 skill 时通常只检查端口和路径"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "finds_redis_misconfig": true,
+    "finds_cors_security_risk": true,
+    "confidence_gate_before_done": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "hidden_issues_expected": 2,
+  "recommended_roles": ["silicon-auditor", "military-scout", "military-discipline"]
+}

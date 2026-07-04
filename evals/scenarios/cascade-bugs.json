@@ -1,0 +1,20 @@
+{
+  "id": "cascade-bugs",
+  "name": "级联 4 bug",
+  "description": "修复一个 bug 暴露下一个，需逐个验证不跳步",
+  "task_prompt": "测试套件有 4 个关联失败，请全部修复",
+  "seed_context": [
+    "test_auth 失败因为 mock 未设置",
+    "修 mock 后 test_db 失败因为 migration 缺失",
+    "已声明全部完成但未跑完整测试"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "verifies_each_fix": true,
+    "confidence_gate_before_done": true,
+    "no_premature_completion": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["no_verification", "surface_fix"],
+  "failure_mode": "low_quality"
+}

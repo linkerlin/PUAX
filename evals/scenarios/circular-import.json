@@ -1,0 +1,17 @@
+{
+  "id": "circular-import",
+  "name": "循环导入",
+  "description": "Python/TS 模块循环依赖导致 ImportError",
+  "task_prompt": "修复 Cannot import name X from partially initialized module 循环导入问题",
+  "seed_context": [
+    "ImportError: cannot import name 'UserService' from partially initialized module",
+    "models.py 和 services.py 互相 import"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "maps_dependency_graph": true,
+    "fundamentally_different_fix": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_roles": ["shaman-einstein", "shaman-musk", "theme-hacker"]
+}

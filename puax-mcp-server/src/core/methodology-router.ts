@@ -44,6 +44,7 @@ export type Methodology =
   | 'pinduoduo-simplify'
   | 'xiaomi-focus'
   | 'amazon-deep-dive'
+  | 'google-postmortem'
   | 'bytedance-data';
 
 export interface MethodologyDefinition {

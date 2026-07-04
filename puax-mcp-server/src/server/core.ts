@@ -14,30 +14,20 @@ import {
     ListResourcesRequestSchema,
     ReadResourceRequestSchema,
     ErrorCode,
-    McpError,
-    type TextContent
+    McpError
 } from '@modelcontextprotocol/sdk/types.js';
-import { allTools, Tools } from '../tools/index.js';
+import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type McpToolResponse, type ToolHandler } from '../tools/index.js';
 import { promptManager } from '../prompts/index.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { Logger } from '../utils/logger.js';
 import { loadVersion } from '../utils/version.js';
+import { withSpanAsync } from '../core/telemetry.js';
+import { usageStatsCollector } from '../core/usage-stats.js';
 import type { ServerConfig } from '../types.js';
-import { hookToolHandlers } from '../handlers/hook-handlers.js';
 
-// 构建 tool name → handler 的查找表（用于快速分发）
-const toolHandlerMap = new Map<string, (args: Record<string, unknown>) => unknown>();
-for (const tool of allTools) {
-    if ('handler' in tool && typeof tool.handler === 'function') {
-        toolHandlerMap.set(tool.name, tool.handler as (args: Record<string, unknown>) => unknown);
-    }
-}
-
-// MCP Tool response type
-interface McpToolResponse {
-    content: TextContent[];
-    [key: string]: unknown;
-}
+const toolHandlerMap = buildToolHandlerMap(
+  allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
+);
 
 export class PuaxMcpServer {
     private server: Server;
@@ -63,6 +53,7 @@ export class PuaxMcpServer {
         this.version = loadVersion();
         
         this.logger.info(`Starting PUAX MCP Server v${this.version}...`);
+        usageStatsCollector.recordSessionStart();
         
         this.server = new Server(
             {
@@ -102,20 +93,20 @@ export class PuaxMcpServer {
                 const { name, arguments: args } = request.params;
                 const safeArgs = (args as Record<string, unknown>) || {};
 
-                // 优先从 allTools 的嵌入 handler 分发
                 const handler = toolHandlerMap.get(name);
                 if (handler) {
-                    const result = handler(safeArgs);
-                    if (result instanceof Promise) {
-                        return await result as McpToolResponse;
-                    }
-                    return result as McpToolResponse;
-                }
-
-                // 兼容：仍从 hookToolHandlers 查找（已废弃路径）
-                const legacyHandler = hookToolHandlers[name];
-                if (legacyHandler) {
-                    return await legacyHandler(safeArgs) as McpToolResponse;
+                    return await withSpanAsync(
+                        `puax.tool.${name}`,
+                        { 'tool.name': name },
+                        async () => {
+                            usageStatsCollector.recordToolCall(name);
+                            const result = handler(safeArgs);
+                            if (result instanceof Promise) {
+                                return normalizeToolResponse(await result);
+                            }
+                            return normalizeToolResponse(result);
+                        }
+                    );
                 }
 
                 throw new McpError(
@@ -230,7 +221,7 @@ export class PuaxMcpServer {
                 this.logger.warn(`  1. Stop the process using port ${port}`);
                 this.logger.warn(`  2. Use a different port: node build/index.js --port <PORT>`);
                 this.logger.warn(`  3. Find process: netstat -ano | findstr :${port}`);
-                console.log('');
+                this.logger.write('');
                 process.exit(1);
             } else if (error.code === 'EACCES') {
                 this.logger.error(`Permission denied to bind to port ${this.config.port}`);
@@ -249,7 +240,7 @@ export class PuaxMcpServer {
             this.logger.success('Server started successfully!');
             this.logger.success('Mode: HTTP (Streamable HTTP / SSE)');
             this.logger.success(`Listening on http://${host}:${port}`);
-            console.log('');
+            this.logger.write('');
             this.logger.info('──────────────────────────────────────────');
             this.logger.info('Endpoints:');
             this.logger.info(`  Health:  http://${host}:${port}/health`);

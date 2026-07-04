@@ -70,21 +70,21 @@ export class TriggerLoader {
   /**
    * 获取单个触发条件
    */
-  getTrigger(id: string): Promise<TriggerDefinition | undefined> {
+  getTrigger(id: string): TriggerDefinition | undefined {
     if (this.cache.has(id)) {
-      return Promise.resolve(this.cache.get(id));
+      return this.cache.get(id);
     }
 
     const allTriggers = this.loadAllTriggers();
-    return Promise.resolve(allTriggers[id]);
+    return allTriggers[id];
   }
 
   /**
    * 按类别获取触发条件
    */
-  getTriggersByCategory(category: string): Promise<TriggerDefinition[]> {
+  getTriggersByCategory(category: string): TriggerDefinition[] {
     const allTriggers = this.loadAllTriggers();
-    return Promise.resolve(Object.values(allTriggers).filter(t => t.category === category));
+    return Object.values(allTriggers).filter(t => t.category === category);
   }
 
   /**
@@ -98,9 +98,9 @@ export class TriggerLoader {
   /**
    * 热重载（用于开发环境）
    */
-  hotReload(): Promise<Record<string, TriggerDefinition>> {
+  hotReload(): Record<string, TriggerDefinition> {
     this.clearCache();
-    return Promise.resolve(this.loadAllTriggers());
+    return this.loadAllTriggers();
   }
 
   /**
@@ -135,20 +135,20 @@ export class TriggerLoader {
   /**
    * 获取所有类别
    */
-  getCategories(): Promise<string[]> {
+  getCategories(): string[] {
     const allTriggers = this.loadAllTriggers();
     const categories = new Set(Object.values(allTriggers).map(t => t.category));
-    return Promise.resolve(Array.from(categories));
+    return Array.from(categories);
   }
 
   /**
    * 获取触发条件统计
    */
-  getStats(): Promise<{
+  getStats(): {
     total: number;
     byCategory: Record<string, number>;
     bySeverity: Record<string, number>;
-  }> {
+  } {
     const allTriggers = this.loadAllTriggers();
     const triggers = Object.values(allTriggers);
 
@@ -160,11 +160,11 @@ export class TriggerLoader {
       bySeverity[trigger.severity] = (bySeverity[trigger.severity] || 0) + 1;
     }
 
-    return Promise.resolve({
+    return {
       total: triggers.length,
       byCategory,
-      bySeverity
-    });
+      bySeverity,
+    };
   }
 }
 

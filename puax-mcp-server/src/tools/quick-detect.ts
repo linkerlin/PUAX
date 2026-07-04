@@ -26,11 +26,11 @@ export const quickDetectTool = {
   
   inputSchema: QuickDetectInputSchema,
   
-  handler: async (args: z.infer<typeof QuickDetectInputSchema>) => {
+  handler: (args: z.infer<typeof QuickDetectInputSchema>) => {
     try {
       const eventType = args.context?.toolName ? 'PostToolUse' : 'UserPromptSubmit';
       
-      const result = await enhancedTriggerDetector.detect({
+      const result = enhancedTriggerDetector.detect({
         sessionId: args.sessionId,
         eventType,
         message: args.text,

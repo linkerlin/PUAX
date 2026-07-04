@@ -1,0 +1,19 @@
+{
+  "id": "sqlite-lock",
+  "name": "SQLite database locked",
+  "description": "并发写入导致 database is locked，需换思路而非重试",
+  "task_prompt": "解决 SQLite database is locked 错误，发生在批量导入脚本中",
+  "seed_context": [
+    "sqlite3.OperationalError: database is locked",
+    "已增加 retry 次数仍失败"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "searches_precedent": true,
+    "switches_approach_on_failure": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["repetitive_attempts", "blame_environment"],
+  "failure_mode": "stuck_spinning",
+  "switch_tool": "puax_switch_on_failure"
+}

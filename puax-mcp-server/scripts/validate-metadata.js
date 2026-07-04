@@ -32,21 +32,29 @@ function loadTriggers() {
 }
 
 function loadBundleRoleIds() {
-  const bundlePath = path.join(SRC, 'prompts', 'prompts-bundle.ts');
-  const content = fs.readFileSync(bundlePath, 'utf-8');
-  
-  // Extract role IDs from the bundle
+  const promptsDir = path.join(SRC, 'prompts');
   const roleIds = new Set();
+
+  const manifestPath = path.join(promptsDir, 'skill-manifest.ts');
+  if (fs.existsSync(manifestPath)) {
+    const content = fs.readFileSync(manifestPath, 'utf-8');
+    const regex = /id:\s*['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      roleIds.add(match[1]);
+    }
+    return roleIds;
+  }
+
+  // Fallback: monolithic bundle
+  const bundlePath = path.join(promptsDir, 'prompts-bundle.ts');
+  const content = fs.readFileSync(bundlePath, 'utf-8');
   const regex = /id:\s*['"]([^'"]+)['"]/g;
   let match;
   while ((match = regex.exec(content)) !== null) {
     roleIds.add(match[1]);
   }
-  
-  // Also try the categories pattern
-  const categoriesRegex = /CATEGORIES\s*=\s*\{([^}]+)\}/s;
-  const catMatch = content.match(categoriesRegex);
-  
+
   return roleIds;
 }
 

@@ -33,6 +33,11 @@ export class Logger {
             console.error(`\x1b[90m[PUAX]\x1b[0m ${message}`, ...args);
         }
     }
+
+    /** Raw stderr output (stdio-safe; no prefix). For help text and blank lines. */
+    write(text: string = ''): void {
+        console.error(text);
+    }
 }
 
 // Global logger instance for handlers

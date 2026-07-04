@@ -31,6 +31,13 @@ export interface SessionState {
   currentFlavor?: string;
   lastTriggerTime?: number;
   methodologyHistory: string[];
+  /** Compaction 保护：推理状态 */
+  triedApproaches: string[];
+  excludedPossibilities: string[];
+  nextHypothesis?: string;
+  activeTask?: string;
+  peakPressureLevel: number;
+  lastCheckpointTime?: number;
 }
 
 export interface FailureRecord {
@@ -176,7 +183,23 @@ export class StateManager {
       pressureLevel: 0,
       failureCount: 0,
       triggerCount: 0,
-      methodologyHistory: []
+      methodologyHistory: [],
+      triedApproaches: [],
+      excludedPossibilities: [],
+      peakPressureLevel: 0,
+    };
+  }
+
+  /** 合并旧版会话状态（缺字段时补默认值） */
+  private normalizeState(raw: Partial<SessionState> & { sessionId: string }): SessionState {
+    const base = this.createInitialState(raw.sessionId);
+    return {
+      ...base,
+      ...raw,
+      triedApproaches: raw.triedApproaches ?? [],
+      excludedPossibilities: raw.excludedPossibilities ?? [],
+      methodologyHistory: raw.methodologyHistory ?? [],
+      peakPressureLevel: raw.peakPressureLevel ?? raw.pressureLevel ?? 0,
     };
   }
 
@@ -184,7 +207,12 @@ export class StateManager {
     try {
       if (existsSync(this.stateFile)) {
         const content = readFileSync(this.stateFile, 'utf-8');
-        return JSON.parse(content) as Record<string, SessionState>;
+        const raw = JSON.parse(content) as Record<string, Partial<SessionState> & { sessionId: string }>;
+        const normalized: Record<string, SessionState> = {};
+        for (const [id, state] of Object.entries(raw)) {
+          normalized[id] = this.normalizeState({ ...state, sessionId: id });
+        }
+        return normalized;
       }
     } catch (error) {
       logger.error('[StateManager] Failed to load session states:', error);
@@ -317,8 +345,74 @@ export class StateManager {
   // ============================================================================
 
   /**
-   * 写入构建日志
+   * 更新推理状态（Compaction 保护）
    */
+  updateReasoningState(sessionId: string, updates: {
+    triedApproaches?: string[];
+    excludedPossibilities?: string[];
+    nextHypothesis?: string;
+    activeTask?: string;
+  }): void {
+    const state = this.getSessionState(sessionId);
+    if (updates.triedApproaches) {
+      state.triedApproaches = [...new Set([...state.triedApproaches, ...updates.triedApproaches])].slice(-20);
+    }
+    if (updates.excludedPossibilities) {
+      state.excludedPossibilities = [...new Set([...state.excludedPossibilities, ...updates.excludedPossibilities])].slice(-20);
+    }
+    if (updates.nextHypothesis !== undefined) state.nextHypothesis = updates.nextHypothesis;
+    if (updates.activeTask !== undefined) state.activeTask = updates.activeTask;
+    state.lastCheckpointTime = Date.now();
+    this.saveSessionState(state);
+    this.writeBuilderJournal(sessionId, {
+      pressureLevel: state.pressureLevel,
+      failureCount: state.failureCount,
+      currentFlavor: state.currentFlavor,
+      activeTask: state.activeTask,
+      triedApproaches: state.triedApproaches,
+      excludedPossibilities: state.excludedPossibilities,
+      nextHypothesis: state.nextHypothesis,
+    });
+  }
+
+  /**
+   * 检测 <2h 断点并返回恢复上下文
+   */
+  getCompactionRestoreContext(sessionId: string, maxAgeHours: number = 2): {
+    should_restore: boolean;
+    context: string | null;
+    elapsed_minutes: number;
+  } {
+    const state = this.getSessionState(sessionId);
+    const elapsed = Date.now() - state.lastActivity;
+    const maxAge = maxAgeHours * 60 * 60 * 1000;
+    const shouldRestore = elapsed < maxAge && (
+      state.failureCount > 0
+      || state.pressureLevel > 0
+      || state.triedApproaches.length > 0
+    );
+
+    if (!shouldRestore) {
+      return { should_restore: false, context: null, elapsed_minutes: Math.round(elapsed / 60000) };
+    }
+
+    const lines = [
+      '## [PUAX 断点恢复]',
+      `压力等级: L${state.pressureLevel}（峰值 L${state.peakPressureLevel}）`,
+      `失败计数: ${state.failureCount}`,
+      state.activeTask ? `当前任务: ${state.activeTask}` : '',
+      state.triedApproaches.length ? `已尝试: ${state.triedApproaches.join('；')}` : '',
+      state.excludedPossibilities.length ? `已排除: ${state.excludedPossibilities.join('；')}` : '',
+      state.nextHypothesis ? `下一假设: ${state.nextHypothesis}` : '',
+    ].filter(Boolean);
+
+    return {
+      should_restore: true,
+      context: lines.join('\n'),
+      elapsed_minutes: Math.round(elapsed / 60000),
+    };
+  }
+
   writeBuilderJournal(sessionId: string, entry: {
     pressureLevel: number;
     failureCount: number;
@@ -442,7 +536,10 @@ ${entry.keyContext || 'N/A'}
    * 设置压力等级
    */
   setPressureLevel(sessionId: string, level: number): void {
-    this.updateSessionState(sessionId, { pressureLevel: Math.max(0, Math.min(4, level)) });
+    const state = this.getSessionState(sessionId);
+    const clamped = Math.max(0, Math.min(4, level));
+    const peak = Math.max(state.peakPressureLevel, clamped);
+    this.updateSessionState(sessionId, { pressureLevel: clamped, peakPressureLevel: peak });
   }
 
   /**

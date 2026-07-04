@@ -1,8 +1,10 @@
+import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { 
   PlatformAdapter, 
   RoleExportData, 
   FlavorExportData, 
   PlatformExportConfig,
+  ExportResult,
   globalAdapterRegistry
 } from './base-adapter.js';
 
@@ -95,33 +97,30 @@ ${flavor.keywords.map(k => `- ${k}`).join('\n')}
   /**
    * CodeBuddy 导出需要特殊处理，创建子目录
    */
-  async export(
+  export(
     roles: RoleExportData[],
     flavors: FlavorExportData[],
     config: PlatformExportConfig
-  ) {
-    const result = {
+  ): ExportResult {
+    const result: ExportResult = {
       success: true,
-      exportedFiles: [] as string[],
-      errors: [] as string[],
-      warnings: [] as string[]
+      exportedFiles: [],
+      errors: [],
+      warnings: [],
     };
 
     try {
-      // 为每个角色创建子目录
       for (const role of roles) {
         try {
           const roleDir = `${config.outputPath}/${role.id}`;
           const content = this.exportRole(role, config);
           const filePath = `${roleDir}/SKILL.md`;
-          
-          // 使用 Node.js 的 fs 模块创建目录和文件
-          const fs = await import('fs');
-          if (!fs.existsSync(roleDir)) {
-            fs.mkdirSync(roleDir, { recursive: true });
+
+          if (!existsSync(roleDir)) {
+            mkdirSync(roleDir, { recursive: true });
           }
-          
-          fs.writeFileSync(filePath, content, 'utf-8');
+
+          writeFileSync(filePath, content, 'utf-8');
           result.exportedFiles.push(filePath);
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -129,19 +128,17 @@ ${flavor.keywords.map(k => `- ${k}`).join('\n')}
         }
       }
 
-      // 导出风味到单独目录
       if (flavors.length > 0) {
         const flavorDir = `${config.outputPath}/flavors`;
-        const fs = await import('fs');
-        if (!fs.existsSync(flavorDir)) {
-          fs.mkdirSync(flavorDir, { recursive: true });
+        if (!existsSync(flavorDir)) {
+          mkdirSync(flavorDir, { recursive: true });
         }
 
         for (const flavor of flavors) {
           try {
             const content = this.exportFlavor(flavor, config);
             const filePath = `${flavorDir}/flavor-${flavor.id}.md`;
-            fs.writeFileSync(filePath, content, 'utf-8');
+            writeFileSync(filePath, content, 'utf-8');
             result.exportedFiles.push(filePath);
           } catch (error) {
             const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -150,12 +147,10 @@ ${flavor.keywords.map(k => `- ${k}`).join('\n')}
         }
       }
 
-      // 生成配置
       try {
         const configContent = this.generateConfig(roles, config);
         const configPath = `${config.outputPath}/codebuddy-config.json`;
-        const fs = await import('fs');
-        fs.writeFileSync(configPath, configContent, 'utf-8');
+        writeFileSync(configPath, configContent, 'utf-8');
         result.exportedFiles.push(configPath);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';

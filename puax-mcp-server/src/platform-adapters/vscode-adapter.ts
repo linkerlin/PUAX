@@ -8,6 +8,7 @@ import {
   RoleExportData, 
   FlavorExportData, 
   PlatformExportConfig,
+  ExportResult,
   globalAdapterRegistry
 } from './base-adapter.js';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
@@ -150,16 +151,16 @@ ${roles.slice(0, 10).map(r => `| ${r.name} | ${r.taskTypes[0] || '通用'} | /pu
   /**
    * VSCode 导出需要特殊处理，创建多个文件
    */
-  async export(
+  export(
     roles: RoleExportData[],
     flavors: FlavorExportData[],
     config: PlatformExportConfig
-  ) {
-    const result = {
+  ): ExportResult {
+    const result: ExportResult = {
       success: true,
-      exportedFiles: [] as string[],
-      errors: [] as string[],
-      warnings: [] as string[]
+      exportedFiles: [],
+      errors: [],
+      warnings: [],
     };
 
     try {
@@ -213,7 +214,7 @@ ${roles.slice(0, 10).map(r => `| ${r.name} | ${r.taskTypes[0] || '通用'} | /pu
       result.success = false;
     }
 
-    return await Promise.resolve(result);
+    return result;
   }
 
   /**

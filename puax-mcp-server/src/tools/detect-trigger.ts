@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { TriggerDetector } from '../core/trigger-detector';
+import { getTriggerDetector } from '../core/service-registry.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -93,7 +93,7 @@ export const detectTriggerTool = {
 
   handler: (args: z.infer<typeof DetectTriggerInputSchema>) => {
     try {
-      const detector = new TriggerDetector(args.options);
+      const detector = getTriggerDetector(args.options);
       const result = detector.detect(
         args.conversation_history,
         args.task_context

@@ -128,7 +128,7 @@ export const detectTriggerEnhancedTool = {
     }
   ],
 
-  handler: async (args: z.infer<typeof DetectTriggerInputSchema>) => {
+  handler: (args: z.infer<typeof DetectTriggerInputSchema>) => {
     try {
       const context: TriggerContext = {
         sessionId: args.sessionId,
@@ -141,10 +141,8 @@ export const detectTriggerEnhancedTool = {
         metadata: args.metadata
       };
 
-      // 使用新的 Hook 系统检测
-      const result = await enhancedTriggerDetector.detect(context);
+      const result = enhancedTriggerDetector.detect(context);
 
-      // 构建输出
       return buildOutput(result, args.sessionId);
     } catch (error) {
       logger.error('[detect_trigger_enhanced] Error:', error);

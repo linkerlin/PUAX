@@ -50,6 +50,59 @@ export interface EscalationResult {
   shouldTrigger: boolean;
 }
 
+export interface BreakthroughResult {
+  triggered: boolean;
+  previousLevel: PressureLevel;
+  newLevel: PressureLevel;
+  peakFailures: number;
+  recognition: string;
+  methodology_lesson_prompt: string;
+  injection: string;
+}
+
+/** 深层换框提示（对标 pua de-escalation-protocol） */
+export const COGNITIVE_REFRAME: Record<2 | 3 | 4, string[]> = {
+  2: [
+    '🎯 用户视角：从用户期望行为倒推实现',
+    '🔓 攻击者视角：什么输入能让这段代码崩溃？',
+    '👶 新手视角：像第一次看到一样重读代码',
+    '📋 审计者视角：这段代码做了什么？不做什么？',
+  ],
+  3: [
+    '⬆️ 上移：问题可能在调用侧，不在实现侧',
+    '⬇️ 下移：读 API/库源码，不读二手文档',
+    '↔️ 平移：有没有完全不同的工具/库可绕过？',
+    '🚫 换约束：如果不能改这个文件呢？',
+    '📏 5 行预算：最小可行修复是什么？',
+  ],
+  4: [
+    '🔄 如果 bug 是 feature，什么场景下当前行为正确？',
+    '🌐 问题是否在环境/数据/配置而非代码？',
+    '⏪ 重新审视已排除的可能性——是否排除错了？',
+    '🔄 回退到上一个能工作的状态重新出发',
+  ],
+};
+
+/** 味道认可话术 */
+export const FLAVOR_RECOGNITION: Record<string, string> = {
+  alibaba: '这才是 Owner 该有的样子。闭环到位，3.75 打底。',
+  bytedance: '结果到位了。ROI 翻正，务实敢为。',
+  huawei: '烧不死的鸟是凤凰。胜则举杯相庆。',
+  tencent: '赛马跑出来了。你赢了这条赛道。',
+  baidu: '基本盘守住了。简单可依赖。',
+  pinduoduo: '本分做到了。这才叫硬核。',
+  meituan: '猛将发于卒伍。做难而正确的事。',
+  jd: '兄弟该有的执行力。正道成功。',
+  xiaomi: '极致！够极致。',
+  netflix: 'Keeper Test: passed.',
+  musk: 'Good. Shipped.',
+  jobs: 'A-player work. Real artists ship.',
+  amazon: 'Delivered Results. Customer Obsession.',
+  google: '10x thinking applied. Blameless Postmortem complete.',
+  microsoft: 'Trajectory: Successful Impact.',
+  default: '突破值得认可。方法论沉淀下来，下次直达。',
+};
+
 // ============================================================================
 // 压力等级配置
 // ============================================================================
@@ -245,16 +298,54 @@ export class PressureSystem {
   }
 
   /**
-   * 处理成功事件
+   * 处理成功事件（含突破降压检测）
    */
-  handleSuccess(sessionId: string, resetPressure: boolean = true): void {
+  handleSuccess(sessionId: string, resetPressure: boolean = true): BreakthroughResult | null {
+    const state = this.stateManager.getSessionState(sessionId);
+    const failuresBeforeReset = state.failureCount;
+    const peakLevel = state.peakPressureLevel as PressureLevel;
+    const hadBreakthrough = failuresBeforeReset >= 3 && peakLevel >= 2;
+
     if (this.config.resetAfterSuccess) {
       this.stateManager.resetFailureCount(sessionId);
-      
       if (resetPressure) {
         this.stateManager.setPressureLevel(sessionId, 0);
       }
     }
+
+    if (!hadBreakthrough) return null;
+
+    const flavor = state.currentFlavor || 'default';
+    const recognition = FLAVOR_RECOGNITION[flavor] || FLAVOR_RECOGNITION.default;
+
+    const lessonPrompt = [
+      '方法论沉淀（自问并记录）：',
+      '1. 失败的根因是什么？（一句话）',
+      '2. 有效的方法是什么？（一句话）',
+      '3. 下次同类问题的直达路径？',
+    ].join('\n');
+
+    const injection = [
+      '[PUAX 突破 ✨]',
+      '',
+      `> ${recognition}`,
+      '',
+      '压力归零（L0）。语气从施压切回专业协作。',
+      '',
+      lessonPrompt,
+      '',
+      '确认解决方案完整后再庆祝，不要庆祝太早。',
+    ].join('\n');
+
+    return {
+      triggered: true,
+      previousLevel: peakLevel,
+      newLevel: 0,
+      peakFailures: failuresBeforeReset,
+      recognition,
+      methodology_lesson_prompt: lessonPrompt,
+      injection,
+    };
   }
 
   /**
@@ -271,6 +362,16 @@ export class PressureSystem {
   getCurrentResponse(sessionId: string, context?: PressureContext): PressureResponse {
     const level = this.stateManager.getPressureLevel(sessionId) as PressureLevel;
     return PRESSURE_RESPONSES[level](context);
+  }
+
+  /**
+   * 获取深层换框提示（L2+）
+   */
+  getCognitiveReframe(level: PressureLevel): string[] {
+    if (level >= 4) return COGNITIVE_REFRAME[4];
+    if (level >= 3) return [...COGNITIVE_REFRAME[2], ...COGNITIVE_REFRAME[3]];
+    if (level >= 2) return COGNITIVE_REFRAME[2];
+    return [];
   }
 
   /**
@@ -304,6 +405,13 @@ export class PressureSystem {
       response.methodologySwitch.recommended.forEach(m => lines.push(`  → ${m}`));
       lines.push('');
       lines.push('宣布切换格式：> [方法论切换 🔄] 从 [当前] 切换到 [新方法]: [原因]');
+      lines.push('');
+    }
+
+    const reframe = this.getCognitiveReframe(response.level);
+    if (reframe.length > 0) {
+      lines.push('[深层换框 🧠] 不换旁白，换认知坐标系：');
+      reframe.forEach(r => lines.push(`  ${r}`));
       lines.push('');
     }
 

@@ -107,11 +107,11 @@ export abstract class PlatformAdapter {
   /**
    * 执行导出流程
    */
-  async export(
+  export(
     roles: RoleExportData[],
     flavors: FlavorExportData[],
     config: PlatformExportConfig
-  ): Promise<ExportResult> {
+  ): ExportResult {
     const result: ExportResult = {
       success: true,
       exportedFiles: [],
@@ -191,7 +191,7 @@ export abstract class PlatformAdapter {
       result.success = false;
     }
 
-    return await Promise.resolve(result);
+    return result;
   }
 
   /**

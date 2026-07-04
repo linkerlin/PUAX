@@ -272,6 +272,45 @@ flavor_overlay:
       - special-creative-spark
       - silicon-canon
 
+  amazon:
+    name: "Amazon味"
+    keywords: ["Customer Obsession", "Working Backwards", "Dive Deep", "PR/FAQ", "6-Pager"]
+    rhetoric:
+      - "Are you working backwards from the customer?"
+      - "Dive Deep — 读到源码层再下结论"
+      - "Disagree and Commit"
+    suitable_roles:
+      - shaman-sun-tzu
+      - military-scout
+      - military-commander
+      - silicon-architect
+
+  google:
+    name: "Google味"
+    keywords: ["OKR", "10x", "Blameless Postmortem", "SRE", "Focus on the user"]
+    rhetoric:
+      - "Focus on the user and all else will follow"
+      - "10x, not 10% — 先问十倍方案是什么"
+      - "Blameless Postmortem — 修系统，不甩锅"
+    suitable_roles:
+      - shaman-einstein
+      - military-technician
+      - silicon-auditor
+      - military-scout
+
+  xiaomi:
+    name: "小米味"
+    keywords: ["专注", "极致", "口碑", "快", "爆品"]
+    rhetoric:
+      - "专注、极致、口碑、快"
+      - "做爆品，不做平庸 — 用户会主动推荐吗？"
+      - "砍掉一切非必要，核心路径拉满"
+    suitable_roles:
+      - shaman-davinci
+      - shaman-jobs
+      - military-warrior
+      - sillytavern-iterator
+
 # ============================================================================
 # 角色元数据
 # ============================================================================

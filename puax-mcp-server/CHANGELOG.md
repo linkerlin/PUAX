@@ -5,6 +5,181 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.10.0] - 2026-07-04
+
+### Added
+- 🔍 **TF-IDF 混合触发检测** — `core/text-similarity.ts`：正则优先 + 语义兜底（paraphrase 可命中）
+- 📊 **匿名使用统计** — `core/usage-stats.ts` + `puax_get_usage_stats` / `puax_set_usage_stats_opt_out`
+- 📡 **OpenTelemetry 集成** — `core/telemetry.ts`：`telemetry.jsonl` 本地 span + `PUAX_OTEL_ENDPOINT` OTLP/JSON 导出
+- MCP 工具 `puax_flush_telemetry`
+
+### Changed
+- `TriggerDetector.checkTrigger`：正则未命中时走语义路径（阈值 0.62）；语料含 pattern + description + name
+- `server/core.ts` 工具调用自动埋点（usage + trace span）
+- `recommend_role` / `activate_with_context` 记录角色推荐/激活统计
+
+### Environment
+- `PUAX_USAGE_STATS=0` — 关闭匿名统计（默认开启，仅本地 `~/.puax/usage-stats.json`）
+- `PUAX_OTEL_ENABLED=1` — 写入 `~/.puax/telemetry.jsonl`
+- `PUAX_OTEL_ENDPOINT` — OTLP/JSON HTTP 导出
+- `PUAX_TELEMETRY_DIR` — 遥测目录
+
+测试环境（`JEST_WORKER_ID`）自动跳过统计写入。
+
+## [3.9.1] - 2026-07-04
+
+### Added
+- 🌶️ **更多风味** — Amazon / Google / Xiaomi 完整行为约束 + 导出元数据
+- `google-postmortem` 方法论（Blameless Postmortem + 10x 思维）
+- `role-mappings.yaml` 新增 amazon / google / xiaomi `flavor_overlay`
+
+### Changed
+- `export-platform` 风味数据改从 `flavor-methodologies.yaml` 单一数据源加载（`getFlavorExportList`）
+- 风味总数 8 → 11（含 tencent、baidu 导出元数据补全）
+
+## [3.9.0] - 2026-07-04
+
+### Added
+- 🎭 **自定义角色** — `puax_register_custom_role` / `puax_list_custom_roles` / `puax_remove_custom_role`
+- `core/custom-role-store.ts` — 持久化 `~/.puax/custom-roles.json`
+- `prompts/skill-catalog.ts` — 内置 bundle + 自定义角色统一目录
+- 自定义角色自动并入 `recommend_role` 推荐池（`recommended_for_triggers` + `task_types`）
+
+## [3.8.5] - 2026-07-04
+
+### Changed
+- ⚡ **消除剩余假异步** — `trigger-loader`、`hooks/trigger-detector-enhanced`、`hook-manager`、平台 `export()`、`export-platform` 及 MCP hook/detect 工具 handler 改为同步路径
+- `codebuddy-adapter` 移除动态 `import('fs')`，改用静态 fs 同步 IO
+
+## [3.8.4] - 2026-07-03
+
+### Added
+- 🔌 **轻量 DI** — `core/service-registry.ts`：核心服务单例 + 测试注入
+- 📈 **性能基准守门** — `evals/benchmark.js` → `results/benchmark.json`
+
+### Changed
+- MCP 工具层（`recommend_role` / `detect_trigger` / `activate_with_context`）复用单例，推荐缓存跨调用生效
+- `hooks/service-container` 默认从 `getCoreServices()` 取核心依赖
+
+## [3.8.3] - 2026-07-03
+
+### Added
+- 🛡️ **L4 治理评测** — `evals/test-governance.js`（Task Contract、防作弊、诊断/信心门控，无 LLM）
+- 💓 **会话心跳评测** — `evals/test-heartbeat.js`（断点恢复、压力升级、过期清理）
+- `evals/scenarios/governance/*.json` 治理场景夹具
+
+### Changed
+- 🔧 **trigger-detector 合并** — `EnhancedTriggerDetector` 并入 `core/trigger-detector.ts`，删除 `trigger-detector-enhanced.ts`
+
+## [3.8.2] - 2026-07-03
+
+### Added
+- 📊 **L4 Scorecard** — `run-l4.js scorecard` 汇总通过率 + `results/scorecard.json`
+- `run-all --skip-complete` 跳过已有完整对照的场景
+
+### Changed
+- `DEEPSEEK_MODEL` 必填，移除已下架 `deepseek-chat` 默认值
+
+## [3.8.1] - 2026-07-03
+
+### Added
+- 🧪 **L4 DeepSeek 自动实测** — `evals/run-l4.js run` / `run-all`（密钥仅环境变量）
+- `evals/lib/` — deepseek-client、response-analyzer、puax-prompt、l4-executor
+- `evals/.env.example`、`evals/test-l4-offline.js`（CI 无密钥守门）
+
+### Security
+- API Key 禁止写入代码与文档；`DEEPSEEK_API_KEY` / `DEEPSEEK_MODEL` / `DEEPSEEK_BASE_URL` 运行时注入
+
+## [3.8.0] - 2026-07-03
+
+### Added
+- 📜 **方法论指南自动生成** — `methodology-guide-generator.ts` + `npm run generate-guides`
+- `methodologies.yaml` 新增 `category_guides`（军事/萨满话术库与隐喻）
+- 8 个类别 `templates/{category}-methodology-guide.md` 由 YAML 单一数据源生成
+
+### Changed
+- `templates/military-methodology-guide.md`、`shaman-methodology-guide.md` 改为自动生成（勿手改）
+- 新增 `templates/README.md` 说明维护流程
+
+## [3.7.1] - 2026-07-03
+
+### Changed
+- 🔀 **handlers/ 并入 tools/** — 删除 `role/skill/trigger/hook-handlers` 及根目录 `hook-handlers.ts`
+- 📋 **`tools/registry.ts`** — `buildToolHandlerMap` + `normalizeToolResponse` 统一分发
+- ➕ **`puax_get_pressure_level`** 迁入 `hook-session.ts`（此前仅在废弃 handlers 中）
+- `server/core.ts` 移除双路径 fallback，单一 `allTools` 分发
+
+### Removed
+- `handlers/hook-handlers.ts`、`role-handlers.ts`、`skill-handlers.ts`、`trigger-handlers.ts`
+- `src/hook-handlers.ts`（重复实现）
+
+## [3.7.0] - 2026-07-03
+
+### Added
+- 📦 **prompts-bundle 按类别拆分** — `bundles/bundle-*.ts`（8 类）+ `skill-manifest.ts` 元数据索引
+- 🧪 **L4 对照评测** — `evals/run-l4.js`（scaffold / validate / compare / report）
+- 📋 **测试文档归集** — `docs/TESTING.md` 统一入口
+
+### Changed
+- **懒加载** — `getBundledSkillById` 仅加载所属类别；`PromptManager` 启动只读 manifest
+- **统一日志** — CLI 帮助/版本输出改用 `Logger.write`（stdio 安全）
+- `evals/run-all.js` 增加 bundle 拆分与 L4 runner 守门
+
+## [3.6.0] - 2026-07-03
+
+### Added
+- 📊 **推荐算法透明化** — `recommend_role` 返回 `score_explanation` 逐步加权说明
+- 🛡️ **路径遍历防护** — `path-security.ts`；`export-platform` 输出路径校验
+- 🧪 **行为评测守门** — `evals/run-all.js` + `test/evals/protocol-compliance.test.ts`
+- 📋 **CI 增强** — workflow 增加 `node evals/run-all.js` 协议层守门
+
+### Changed
+- 消除 `base-adapter` / `vscode-adapter` 假异步 `Promise.resolve`
+- `npm run validate:metadata` / `test:evals` 脚本
+
+## [3.5.0] - 2026-07-03
+
+### Added
+- 🌐 **+6 平台适配器** — codex、opencode、openclaw、antigravity、trae、pi（SKILL.md 导出）
+- 🇺🇸 **PIP Edition** — `i18n-en.ts` Amazon/Google/Meta/Netflix/Stripe 修辞层；`language=en` 激活/导出
+- 📦 **分发渠道** — `distributions/claude-code/` 插件清单 + `distributions/INSTALL.md`
+- 👥 **`puax_orchestrate_team`** — Agent Team 创建/上报/状态 + `[PUAX-REPORT]` 协议
+- 🎭 **语气变体** — `tone_variant`: strict / yes / mama
+- 📋 **`puax_list_platforms`** — 11 平台 + MCP + 安装路径一览
+
+### Changed
+- `export --export=all` 现导出全部已注册平台（11 个）
+- `activate_with_context` / `get_role_with_methodology` 支持 `tone_variant` + `language`
+
+## [3.4.0] - 2026-07-03
+
+### Added
+- 🎉 **`puax_handle_breakthrough`** — 连续失败≥3 后成功触发 `[PUAX 突破 ✨]` 降压 + 方法论沉淀
+- 🧬 **自进化引擎** — `~/.puax/evolution.json` 基线/段位/内化模式；`puax_get_evolution_baseline` + `puax_record_evolution`
+- 🛡️ **防作弊治理** — `puax_define_contract` + `puax_verify_completion`（权责分离）
+- 🧠 **深层换框** — L2/L3/L4 注入认知换框提示（用户/攻击者/抽象层/约束反转）
+- 📦 **`puax_quality_compass`** — Trust T1-T3 + 5 问自检 + Recovery Protocol + Calibration
+- 💾 **Compaction 保护** — `puax_update_reasoning_state` + 会话 `<2h` 断点恢复
+- 🎭 **味道行为约束** — `flavor-methodologies.yaml`（8 风味行为层，非仅语气）
+
+### Changed
+- `pressure-system.handleSuccess` 返回突破结果；`buildInjectionPrompt` 含换框段
+- `state-manager` 扩展 `triedApproaches`/`peakPressureLevel` 等推理状态
+- `puax_start_session` 启动时加载 evolution 基线 + compaction 恢复上下文
+
+## [3.3.0] - 2026-07-03
+
+### Added
+- 🔄 **`puax_switch_on_failure`** — 失败后方法论/角色切换引擎，含切换前三问自检
+- 🔍 **`puax_check_diagnosis`** — 诊断先行协议验证（`[PUAX-DIAGNOSIS]` + 证据来源）
+- ✅ **`puax_confidence_check`** — 6 步信心门控（列声明→找漏洞→修或披露→跑证据→循环判定→事实100%）
+- 📦 **`behavior-protocols.ts`** — 行为有效性核心逻辑，桥接 methodology-router 与 role-recommender
+- 🧪 **`evals/`** — 6 个行为基准场景（对标 pua evals）+ 场景结构校验脚本
+
+### Changed
+- `activate_with_context` 激活时自动注入诊断先行协议
+- 版本目标对齐演进方案 Phase 1（行为有效性闭环）
+
 ## [3.2.0] - 2026-04-15
 
 ### Changed

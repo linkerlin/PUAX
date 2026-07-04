@@ -7,8 +7,11 @@
 import { z } from 'zod';
 import { methodologyEngine } from '../core/methodology-engine';
 import { roleRecommender } from '../core/role-recommender';
-import { getBundledSkillById } from '../prompts/prompts-bundle.js';
+import { getSkillById } from '../prompts/skill-catalog.js';
 import { getRoleDisplayName, getFlavorRhetoric } from '../utils/role-utils.js';
+import { getFlavorBehaviorInjection } from '../core/flavor-methodology.js';
+import { applyToneVariant, isValidToneVariant } from '../core/tone-variants.js';
+import { applyPipEdition } from '../core/i18n-en.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -29,7 +32,11 @@ const GetRoleWithMethodologyInputSchema = z.object({
     include_flavor: z.string().optional()
       .describe('叠加的大厂风味，如 huawei, alibaba, musk'),
     format: z.enum(['full', 'compact', 'prompt_only']).default('full')
-      .describe('输出格式')
+      .describe('输出格式'),
+    tone_variant: z.enum(['strict', 'yes', 'mama']).optional()
+      .describe('语气变体'),
+    language: z.enum(['zh', 'en']).optional()
+      .describe('PIP Edition 英文'),
   }).optional().describe('选项')
 });
 
@@ -70,7 +77,7 @@ const GetRoleWithMethodologyOutputSchema = z.object({
 // ============================================================================
 
 function loadRoleSystemPrompt(roleId: string): string {
-  return getBundledSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
+  return getSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
 }
 
 // ============================================================================
@@ -118,14 +125,24 @@ export const getRoleWithMethodologyTool = {
           include_methodology?: boolean;
           include_checklist?: boolean;
           include_flavor?: string;
+          tone_variant?: string;
+          language?: 'zh' | 'en';
         }
       };
       
-      // 加载System Prompt
-      const systemPrompt = loadRoleSystemPrompt(role_id);
-      
       // 获取角色元数据
       const metadata = roleRecommender.getRoleMetadata(role_id);
+
+      // 加载System Prompt
+      let systemPrompt = loadRoleSystemPrompt(role_id);
+      const displayName = getRoleDisplayName(role_id);
+
+      if (options.language === 'en') {
+        systemPrompt = applyPipEdition(systemPrompt, displayName, metadata?.category || '');
+      }
+      if (options.tone_variant && isValidToneVariant(options.tone_variant)) {
+        systemPrompt = applyToneVariant(systemPrompt, options.tone_variant);
+      }
       
       // 获取方法论
       let methodology = options.include_methodology !== false
@@ -145,7 +162,8 @@ export const getRoleWithMethodologyTool = {
       // 构建风味叠加信息
       const flavorOverlay = options.include_flavor ? {
         applied: options.include_flavor,
-        rhetoric_additions: getFlavorRhetoric(options.include_flavor)
+        rhetoric_additions: getFlavorRhetoric(options.include_flavor),
+        behavior_constraints: getFlavorBehaviorInjection(options.include_flavor),
       } : undefined;
       
       return {

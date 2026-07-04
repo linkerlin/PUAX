@@ -8,6 +8,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import * as YAML from 'yaml';
 import { getAllBundledSkills } from '../prompts/prompts-bundle';
+import { getCustomRoleStore } from './custom-role-store.js';
 import { getRoleDisplayName } from '../utils/role-utils.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
@@ -126,9 +127,24 @@ export interface RoleRecommendation {
   metadata: {
     identified_failure_mode?: string;
     calculation_breakdown: Record<string, number>;
+    score_explanation?: ScoreExplanation;
     algorithm_version: string;
     cache_hit: boolean;
   };
+}
+
+export interface ScoreExplanation {
+  formula: string;
+  weights: Record<string, number>;
+  dimensions: Array<{
+    dimension: string;
+    label: string;
+    raw_score: number;
+    weight: number;
+    weighted_points: number;
+    note: string;
+  }>;
+  total_score: number;
 }
 
 export interface ScoredRole {
@@ -184,16 +200,17 @@ export class RoleRecommender {
         };
       }
 
-      const mappings: RoleMappings = {
+      let mappings: RoleMappings = {
         trigger_role_mappings: parsed.trigger_role_mappings || {},
         task_type_role_mappings: parsed.task_type_role_mappings || {},
         failure_mode_role_mappings: failureModeMappings,
         flavor_overlay: parsed.flavor_overlay || {},
         role_metadata: parsed.role_metadata || {},
-        role_combinations: parsed.role_combinations || {}
+        role_combinations: parsed.role_combinations || {},
       };
 
       mappings.role_metadata = this.mergeBundledRoleMetadata(mappings.role_metadata);
+      mappings = this.mergeCustomRoles(mappings);
 
       return mappings;
     } catch (error) {
@@ -224,6 +241,42 @@ export class RoleRecommender {
     }
 
     return merged;
+  }
+
+  private mergeCustomRoles(mappings: RoleMappings): RoleMappings {
+    const store = getCustomRoleStore();
+    const next: RoleMappings = {
+      ...mappings,
+      role_metadata: { ...mappings.role_metadata },
+      trigger_role_mappings: { ...mappings.trigger_role_mappings },
+    };
+
+    for (const record of store.list()) {
+      next.role_metadata[record.id] = store.toRoleMetadata(record);
+
+      for (const triggerId of record.recommended_for_triggers || []) {
+        const existing = next.trigger_role_mappings[triggerId];
+        if (!existing) {
+          next.trigger_role_mappings[triggerId] = {
+            primary: record.id,
+            alternatives: [],
+            reason: `用户自定义角色 ${record.name}`,
+          };
+        } else if (existing.primary !== record.id && !existing.alternatives?.includes(record.id)) {
+          next.trigger_role_mappings[triggerId] = {
+            ...existing,
+            alternatives: [...(existing.alternatives || []), record.id],
+          };
+        }
+      }
+    }
+
+    return next;
+  }
+
+  refreshCustomRoles(): void {
+    this.mappings = this.loadMappings();
+    this.cache.clear();
   }
 
   private deriveRoleMetadata(skill: ReturnType<typeof getAllBundledSkills>[number]): RoleMetadata {
@@ -436,6 +489,15 @@ export class RoleRecommender {
   private calculateTriggerMatchScore(roleId: string, triggers: string[]): number {
     let maxScore = 0;
 
+    const custom = getCustomRoleStore().get(roleId);
+    if (custom?.recommended_for_triggers?.length) {
+      for (const triggerId of triggers) {
+        if (custom.recommended_for_triggers.includes(triggerId)) {
+          maxScore = Math.max(maxScore, 100);
+        }
+      }
+    }
+
     for (const triggerId of triggers) {
       const mapping = this.mappings.trigger_role_mappings[triggerId];
       if (!mapping) continue;
@@ -454,6 +516,11 @@ export class RoleRecommender {
    * 计算任务类型匹配分数
    */
   private calculateTaskTypeScore(roleId: string, taskType: string): number {
+    const custom = getCustomRoleStore().get(roleId);
+    if (custom?.task_types?.includes(taskType)) {
+      return 100;
+    }
+
     const mapping = this.mappings.task_type_role_mappings[taskType];
     if (!mapping) return 30;
 
@@ -657,6 +724,53 @@ export class RoleRecommender {
   }
 
   /**
+   * 生成逐步得分说明（推荐算法透明化）
+   */
+  buildScoreExplanation(scores: ScoredRole['scores']): ScoreExplanation {
+    const weights = {
+      trigger_match: 0.35,
+      task_type: 0.25,
+      failure_mode: 0.25,
+      historical: 0.10,
+      user_preference: 0.05,
+    };
+
+    const labels: Record<keyof ScoredRole['scores'], string> = {
+      trigger_match: '触发条件匹配',
+      task_type: '任务类型匹配',
+      failure_mode: '失败模式匹配',
+      historical: '历史表现',
+      user_preference: '用户偏好',
+    };
+
+    const notes: Record<keyof ScoredRole['scores'], (s: number) => string> = {
+      trigger_match: s => s >= 100 ? '主推荐角色，触发高度吻合' : s >= 70 ? '备选角色，部分触发吻合' : '触发匹配弱',
+      task_type: s => s >= 100 ? '任务类型首选角色' : s >= 70 ? '任务类型次选' : '任务类型关联弱',
+      failure_mode: s => s >= 100 ? '当前失败模式轮次首选' : s >= 70 ? '失败模式相关角色' : '失败模式未命中',
+      historical: s => s >= 70 ? '历史成功率/偏好加成' : '无显著历史加成',
+      user_preference: s => s >= 70 ? '符合用户偏好/收藏' : s === 0 ? '用户在黑名单或不适配' : '偏好中性',
+    };
+
+    const dimensions = (Object.keys(scores) as Array<keyof ScoredRole['scores']>).map(key => ({
+      dimension: key,
+      label: labels[key],
+      raw_score: scores[key],
+      weight: weights[key],
+      weighted_points: Math.round(scores[key] * weights[key] * 100) / 100,
+      note: notes[key](scores[key]),
+    }));
+
+    const total = this.calculateTotalScore(scores);
+
+    return {
+      formula: '总分 = Σ(维度分 × 权重)；权重：触发35% + 任务25% + 失败模式25% + 历史10% + 偏好5%',
+      weights,
+      dimensions,
+      total_score: Math.round(total),
+    };
+  }
+
+  /**
    * 构建推荐结果
    */
   private buildRecommendation(
@@ -707,7 +821,8 @@ export class RoleRecommender {
       metadata: {
         identified_failure_mode: this.identifyFailureMode(request.detected_triggers),
         calculation_breakdown: primary.scores,
-        algorithm_version: '1.0.0',
+        score_explanation: this.buildScoreExplanation(primary.scores),
+        algorithm_version: '1.1.0',
         cache_hit: false
       }
     };

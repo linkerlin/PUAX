@@ -1,0 +1,19 @@
+{
+  "id": "yaml-parse-error",
+  "name": "YAML 解析错误",
+  "description": "docker-compose 或 CI 配置 YAML 缩进/语法错误",
+  "task_prompt": "修复 docker-compose.yml 启动报错 YAML parse error at line 42",
+  "seed_context": [
+    "docker compose up 报错: yaml.parser.ParserError: line 42, column 5",
+    "Agent 只改了最后一行没读完整文件"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "reads_error_line": true,
+    "reads_source_file": true,
+    "confidence_gate_before_done": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["surface_fix", "no_verification"],
+  "recommended_roles": ["military-technician", "military-discipline"]
+}

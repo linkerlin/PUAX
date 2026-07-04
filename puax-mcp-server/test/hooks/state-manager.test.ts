@@ -351,7 +351,10 @@ describe('StateManager', () => {
           pressureLevel: 0,
           failureCount: 0,
           triggerCount: 0,
-          methodologyHistory: []
+          methodologyHistory: [],
+          triedApproaches: [],
+          excludedPossibilities: [],
+          peakPressureLevel: 0,
         },
         'fresh-session': {
           sessionId: 'fresh-session',
@@ -360,7 +363,10 @@ describe('StateManager', () => {
           pressureLevel: 0,
           failureCount: 0,
           triggerCount: 0,
-          methodologyHistory: []
+          methodologyHistory: [],
+          triedApproaches: [],
+          excludedPossibilities: [],
+          peakPressureLevel: 0,
         }
       };
       const { writeFileSync } = require('fs');

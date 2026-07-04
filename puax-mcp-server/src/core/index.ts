@@ -4,7 +4,25 @@
  * 导出所有核心组件
  */
 
-export { TriggerDetector, triggerDetector } from './trigger-detector.js';
+export {
+  TriggerDetector,
+  triggerDetector,
+  EnhancedTriggerDetector,
+  enhancedTriggerDetectorCore,
+  ENHANCED_TRIGGER_DEFINITIONS,
+  createEnhancedTriggerDetector,
+} from './trigger-detector.js';
+
+export {
+  getCoreServices,
+  getTriggerDetector,
+  getRoleRecommender,
+  getMethodologyEngine,
+  getMethodologyRouter,
+  setCoreServicesForTesting,
+  resetTriggerDetectorCache,
+} from './service-registry.js';
+export type { CoreServices } from './service-registry.js';
 export { RoleRecommender, roleRecommender } from './role-recommender.js';
 export { MethodologyEngine, methodologyEngine } from './methodology-engine.js';
 

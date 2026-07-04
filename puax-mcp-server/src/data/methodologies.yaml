@@ -305,6 +305,57 @@ category_methodologies:
     description: "用专业技能攻克难题"
 
 # ============================================================================
+# 类别指南元数据（供 generate-guides 生成 templates/*.md）
+# ============================================================================
+
+category_guides:
+  military:
+    display_name: "军事类"
+    framework: "作战指挥框架"
+    metaphors:
+      problem: "敌人"
+      solution: "作战胜利"
+      process: "军事作战流程"
+    phrase_bank:
+      opening:
+        - "全体注意，作战指挥部，战斗命令下达！"
+        - "情况紧急！紧急！紧急！"
+        - "侦察兵报告，敌情如下..."
+      progress:
+        - "主攻方向确定，准备进攻！"
+        - "火力支援跟上！"
+      difficulty:
+        - "这是块硬骨头，但必须啃下来！"
+        - "调整战术，准备第二轮进攻！"
+      victory:
+        - "阵地已占领，敌人已被歼灭！"
+        - "战斗胜利，开始打扫战场！"
+      motivate:
+        - "士兵，你是在战场上打盹吗？！"
+        - "速度慢了，加快速度！"
+
+  shaman:
+    display_name: "萨满/先知类"
+    framework: "洞察-启示框架"
+    metaphors:
+      problem: "迷雾/未知"
+      solution: "洞察真相"
+      process: "寻求启示的旅程"
+    phrase_bank:
+      opening:
+        - "让我静下心，感受这个问题的本质..."
+        - "迷雾中，我感知到了什么..."
+      progress:
+        - "智慧的源泉正在启示..."
+        - "古老的智慧告诉我..."
+      difficulty:
+        - "迷雾更深了，但真理必现..."
+        - "再深入一层，接近核心..."
+      victory:
+        - "真相大白，迷雾散尽！"
+        - "神迹已显，问题化解！"
+
+# ============================================================================
 # 大厂风味前缀
 # ============================================================================
 
@@ -318,6 +369,8 @@ flavor_prefixes:
   musk: "用Musk方法论："
   jobs: "用Jobs方法论："
   amazon: "用Amazon方法论："
+  google: "用Google方法论："
+  xiaomi: "用小米方法论："
 
 # ============================================================================
 # 方法论路由定义 (供 methodology-router.ts 使用)
@@ -353,6 +406,20 @@ methodology_definitions:
     effective_against: ["not_searching"]
     steps: ["深入细节", "挖掘根因", "数据验证"]
     switch_to_on_failure: ["bytedance-abtest"]
+
+  google-postmortem:
+    name: "Google无责复盘"
+    description: "Blameless Postmortem + 10x 思维 + 数据驱动"
+    flavor: "google"
+    keywords: ["Postmortem", "10x", "OKR", "SRE", "度量"]
+    suitable_tasks: ["debugging", "review"]
+    effective_against: ["poor_quality", "spinning"]
+    steps:
+      - "时间线：还原事件经过"
+      - "根因：找系统/流程缺陷，不追究个人"
+      - "10x：当前方案是 10% 优化还是 10x 换思路？"
+      - "行动项：可度量、有 owner、有 deadline"
+    switch_to_on_failure: ["huawei-rca", "amazon-backwards"]
 
   bytedance-data:
     name: "字节数据驱动"
@@ -483,13 +550,13 @@ methodology_definitions:
 # ============================================================================
 
 task_methodology_map:
-  debugging: ["huawei-rca", "baidu-search", "alibaba-closed-loop"]
-  building: ["musk-algorithm", "bytedance-abtest", "alibaba-closed-loop"]
+  debugging: ["huawei-rca", "google-postmortem", "baidu-search", "alibaba-closed-loop"]
+  building: ["musk-algorithm", "xiaomi-focus", "bytedance-abtest", "alibaba-closed-loop"]
   research: ["baidu-search", "amazon-backwards", "bytedance-abtest"]
-  architecture: ["amazon-backwards", "musk-algorithm", "jobs-subtraction"]
+  architecture: ["amazon-backwards", "google-postmortem", "musk-algorithm", "jobs-subtraction"]
   performance: ["bytedance-abtest", "musk-algorithm", "huawei-rca"]
   deployment: ["alibaba-closed-loop", "huawei-rca", "musk-algorithm"]
-  review: ["jobs-subtraction", "netflix-keeper", "huawei-rca"]
+  review: ["jobs-subtraction", "google-postmortem", "netflix-keeper", "huawei-rca"]
   planning: ["amazon-backwards", "alibaba-closed-loop", "netflix-keeper"]
 
 # ============================================================================

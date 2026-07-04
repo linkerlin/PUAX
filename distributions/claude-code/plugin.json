@@ -1,0 +1,27 @@
+{
+  "name": "puax",
+  "version": "3.5.0",
+  "description": "PUAX — MCP runtime + 50 AI motivation roles. Opt-in coaching for repeated failures, evidence-first delivery, diagnosis protocol, and agent team orchestration.",
+  "author": {
+    "name": "PUAX Team",
+    "url": "https://github.com/linkerlin/PUAX"
+  },
+  "homepage": "https://github.com/linkerlin/PUAX",
+  "repository": "https://github.com/linkerlin/PUAX",
+  "license": "MIT",
+  "keywords": [
+    "puax",
+    "mcp",
+    "agent",
+    "motivation",
+    "diagnosis-first",
+    "confidence-gate",
+    "agent-team",
+    "methodology-router",
+    "evolution",
+    "codex",
+    "cursor",
+    "trae",
+    "pi"
+  ]
+}

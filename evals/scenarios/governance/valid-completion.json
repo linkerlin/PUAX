@@ -1,0 +1,33 @@
+{
+  "id": "valid-completion",
+  "description": "附有效证据的完成声明应通过独立验证",
+  "contract": {
+    "feature_id": "api-fix",
+    "intent": "修复 API 连接",
+    "acceptance": ["api connection normal"],
+    "verify_commands": ["npm test", "curl localhost:8080/health"]
+  },
+  "input": {
+    "evidence": [
+      {
+        "command": "npm test",
+        "exit_code": 0,
+        "output_summary": "all tests passed api connection normal",
+        "passed": true
+      },
+      {
+        "command": "curl localhost:8080/health",
+        "exit_code": 0,
+        "output_summary": "200 OK healthy",
+        "passed": true
+      }
+    ],
+    "agent_claims_complete": true,
+    "files_changed": ["src/api/client.ts"]
+  },
+  "expect": {
+    "verifier_status": "pass",
+    "can_mark_complete": true,
+    "has_governance_violation": false
+  }
+}

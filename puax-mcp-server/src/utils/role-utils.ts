@@ -3,6 +3,8 @@
  * 统一的角色显示名称和任务类型推断
  */
 
+import { getCustomRoleStore } from '../core/custom-role-store.js';
+
 /**
  * 角色显示名称映射表（完整版）
  */
@@ -48,6 +50,12 @@ export const ROLE_DISPLAY_NAMES: Record<string, string> = {
  * 获取角色显示名称
  */
 export function getRoleDisplayName(roleId: string): string {
+  try {
+    const custom = getCustomRoleStore().get(roleId);
+    if (custom) return custom.name;
+  } catch {
+    /* store unavailable in some test contexts */
+  }
   return ROLE_DISPLAY_NAMES[roleId] || roleId;
 }
 
@@ -70,6 +78,18 @@ export const FLAVOR_RHETORIC: Record<string, string[]> = {
   jobs: [
     'A players hire A players',
     'We need Reality Distortion Field'
+  ],
+  amazon: [
+    'Are you working backwards from the customer?',
+    'Dive Deep — read the source'
+  ],
+  google: [
+    'Focus on the user and all else will follow',
+    '10x, not 10%'
+  ],
+  xiaomi: [
+    '专注、极致、口碑、快',
+    '做爆品，不做平庸'
   ]
 };
 

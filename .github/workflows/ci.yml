@@ -29,6 +29,9 @@ jobs:
       working-directory: ./puax-mcp-server
       run: npm ci
 
+    - name: Eval protocol gate
+      run: node evals/run-all.js
+
     - name: Lint
       working-directory: ./puax-mcp-server
       run: npm run lint

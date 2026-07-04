@@ -5,12 +5,15 @@
  */
 
 import { z } from 'zod';
-import { TriggerDetector } from '../core/trigger-detector';
-import { RoleRecommender } from '../core/role-recommender';
+import { getTriggerDetector, getRoleRecommender } from '../core/service-registry.js';
 import { methodologyEngine } from '../core/methodology-engine';
-import { getBundledSkillById } from '../prompts/prompts-bundle.js';
+import { getSkillById } from '../prompts/skill-catalog.js';
 import { inferTaskType } from '../utils/role-utils.js';
 import { getGlobalLogger } from '../utils/logger.js';
+import { buildDiagnosisPromptInjection } from '../core/behavior-protocols.js';
+import { usageStatsCollector } from '../core/usage-stats.js';
+import { buildLocalizedDiagnosisInjection, type SupportedLanguage } from '../core/i18n-en.js';
+import { applyToneVariant, isValidToneVariant, type ToneVariant } from '../core/tone-variants.js';
 
 const logger = getGlobalLogger();
 
@@ -42,7 +45,11 @@ const ActivateWithContextInputSchema = z.object({
     include_methodology: z.boolean().default(true)
       .describe('是否包含方法论'),
     include_checklist: z.boolean().default(true)
-      .describe('是否包含检查清单')
+      .describe('是否包含检查清单'),
+    tone_variant: z.enum(['strict', 'yes', 'mama']).default('strict')
+      .describe('语气变体：严厉/鼓励/唠叨'),
+    language: z.enum(['zh', 'en']).default('zh')
+      .describe('语言：zh 中文 / en PIP Edition')
   }).optional().describe('激活选项')
 });
 
@@ -134,6 +141,8 @@ export const activateWithContextTool = {
           fallback_role?: string;
           include_methodology?: boolean;
           include_checklist?: boolean;
+          tone_variant?: ToneVariant;
+          language?: SupportedLanguage;
         }
       };
       
@@ -143,7 +152,7 @@ export const activateWithContextTool = {
       let shouldActivate = false;
       
       if (options.auto_detect) {
-        const detector = new TriggerDetector();
+        const detector = getTriggerDetector();
         const detectionResult = detector.detect(
           context.conversation_history,
           context.task_context
@@ -177,7 +186,7 @@ export const activateWithContextTool = {
       
       // Step 2: 推荐角色
       const recommendationStart = Date.now();
-      const recommender = new RoleRecommender();
+      const recommender = getRoleRecommender();
       
       const recommendation = recommender.recommend({
         detected_triggers: detectedTriggers.length > 0 
@@ -195,13 +204,24 @@ export const activateWithContextTool = {
       
       // Step 3: 获取角色完整信息
       const roleId = recommendation.primary.role_id;
-      const systemPrompt = loadRoleSystemPrompt(roleId);
+      const lang = options.language || 'zh';
+      const toneVariant = isValidToneVariant(options.tone_variant || 'strict')
+        ? options.tone_variant!
+        : 'strict';
+      let basePrompt = loadRoleSystemPrompt(roleId);
+      basePrompt = applyToneVariant(basePrompt, toneVariant);
+      const diagnosisBlock = lang === 'en'
+        ? buildLocalizedDiagnosisInjection('en')
+        : buildDiagnosisPromptInjection();
+      const systemPrompt = `${basePrompt}\n\n---\n\n${diagnosisBlock}`;
       const methodology = options.include_methodology !== false
         ? methodologyEngine.getMethodology(roleId)
         : undefined;
       const checklist = options.include_checklist !== false
         ? methodologyEngine.getChecklist(roleId)
         : undefined;
+
+      usageStatsCollector.recordRoleActivated(roleId);
       
       return {
         activated: true,
@@ -228,11 +248,12 @@ export const activateWithContextTool = {
           required: c.required
         })),
         next_steps: [
-          '将System Prompt注入对话上下文',
+          '将 System Prompt（含诊断先行协议）注入对话上下文',
+          '行动前输出 [PUAX-DIAGNOSIS] 诊断块，可用 puax_check_diagnosis 验证',
           '向用户说明已激活的角色和原因',
           '按照方法论执行调试步骤',
-          '完成检查清单中的必要项',
-          '持续监控对话状态'
+          '交付前通过 puax_confidence_check 信心门控',
+          '连续失败时调用 puax_switch_on_failure 切换角色/方法论',
         ],
         metadata: {
           detection_time_ms: detectionTime,
@@ -253,7 +274,7 @@ export const activateWithContextTool = {
 // ============================================================================
 
 function loadRoleSystemPrompt(roleId: string): string {
-  return getBundledSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
+  return getSkillById(roleId)?.content || `# ${roleId}\n\n角色内容加载中...`;
 }
 // 导出类型
 export type ActivateWithContextInput = z.infer<typeof ActivateWithContextInputSchema>;

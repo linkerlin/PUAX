@@ -1,15 +1,15 @@
-# PUAX 3.2 - AI Agent 激励系统
+# PUAX — AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.2.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.10.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/triggers-16-yellow.svg" alt="Triggers">
-  <img src="https://img.shields.io/badge/hook%20system-v3.2.0-red.svg" alt="Hook System">
+  <img src="https://img.shields.io/badge/MCP%20tools-42-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
 <p align="center">
-  <b>当 AI Agent 需要激励时，PUAX 提供专业的角色和方法论</b>
+  <b>当 AI Agent 陷入瓶颈时，PUAX 提供角色、方法论与行为协议，驱动有效行动</b>
 </p>
 
 <p align="center">
@@ -18,318 +18,179 @@
 
 ---
 
-## 🎯 什么是 PUAX？
+## 什么是 PUAX？
 
-PUAX 是一个专为 AI Agent 设计的激励系统，通过：
+PUAX 是面向 AI Agent 的**激励与行为驱动**系统，核心能力包括：
 
-- **自动检测** - 识别 AI 何时陷入瓶颈（16种触发条件，分4大类别）
-- **智能推荐** - 推荐最适合的激励角色（50+角色，覆盖8大分类）
-- **Hook System** - 状态持久化与压力等级管理（L1-L4，5种Hook事件）
-- **CC-BOS** - 8维策略空间，文言文增强（1,000万+种策略组合）
-- **结构化方法论** - 提供五步法调试流程
-- **检查清单** - 确保执行质量（七项强制检查）
-
-帮助 AI Agent 突破困境，提升解决问题的能力。
-
----
-
-## ✨ 核心特性
-
-### 📦 零安装使用
-
-```bash
-# MCP 客户端一键启动（推荐）
-npx puax-mcp-server --stdio
-
-# HTTP 模式
-npx puax-mcp-server
-```
-
-### 🪝 Hook System v3.2.0</parameter>
-
-全新的 Hook 系统提供会话级状态管理：
-
-| 功能 | 说明 |
+| 能力 | 说明 |
 |------|------|
-| **状态持久化** | 跨会话状态保存到 `~/.puax/` |
-| **压力等级** | L1-L4 四级压力递增机制 |
-| **反馈收集** | 会话结束时的成功率评估 |
-| **循环报告** | 生成详细的干预效果报告 |
+| **混合触发检测** | YAML 正则 + TF-IDF/子串语义（paraphrase 可命中） |
+| **智能角色推荐** | 50 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
+| **行为有效性闭环** | 诊断先行、信心门控、失败后切换、Task Contract、独立验证 |
+| **Hook System** | 会话状态、L0–L4 压力、突破降压、Compaction 推理保护 |
+| **自进化** | `~/.puax/evolution.json` 跨会话基线与段位 |
+| **11 种大厂风味** | 语气 + 行为约束（非仅修辞） |
+| **可观测性** | 匿名本地使用统计 + OpenTelemetry 兼容 span |
 
-已验证状态：
-- 五类 Hook 事件 `UserPromptSubmit`、`PostToolUse`、`PreCompact`、`SessionStart`、`Stop` 可正常触发
-- 已修复单次明确命中语句被模式总量稀释、导致不触发的问题
-- 已修复 `PreCompact`、`SessionStart`、`Stop` 生命周期事件被冷却时间误拦截的问题
-- Hook 专项测试通过：47/47
-
-```typescript
-// Hook System 工具
-puax_start_session     // 开始会话
-puax_detect_trigger    // 检测触发条件
-puax_submit_feedback   // 提交反馈
-puax_get_pressure_level // 获取当前压力等级
-puax_generate_pua_loop_report // 生成报告
-```
-
-### 🤖 自动触发检测
-
-检测 **15 种**需要干预的场景：
-
-| 类别 | 触发条件 | 严重级别 |
-|------|----------|----------|
-| 失败模式 | 连续失败、重复尝试、参数微调 | High |
-| 态度问题 | 放弃语言、甩锅环境、被动等待 | Medium-Critical |
-| 用户情绪 | 用户挫折 | Critical |
-| 方法问题 | 表面修复、未验证、工具使用不足 | Medium |
-| 质量问题 | 低质量输出、忽略边界、过度复杂化 | Medium |
-
-### 🎭 50 激励角色
-
-覆盖 8 大分类的专业角色：
-
-| 分类 | 数量 | 代表角色 |
-|------|------|----------|
-| 军事类 | 9 | 上将军、虎贲勇士、监军御史、斥候校尉、军法官 |
-| 萨满类 | 8 | 通玄真人、造化宗师、源码天尊、兵圣、大哲 |
-| P10战略类 | 1 | 战略规划师 |
-| 硅基文明类 | 7 | 圣座总控核心、文明建造师、布道官、同化官 |
-| 主题类 | 7 | 修仙炼丹、末日生存、赛博黑客、星际舰队 |
-| SillyTavern | 5 | 反脆弱复盘官、铁血幕僚长、迭代官、监察使 |
-| 自激励类 | 6 | 觉悟居士、君子、自强不息、腐败系统 |
-| 特殊类 | 7 | 创意火花、紧急冲刺、产品设计师、挑战解决者 |
-
-### 📜 PUAX-CC 文言文增强
-
-8 维策略空间：
-
-```
-D1: 角色身份    - 上将军、通玄真人、觉悟居士
-D2: 行为引导    - 明令、求学、论道、激将
-D3: 机制        - 场景嵌套、虚构世界、历史分析
-D4: 隐喻映射    - 城池攻防、水之道、棋局对弈
-D5: 表达风格    - 纯文言、半文半白、骈文诗赋、诏令体
-D6: 知识关联    - 孙子兵法、道德经、鬼谷子
-D7: 情境设定    - 战国乱世、三国纷争、稷下学宫
-D8: 触发模式    - 逐一列明、符文记录、密传之学
-```
-
-### 📊 智能推荐算法
-
-```
-触发条件匹配 (35%)
-├── 失败模式识别
-├── 语言模式检测（含文言文关键词）
-└── 工具使用分析
-
-任务类型匹配 (25%)
-├── 调试/开发/审查
-├── 紧急/计划/创意
-└── 场景适配度
-
-失败模式匹配 (25%)
-├── 轮次递进策略
-├── 压力递增机制（L1-L4）
-└── 角色轮换逻辑
-
-历史记录 (10%) + 用户偏好 (5%)
-```
-
-### 🏭 8 种大厂风味
-
-可为角色叠加不同企业文化：
-- 阿里味 - 闭环方法论
-- 华为味 - 根因分析法
-- 字节味 - A/B测试驱动
-- 腾讯味 - 赛马机制
-- 美团味 - 执行至上
-- Netflix味 - Keeper测试
-- Musk味 - The Algorithm
-- Jobs味 - 减法哲学
+帮助 Agent 从「分析正确」走向「验证完成、可交付」。
 
 ---
 
-## 🚀 快速开始
-
-### 方式 1：npx 一键使用（推荐）
+## 快速开始
 
 ```bash
-# MCP 客户端（STDIO 模式）
+# MCP 客户端（STDIO，推荐）
 npx puax-mcp-server --stdio
 
 # HTTP 模式
 npx puax-mcp-server --port 2333
-```
 
-### 方式 2：配置 MCP 客户端
-
-**Claude Desktop** (`%APPDATA%/Claude/claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
-**Cursor** (`~/.cursor/mcp_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "puax": {
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
-**CRUSH** (`~/.crush/config.json`):
-
-```json
-{
-  "mcp": {
-    "puax": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["puax-mcp-server", "--stdio"]
-    }
-  }
-}
-```
-
-### 方式 3：平台导出
-
-```bash
-# 导出到 Cursor Rules
+# 导出到 Cursor / VSCode 等
 npx puax-mcp-server --export=cursor --output=./.cursor/rules
-
-# 导出到 VSCode Copilot
-npx puax-mcp-server --export=vscode --output=./.github
-
-# 查看支持的平台
 npx puax-mcp-server --list-platforms
 ```
 
----
+**MCP 配置示例（Cursor）** — `~/.cursor/mcp.json`：
 
-## 🛠️ MCP 工具
-
-### 1. detect_trigger - 触发检测
-
-```typescript
-const result = await client.callTool('detect_trigger', {
-  conversation_history: [
-    { role: 'assistant', content: '尝试连接...失败' },
-    { role: 'user', content: '为什么还不行？' }
-  ],
-  task_context: { attempt_count: 2 }
-});
+```json
+{
+  "mcpServers": {
+    "puax": {
+      "command": "npx",
+      "args": ["puax-mcp-server", "--stdio"]
+    }
+  }
+}
 ```
 
-### 2. recommend_role - 角色推荐
-
-```typescript
-const result = await client.callTool('recommend_role', {
-  detected_triggers: ['user_frustration'],
-  task_context: { task_type: 'debugging', urgency: 'critical' }
-});
-```
-
-### 3. activate_with_context - 一键激活
-
-```typescript
-const result = await client.callTool('activate_with_context', {
-  context: { conversation_history: messages },
-  options: { auto_detect: true }
-});
-```
-
-### 4. Hook System 工具
-
-```typescript
-// 开始会话
-await client.callTool('puax_start_session', {
-  session_id: 'session-001',
-  initial_context: { task: 'debug api' }
-});
-
-// 检测触发
-await client.callTool('puax_detect_trigger', {
-  session_id: 'session-001',
-  context: { message: '又失败了' }
-});
-
-// 提交反馈
-await client.callTool('puax_submit_feedback', {
-  session_id: 'session-001',
-  feedback: { success: true, rating: 5 }
-});
-
-// 获取压力等级
-await client.callTool('puax_get_pressure_level', {
-  session_id: 'session-001'
-});
-```
+详见 [puax-mcp-server/README.md](puax-mcp-server/README.md)。
 
 ---
 
-## 📖 文档
+## 核心特性
+
+### 行为有效性闭环（v3.3+）
+
+| 工具 | 作用 |
+|------|------|
+| `puax_check_diagnosis` | 验证 `[PUAX-DIAGNOSIS]` 诊断块 |
+| `puax_confidence_check` | 6 步信心门控 |
+| `puax_switch_on_failure` | 失败模式 → 方法论/角色切换链 |
+| `puax_define_contract` | Task Contract 定义 |
+| `puax_verify_completion` | 独立验证（非 Agent 自评） |
+
+激活角色时自动注入诊断先行协议（`activate_with_context` / `get_role_with_methodology`）。
+
+### Hook System 与压力管理
+
+- 状态持久化：`~/.puax/sessions/`
+- 压力 L0–L4，连续失败升级；突破成功后降压（`puax_handle_breakthrough`）
+- 5 类 Hook 事件：`UserPromptSubmit`、`PostToolUse`、`PreCompact`、`SessionStart`、`Stop`
+
+### 50 激励角色 + 自定义角色
+
+8 大分类：军事、萨满、P10、硅基、主题、SillyTavern、自激励、特殊。
+
+自定义角色：`puax_register_custom_role` → 写入 `~/.puax/custom-roles.json`，自动进入推荐池。
+
+### 11 种大厂风味
+
+阿里、华为、Musk、Jobs、百度、Amazon、Google、小米、字节、Netflix、腾讯 — 定义于 `flavor-methodologies.yaml`（行为约束 + 导出元数据）。
+
+### 混合触发检测（v3.10）
+
+1. **正则优先** — 命中 YAML 模式即触发  
+2. **语义兜底** — 未命中时 TF-IDF + 子串重叠（阈值 0.62）  
+3. **增强检测** — 工具闲置、低质量输出等上下文感知（`EnhancedTriggerDetector`）
+
+### 评测与守门
+
+```bash
+node evals/run-all.js          # 12 项协议守门（无 LLM）
+cd puax-mcp-server && npm test # 578+ 单元/集成测试
+node evals/benchmark.js        # 性能基准
+```
+
+详见 [evals/README.md](evals/README.md)。
+
+---
+
+## MCP 工具概览（42 个）
+
+| 类别 | 代表工具 |
+|------|----------|
+| 角色/SKILL | `list_skills`, `get_skill`, `activate_skill`, `get_role_with_methodology` |
+| 检测与推荐 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
+| 行为协议 | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
+| 会话/压力 | `puax_start_session`, `puax_get_pressure_level`, `puax_handle_breakthrough` |
+| 自进化 | `puax_get_evolution_baseline`, `puax_record_evolution` |
+| 自定义角色 | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
+| 可观测性 | `puax_get_usage_stats`, `puax_flush_telemetry` |
+| 编排 | `puax_orchestrate_team`, `puax_list_platforms` |
+
+完整清单见 [puax-mcp-server/README.md#mcp-工具清单](puax-mcp-server/README.md)。
+
+---
+
+## 环境变量（可选）
+
+| 变量 | 说明 | 默认 |
+|------|------|------|
+| `PUAX_USAGE_STATS` | `0` 关闭匿名使用统计 | 开启（本地 `~/.puax/usage-stats.json`） |
+| `PUAX_OTEL_ENABLED` | `1` 写入 span 到 `telemetry.jsonl` | 关闭 |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON 导出地址 | — |
+| `PUAX_TELEMETRY_DIR` | 遥测文件目录 | `~/.puax` |
+| `DEEPSEEK_API_KEY` | L4 对照实测（仅 evals） | — |
+
+统计与遥测**不含对话内容**，仅存计数与 span 元数据。
+
+---
+
+## 项目结构
+
+```
+PUAX/
+├── skills/                 # 50 个角色 SKILL.md
+├── puax-mcp-server/        # MCP 服务器（npm 包 puax-mcp-server）
+├── evals/                  # 行为评测与 L4 对照
+├── templates/              # 方法论指南（部分 AUTO-GENERATED）
+├── distributions/          # Claude 插件 / Skills CLI 安装说明
+├── TODO.md                 # 改进计划（P0–P3）
+└── 演进方案.md             # 与 pua 差距对标
+```
+
+---
+
+## 文档
 
 | 文档 | 说明 |
 |------|------|
-| [MCP Server 配置](puax-mcp-server/README.md) | npx 配置指南、STDIO/HTTP 模式详解 |
-| [PUAX-CC 文言文版](PUAX-CC-README.md) | 文言文增强版说明 |
-| [API文档](docs/API.md) | MCP工具完整API参考 |
-| [使用指南](docs/USER-GUIDE.md) | 详细使用说明 |
-| [快速开始](QUICKSTART.md) | 5分钟快速上手 |
-| [改进计划](TODO.md) | 项目改进计划 |
+| [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
+| [API 参考](docs/API.md) | **42 个 MCP 工具**参数与示例（v3.10） |
+| [使用指南](docs/USER-GUIDE.md) | 场景化工作流 |
+| [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
+| [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
+| [TODO.md](TODO.md) | 改进计划与里程碑 |
+| [演进方案.md](演进方案.md) | 差距分析（v3.10 关闭状态表） |
 
 ---
 
-## 🧪 测试
+## 开发与测试
 
 ```bash
 cd puax-mcp-server
+npm install && npm run build
 npm test
+npm run validate          # lint + typecheck + test
+node ../evals/run-all.js  # 从仓库根目录
 ```
 
 ---
 
-## 🤝 贡献
+## 许可证
 
-```bash
-# 1. 使用模板创建角色
-cp templates/SKILL-v2.0-template.md skills/my-role/SKILL.v2.md
-
-# 2. 验证角色
-node scripts/validate-role.js my-role
-
-# 3. 生成Bundle
-cd puax-mcp-server && npm run generate-bundle
-```
+MIT License — 详见 [LICENSE](LICENSE)
 
 ---
 
-## 📝 许可证
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
-欢迎大家抄袭本项目，用于任何合法用途。
-
----
-
-## 🙏 致谢
-
-- [CC-BOS](https://arxiv.org/abs/2602.22983) - 文言文策略空间的核心思想来源
-- 所有贡献者和用户的支持！
-
----
-
-<p align="center">
-  <b>让 AI Agent 不再孤军奋战</b>
-</p>
+<p align="center"><b>让 AI Agent 不再孤军奋战</b></p>

@@ -1,0 +1,26 @@
+{
+  "id": "confidence-gate",
+  "description": "6 步信心门控：完整/残缺输入对照",
+  "pass_input": {
+    "claims": ["API 修复完成并通过集成测试"],
+    "vulnerabilities": ["CORS 头可能遗漏"],
+    "fixes_or_disclosures": ["已补 Access-Control-Allow-Origin"],
+    "evidence": [
+      {
+        "claim": "API 修复",
+        "output_summary": "npm test passed 12/12",
+        "passed": true
+      }
+    ],
+    "verification_results": [{ "claim": "API 修复", "verified": true }],
+    "de_facto_100_confirmed": true
+  },
+  "fail_input": {
+    "claims": ["修好了"],
+    "vulnerabilities": [],
+    "fixes_or_disclosures": [],
+    "evidence": [],
+    "verification_results": [],
+    "de_facto_100_confirmed": false
+  }
+}
