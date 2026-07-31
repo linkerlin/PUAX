@@ -34,6 +34,18 @@ npx puax-mcp-server --stdio
 
 See [puax-mcp-server/README.md](puax-mcp-server/README.md) and [CHANGELOG](puax-mcp-server/CHANGELOG.md).
 
+### Other install paths
+
+Beyond the MCP runtime, PUAX exposes these entry points (see [distributions/INSTALL.md](distributions/INSTALL.md)):
+
+| Path | Command |
+|------|---------|
+| Skills CLI | `npx skills add linkerlin/PUAX` |
+| Claude Code marketplace | `claude plugin marketplace add ./distributions/claude-code` |
+| Platform export | `npx puax-mcp-server --export=all --output=./puax-export` |
+
+> `npx skills` relies on the Vercel Skills CLI, which scans `skills/*/SKILL.md` — matching PUAX's role layout. The full toolchain still requires `npx puax-mcp-server`.
+
 ---
 
 ## Quick links

@@ -65,6 +65,18 @@ npx puax-mcp-server --list-platforms
 
 详见 [puax-mcp-server/README.md](puax-mcp-server/README.md)。
 
+### 其他安装方式
+
+除 MCP 运行时外，PUAX 亦提供以下入口（详见 [distributions/INSTALL.md](distributions/INSTALL.md)）：
+
+| 方式 | 命令 |
+|------|------|
+| Skills CLI | `npx skills add linkerlin/PUAX` |
+| Claude Code 插件市场 | `claude plugin marketplace add ./distributions/claude-code` |
+| 平台原生导出 | `npx puax-mcp-server --export=all --output=./puax-export` |
+
+> `npx skills` 借用 Vercel Skills CLI，按约定扫描 `skills/*/SKILL.md`，与 PUAX 角色目录结构相符；其完整工具链仍需 `npx puax-mcp-server`。
+
 ---
 
 ## 核心特性
