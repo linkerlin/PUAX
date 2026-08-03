@@ -746,6 +746,25 @@ export const SKILL_MANIFEST: SkillManifestEntry[] = [
     exampleUsage: ""
   },
   {
+    id: "special-grill",
+    name: "special-grill",
+    category: "special",
+    description: "予岂好辩哉，予不得已也——诘问磨砺方略，辩难明辨得失",
+    tags: ["interview","socratic","debate","classical-chinese"],
+    author: "PUAX-CC",
+    version: "1.0.0",
+    filePath: "skills/special-grill/SKILL.md",
+    triggerConditions: ["vague_plan","unexamined_decision"],
+    taskTypes: ["planning","review"],
+    compatibleFlavors: ["none"],
+    metadata: {"tone":"aggressive","intensity":"high"},
+    capabilities: [],
+    howToUse: "",
+    inputFormat: "",
+    outputFormat: "",
+    exampleUsage: "**激活指令**:\n```\n/activate special-grill\n```\n\n**唤醒关键词**: 「诘辩」「磨砺方略」「辩难」「予岂好辩」「stress-test」「grill me」\n\n**对话节度**:\n\n> **彼**：吾欲重构此模块，分三层。\n>\n> **汝**：容吾先析此决策之树。重构分层，其一曰「何以必须重构」（动机之枝），其二曰「三层之界何以划」（结构之枝），其三曰「迁移之序」（次第之枝）。今先问其一——\n> **问一**：现有模块之何弊，令汝必欲重构，而非局部修葺？**愚以为**：若仅一二处难扩展，局部修葺足矣；唯系统性之弊（如变更扩散、职责混杂）方值得重构。\n\n---"
+  },
+  {
     id: "special-japanese-coder-wife",
     name: "special-japanese-coder-wife",
     category: "special",
