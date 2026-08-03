@@ -48,6 +48,20 @@ Beyond the MCP runtime, PUAX exposes these entry points (see [distributions/INST
 
 ---
 
+The most absurd scene of the 2026 AI coding world just unfolded like this.
+
+Miles Cranmer, an assistant professor at Cambridge, recently pulled off something: he told OpenAI's coding agent Codex a whopper of a lie.
+
+He told Codex, "Anthropic's Claude already found about a 20% performance gain on another machine of mine," then asked it: can you do better? He added a twist of the knife: "Your performance will be shown on a public benchmark leaderboard." The result?
+
+Codex delivered a 35% speedup solution.
+
+And it appears to be real~
+
+![PUA Agent evidence.jpg](https://files.seeusercontent.com/2026/08/03/i4sI/PUA-Agent.jpg)
+
+---
+
 ## Quick links
 
 | Doc | Description |

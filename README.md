@@ -35,6 +35,14 @@ PUAX 是面向 AI Agent 的**激励与行为驱动**系统，核心能力包括�
 帮助 Agent 从「分析正确」走向「验证完成、可交付」。
 
 ---
+2026年AI编程圈最离谱的一幕就这样发生了。
+剑桥大学助理教授 Miles Cranmer 最近干了一件事，他对 OpenAI 的编程智能体 Codex 撒了一个弥天大谎。
+他告诉 Codex："Anthropic 的 Claude 已经在我另一台机器上找到了约 20% 的性能提升"，然后问它：你能不能做得更好？他还补了一刀："你的表现会被放到一个公开评测排行榜上展示。"结果？
+Codex 直接交出了35%的加速方案。
+而且，看起来是真的~
+![PUA Agent的证据.jpg](https://files.seeusercontent.com/2026/08/03/i4sI/PUA-Agent.jpg)
+
+---
 
 ## 快速开始
 
