@@ -7,9 +7,11 @@ import {
   PlatformAdapter, 
   RoleExportData, 
   FlavorExportData, 
-  PlatformExportConfig 
+  PlatformExportConfig,
+  HookFile
 } from './base-adapter.js';
 import { globalAdapterRegistry } from './base-adapter.js';
+import { HOOK_JS, RUN_HOOK_CMD, eventScript } from './hook-templates.js';
 
 export class CursorAdapter extends PlatformAdapter {
   constructor() {
@@ -107,6 +109,28 @@ ${flavor.rhetoric.emphasis.map(e => `- **${e}**`).join('\n')}
     };
 
     return JSON.stringify(configObj, null, 2);
+  }
+
+  /**
+   * 生成 Cursor 原生 hook 产物（对标 superpowers hooks/hooks-cursor.json：
+   * 小写 sessionStart 键、无 matcher、相对命令路径）。
+   */
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    const hooksCursorJson = {
+      version: 1,
+      hooks: {
+        sessionStart: [
+          { command: 'node ./hooks/hook.js session-start' }
+        ]
+      }
+    };
+
+    return [
+      { path: 'hooks/hooks-cursor.json', content: JSON.stringify(hooksCursorJson, null, 2) + '\n' },
+      { path: 'hooks/hook.js', content: HOOK_JS },
+      { path: 'hooks/run-hook.cmd', content: RUN_HOOK_CMD },
+      { path: 'hooks/session-start', content: eventScript('session-start') }
+    ];
   }
 
   /**

@@ -28,6 +28,25 @@ claude plugin marketplace add ./distributions/claude-code
 claude plugin install puax@puax-skills
 ```
 
+插件自带原生 hook（`hooks/hooks.json`）：SessionStart 注入、PreToolUse 强制拦截
+（git push / 隐藏文件防作弊）、PostToolUse 失败自动压力升级。
+
+> 前置：hook 脚本经 `npx puax-mcp-server hook ...` 调用引擎，需已安装
+> `puax-mcp-server`（`npm i -g puax-mcp-server` 或 `npx` 可用）。
+> 未安装时 hook 静默降级（`{}`），不中断会话。
+
+## 方式三·扩展：原生 Hook 手动接入
+
+不装插件也可手动生成 hook 产物：
+
+```bash
+npx puax-mcp-server --export=claude-code --output=./    # Claude Code: hooks/hooks.json + 脚本
+npx puax-mcp-server --export=cursor --output=./        # Cursor: hooks/hooks-cursor.json
+npx puax-mcp-server --export=opencode --output=./      # opencode: .opencode/plugins/puax.js
+```
+
+详见 [docs/HOOK-ARCHITECTURE.md](../docs/HOOK-ARCHITECTURE.md) 与 [docs/polyglot-hooks.md](../docs/polyglot-hooks.md)。
+
 ## 方式四：平台原生导出
 
 | 平台 | 命令 |

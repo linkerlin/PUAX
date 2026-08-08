@@ -1,0 +1,147 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Platform adapter hook generation snapshot: generated hook artifacts do not drift (regression guard): claude-code hooks.json 1`] = `
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "async": false,
+            "command": "node "./hooks/hook.js" post-tool-use",
+            "shell": "bash",
+            "type": "command",
+          },
+        ],
+        "matcher": "Bash",
+      },
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "async": false,
+            "command": "node "./hooks/hook.js" pre-tool-use",
+            "shell": "bash",
+            "type": "command",
+          },
+        ],
+        "matcher": "Bash|Read|Write|Edit",
+      },
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "async": false,
+            "command": "node "./hooks/hook.js" session-start",
+            "shell": "bash",
+            "type": "command",
+          },
+        ],
+        "matcher": "startup|clear|compact",
+      },
+    ],
+  },
+}
+`;
+
+exports[`Platform adapter hook generation snapshot: generated hook artifacts do not drift (regression guard): cursor hooks-cursor.json 1`] = `
+{
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node ./hooks/hook.js session-start",
+      },
+    ],
+  },
+  "version": 1,
+}
+`;
+
+exports[`Platform adapter hook generation snapshot: generated hook artifacts do not drift (regression guard): opencode plugin puax.js 1`] = `
+"/**
+ * PUAX plugin for OpenCode.ai（由 puax 平台适配器生成）
+ * Shape B 进程内插件：每个 agent step 自动触发，经
+ * \`puax-mcp-server hook\` 单通路调用检测引擎（引擎共享层）。
+ * 优雅降级：CLI 不可用时静默跳过，不干扰会话。
+ */
+import { execFileSync } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const MARKER = "<EXTREMELY_IMPORTANT>";
+
+// Windows 上 npx 是 npx.cmd；execFileSync 不经 shell，不解析 .cmd 扩展名
+const NPX_BIN = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+
+// 模块级缓存：同一会话只注入一次（避免每 step 重复 spawn）
+let _injectedSession = null;
+
+function runHook(event, extraArgs = []) {
+  const args = ['puax-mcp-server', 'hook', event, '--harness', 'sdk', ...extraArgs];
+  try {
+    const stdout = execFileSync(NPX_BIN, args, {
+      encoding: 'utf8',
+      timeout: 5000,
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+    return JSON.parse(stdout || '{}');
+  } catch {
+    return {};
+  }
+}
+
+export const PuaxPlugin = async () => {
+  return {
+    config: async (config) => {
+      // 注册技能目录（复用 PUAX 导出的 skills/，无 symlink 需要）
+      const skillsDir = path.resolve(__dirname, '../skills');
+      config.skills = config.skills || {};
+      config.skills.paths = config.skills.paths || [];
+      if (!config.skills.paths.includes(skillsDir)) {
+        config.skills.paths.push(skillsDir);
+      }
+    },
+
+    'experimental.chat.messages.transform': async (_input, output) => {
+      if (!output.messages || !output.messages.length) return;
+      const firstUser = output.messages.find(m => m.info?.role === 'user');
+      if (!firstUser || !firstUser.parts || !firstUser.parts.length) return;
+
+      // 去重守卫：已注入则跳过
+      if (firstUser.parts.some(p => p.type === 'text' && p.text.includes(MARKER))) return;
+
+      // 会话恢复上下文（仅一次）
+      let text = null;
+      if (_injectedSession !== _input.sessionID) {
+        const res = runHook('SessionStart', ['--session-id', _input.sessionID || 'opencode']);
+        _injectedSession = _input.sessionID;
+        if (res.hookSpecificOutput?.additionalContext || res.additionalContext || res.additional_context) {
+          text = res.hookSpecificOutput?.additionalContext || res.additionalContext || res.additional_context;
+        }
+      }
+
+      // 每轮用户消息检测（挫折/放弃语言）
+      if (!text) {
+        const userText = firstUser.parts
+          .filter(p => p.type === 'text')
+          .map(p => p.text || '')
+          .join(' ');
+        if (userText.trim()) {
+          const res = runHook('UserPromptSubmit', ['--session-id', _input.sessionID || 'opencode', '--message', userText]);
+          text = res.hookSpecificOutput?.additionalContext || res.additionalContext || res.additional_context || null;
+        }
+      }
+
+      if (!text) return;
+
+      const ref = firstUser.parts[0];
+      firstUser.parts.unshift({ ...ref, type: 'text', text });
+    }
+  };
+};
+"
+`;

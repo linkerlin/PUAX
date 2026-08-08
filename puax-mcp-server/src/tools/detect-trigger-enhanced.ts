@@ -29,7 +29,7 @@ const logger = getGlobalLogger();
 const DetectTriggerInputSchema = z.object({
   sessionId: z.string().describe('会话ID，用于状态跟踪'),
   
-  eventType: z.enum(['UserPromptSubmit', 'PostToolUse', 'PreCompact', 'SessionStart', 'Stop'])
+  eventType: z.enum(['UserPromptSubmit', 'PostToolUse', 'PreToolUse', 'PreCompact', 'SessionStart', 'Stop'])
     .default('UserPromptSubmit')
     .describe('触发检测的事件类型'),
   

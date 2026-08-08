@@ -22,7 +22,6 @@ describe('PUAX Hook System v3.1.0', () => {
 
   beforeEach(() => {
     stateManager.clearSessionState(testSessionId);
-    hookManager.clearSubscriptions();
   });
 
   afterAll(() => {
@@ -59,65 +58,26 @@ describe('PUAX Hook System v3.1.0', () => {
       void hookManager.endSession(`${testSessionId}_2`);
     });
 
-    test('should subscribe and receive events', async () => {
-      let receivedTrigger = false;
-      
-      const subId = hookManager.subscribe('UserPromptSubmit', (result) => {
-        if (result.triggered) {
-          receivedTrigger = true;
-        }
-      });
-
+    test('should record user message and detect triggers', async () => {
       hookManager.startSession(testSessionId);
-      await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
+      const result = await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
       
-      expect(receivedTrigger).toBe(true);
-      expect(hookManager.unsubscribe(subId)).toBe(true);
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('userFrustration');
       
       void hookManager.endSession(testSessionId);
     });
 
-    test('should subscribe to all events', async () => {
-      const receivedEvents: string[] = [];
-      
-      hookManager.subscribe('all', (result, context) => {
-        receivedEvents.push(context.eventType);
-      });
-
-      hookManager.startSession(testSessionId);
-      await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
-      await hookManager.endSession(testSessionId);
-
+    test('should record tool use and detect failures', async () => {
       const toolSessionId = `${testSessionId}_tool`;
       stateManager.clearSessionState(toolSessionId);
       hookManager.startSession(toolSessionId);
-      await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
-      await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
+      const result = await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
       
-      expect(receivedEvents).toContain('UserPromptSubmit');
-      expect(receivedEvents).toContain('PostToolUse');
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('bashFailure');
       
       await hookManager.endSession(toolSessionId);
-    });
-
-    test('should filter subscriptions', async () => {
-      let highSeverityTriggered = false;
-      
-      hookManager.subscribe('UserPromptSubmit', () => {
-        highSeverityTriggered = true;
-      }, (result) => result.severity === 'critical');
-
-      hookManager.startSession(testSessionId);
-      
-      // 普通消息不应触发
-      await hookManager.recordUserMessage(testSessionId, 'hello world');
-      expect(highSeverityTriggered).toBe(false);
-      
-      // 挫折消息应触发
-      await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
-      expect(highSeverityTriggered).toBe(true);
-      
-      void hookManager.endSession(testSessionId);
     });
 
     test('should record conversation history', async () => {
@@ -158,22 +118,17 @@ describe('PUAX Hook System v3.1.0', () => {
       void hookManager.endSession(testSessionId);
     });
 
-    test('should handle PreCompact event', async () => {
-      let preCompactTriggered = false;
-      
-      hookManager.subscribe('PreCompact', () => {
-        preCompactTriggered = true;
-      });
-
+    test('should handle PreCompact event and write journal', async () => {
       hookManager.startSession(testSessionId);
       await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
-      await hookManager.recordPreCompact(testSessionId, {
+      const result = await hookManager.recordPreCompact(testSessionId, {
         currentTask: 'test task',
         triedApproaches: ['approach1'],
         nextHypothesis: 'try something else'
       });
       
-      expect(preCompactTriggered).toBe(true);
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('preCompact');
       
       void hookManager.endSession(testSessionId);
     });
@@ -190,11 +145,11 @@ describe('PUAX Hook System v3.1.0', () => {
   });
 
   // ============================================================================
-  // 5 种 Hook 事件类型测试
+  // 6 种 Hook 事件类型测试
   // ============================================================================
   describe('Hook Event Types', () => {
-    const eventTypes: Array<'UserPromptSubmit' | 'PostToolUse' | 'PreCompact' | 'SessionStart' | 'Stop'> = 
-      ['UserPromptSubmit', 'PostToolUse', 'PreCompact', 'SessionStart', 'Stop'];
+    const eventTypes: Array<'UserPromptSubmit' | 'PostToolUse' | 'PreToolUse' | 'PreCompact' | 'SessionStart' | 'Stop'> = 
+      ['UserPromptSubmit', 'PostToolUse', 'PreToolUse', 'PreCompact', 'SessionStart', 'Stop'];
 
     test.each(eventTypes)('should support %s event type', async (eventType) => {
       const result = await enhancedTriggerDetector.detect({

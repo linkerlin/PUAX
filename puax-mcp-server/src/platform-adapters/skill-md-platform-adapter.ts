@@ -65,8 +65,7 @@ ${body}
 `;
   }
 
-  exportFlavor(flavor: FlavorExportData, config: PlatformExportConfig): string {
-    const lang = config.language === 'en' ? 'en' : 'zh';
+  exportFlavor(flavor: FlavorExportData, _config: PlatformExportConfig): string {
     return `---
 name: puax-flavor-${flavor.id}
 description: "PUAX flavor overlay: ${flavor.name}"
@@ -122,11 +121,8 @@ const EXTENDED_PLATFORMS: SkillPlatformOptions[] = [
     roleSubdir: 'skills',
     installPathHint: 'Copy skills/ to ~/.codex/skills/ or use npx skills add',
   },
-  {
-    platformName: 'opencode',
-    roleSubdir: 'skills',
-    installPathHint: 'Copy skills/ to ~/.config/opencode/skills/',
-  },
+  // opencode 已由专属适配器（opencode-adapter.ts，含 Shape B 进程内插件）覆盖，
+  // 此处不再注册，避免同名平台双重注册、行为依赖 import 顺序。
   {
     platformName: 'openclaw',
     roleSubdir: 'skills',

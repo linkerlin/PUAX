@@ -105,7 +105,11 @@ npx puax-mcp-server --list-platforms
 
 - 状态持久化：`~/.puax/sessions/`
 - 压力 L0–L4，连续失败升级；突破成功后降压（`puax_handle_breakthrough`）
-- 5 类 Hook 事件：`UserPromptSubmit`、`PostToolUse`、`PreCompact`、`SessionStart`、`Stop`
+- 6 类 Hook 事件：`UserPromptSubmit`、`PostToolUse`、`PreToolUse`、`PreCompact`、`SessionStart`、`Stop`
+- 双模并存：MCP 工具（Agent 自愿）+ **原生 Hook**（v3.11，宿主强制，`puax-mcp-server hook <事件>`）
+  - 原生 Hook：SessionStart 注入、PreToolUse 强制拦截（git push / 隐藏文件防作弊）、PostToolUse 失败自动升级
+  - 平台导出：`--export=claude-code|cursor|opencode` 自动生成宿主 hook 配置与脚本
+  - 详见 [docs/HOOK-ARCHITECTURE.md](docs/HOOK-ARCHITECTURE.md)
 
 ### 50 激励角色 + 自定义角色
 

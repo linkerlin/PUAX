@@ -6,7 +6,7 @@
 
 import { appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { getPuaxHome } from '../utils/storage-paths.js';
 import { randomBytes } from 'crypto';
 
 export interface SpanRecord {
@@ -29,7 +29,7 @@ function nowNano(): string {
 }
 
 function telemetryDir(): string {
-  return process.env.PUAX_TELEMETRY_DIR ?? join(homedir(), '.puax');
+  return process.env.PUAX_TELEMETRY_DIR ?? getPuaxHome();
 }
 
 function telemetryFile(): string {

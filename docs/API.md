@@ -298,6 +298,7 @@ puax_start_session
 | `custom-roles.json` | 用户自定义角色 |
 | `feedback/` | 反馈数据 |
 | `sessions/` | Hook 会话状态 |
+| `hooks.json` | 触发模式用户覆盖（可选，见下） |
 
 ---
 
@@ -309,6 +310,8 @@ puax_start_session
 | `PUAX_OTEL_ENABLED=1` | 写入 `telemetry.jsonl` |
 | `PUAX_OTEL_ENDPOINT` | OTLP/JSON HTTP 导出 |
 | `PUAX_TELEMETRY_DIR` | 遥测目录 |
+| `PUAX_HOOKS_CONFIG` | hook 配置路径（默认 `~/.puax/hooks.json`） |
+| `PUAX_HOME` | 本地状态根目录（默认 `~/.puax`，见 `utils/storage-paths.ts`）。测试/容器部署可重定向全部持久化（会话、进化基线、自定义角色、反馈、遥测、hook 配置） |
 
 ---
 
@@ -320,7 +323,34 @@ npx puax-mcp-server --export=all --output=./puax-export
 npx puax-mcp-server --list-platforms
 ```
 
-支持 Cursor、VSCode、Windsurf、Kiro、CodeBuddy、Codex、OpenCode、OpenClaw、Antigravity、Trae、pi 等。
+支持 Cursor、VSCode、Windsurf、Kiro、CodeBuddy、Codex、OpenCode、OpenClaw、Antigravity、Trae、pi、**claude-code** 等。
+`--export=claude-code|cursor|opencode` 会额外生成宿主原生 hook 配置与脚本（详见 [HOOK-ARCHITECTURE.md](HOOK-ARCHITECTURE.md)）。
+
+---
+
+## Hook CLI（原生 hook 引擎共享层，v3.11）
+
+宿主 hook 脚本与进程内插件统一经此单通路调用检测引擎：
+
+```bash
+# 会话注入 / 压力检测 / 强制拦截
+npx puax-mcp-server hook session-start --session-id xxx --harness claude
+npx puax-mcp-server hook user-prompt --session-id xxx --message "为什么还不行！"
+npx puax-mcp-server hook post-tool-use --session-id xxx --tool Bash --result '{"exit_code":1}'
+npx puax-mcp-server hook pre-tool-use --session-id xxx --tool Bash --tool-args '{"command":"git push"}'
+```
+
+| 事件 | 语义 | 输出 |
+|------|------|------|
+| `SessionStart` | 会话开始（startup/clear/compact） | 注入：断点恢复 |
+| `UserPromptSubmit` | 用户消息 | 注入：挫折/放弃检测 |
+| `PostToolUse` | 工具执行后 | 注入：失败压力升级 |
+| `PreToolUse` | 工具执行前（可阻断） | 决策：block/approve |
+| `PreCompact` | 压缩前 | 静默：journal 持久化 |
+| `Stop` | 会话结束 | 注入：反馈提示 |
+
+选项：`--session-id` `--message` `--tool` `--tool-args` `--result` `--error` `--harness`（claude/cursor/copilot/sdk/auto）。
+stdout 只输出宿主 JSON（严格一种形状），任何失败降级为 `{}` 且退出码 0。
 
 ---
 

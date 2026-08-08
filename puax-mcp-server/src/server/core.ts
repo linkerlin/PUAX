@@ -16,8 +16,9 @@ import {
     ErrorCode,
     McpError
 } from '@modelcontextprotocol/sdk/types.js';
-import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type McpToolResponse, type ToolHandler } from '../tools/index.js';
+import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type ToolHandler } from '../tools/index.js';
 import { promptManager } from '../prompts/index.js';
+import { guardToolCall } from '../core/tool-guard.js';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { Logger } from '../utils/logger.js';
 import { loadVersion } from '../utils/version.js';
@@ -95,6 +96,14 @@ export class PuaxMcpServer {
 
                 const handler = toolHandlerMap.get(name);
                 if (handler) {
+                    // 工具守卫：PreToolUse 拦截（防作弊，见 core/tool-guard.ts）
+                    const guard = guardToolCall(name, safeArgs);
+                    if (guard.blocked) {
+                        throw new McpError(
+                            ErrorCode.InvalidParams,
+                            `${guard.reason || 'Tool call blocked'}${guard.recommendations ? ` Suggestions: ${guard.recommendations.join('; ')}` : ''}`
+                        );
+                    }
                     return await withSpanAsync(
                         `puax.tool.${name}`,
                         { 'tool.name': name },

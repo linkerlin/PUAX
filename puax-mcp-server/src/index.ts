@@ -125,6 +125,17 @@ PUAX MCP Server v${version}
   npx puax-mcp-server [选项]
   node build/index.js [选项]
 
+Hook 子命令（原生 hook 引擎共享层）:
+  puax-mcp-server hook <事件> [选项]
+  npx puax-mcp-server hook session-start --session-id xxx
+  npx puax-mcp-server hook pre-tool-use --tool Bash --tool-args '{"command":"git push"}'
+
+  事件: SessionStart | UserPromptSubmit | PostToolUse | PreToolUse | PreCompact | Stop
+  选项: --session-id <id>  --message <文本>  --tool <工具名>
+        --tool-args <JSON> --result <JSON>  --error <文本>
+        --harness <claude|cursor|copilot|sdk|auto>
+  输出: 宿主 JSON（stdout），任何失败降级为 {} 且退出码 0
+
 服务器选项:
   -p, --port <端口>        指定监听端口 (默认: 2333)
   -H, --host <主机>        指定监听主机 (默认: 127.0.0.1)
@@ -135,7 +146,7 @@ PUAX MCP Server v${version}
   -h, --help               显示此帮助信息
 
 导出选项:
-  --export <平台>          导出角色到指定平台 (cursor|vscode|all)
+  --export <平台>          导出角色到指定平台 (cursor|vscode|claude-code|opencode|all)
   --output <路径>          导出输出目录 (默认: ./puax-export)
   --roles <列表>           只导出指定角色 (逗号分隔)
   --flavors <列表>         只导出指定风味 (逗号分隔)
@@ -187,6 +198,8 @@ async function showPlatforms(): Promise<void> {
     const { globalAdapterRegistry } = await import('./platform-adapters/base-adapter.js');
     await import('./platform-adapters/cursor-adapter.js');
     await import('./platform-adapters/vscode-adapter.js');
+    await import('./platform-adapters/claude-code-adapter.js');
+    await import('./platform-adapters/opencode-adapter.js');
     
     const platforms = globalAdapterRegistry.getSupportedPlatforms();
     logger.write('\n支持的平台:');
@@ -221,6 +234,13 @@ async function main(): Promise<void> {
         process.exit(0);
     }
 
+    // 处理 hook 子命令（原生 hook 引擎共享层，见 cli/hook-cli.ts）
+    if (args[0] === 'hook') {
+        const { mainHookCliWithStdin } = await import('./cli/hook-cli.js');
+        await mainHookCliWithStdin(args.slice(1));
+        return;
+    }
+
     // 处理平台列表请求
     if (args.includes('--list-platforms')) {
         await showPlatforms();
@@ -230,7 +250,7 @@ async function main(): Promise<void> {
     // 处理导出命令
     if (isExportCommand()) {
         const { handleExportCommand } = await import('./tools/export-platform.js');
-        await handleExportCommand(args);
+        handleExportCommand(args);
         process.exit(0);
     }
     

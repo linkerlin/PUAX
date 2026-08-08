@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.11.0] - 2026-08-08
+
+### Added
+- 🪝 **原生 Hook 层（运行时强制接入）** — 详见 [docs/HOOK-ARCHITECTURE.md](../docs/HOOK-ARCHITECTURE.md) 与 [Hook机制演进方案.md](../Hook机制演进方案.md)
+  - `puax hook <事件>` 子命令（引擎共享层）：SessionStart / UserPromptSubmit / PostToolUse / PreToolUse / PreCompact / Stop，支持 stdin 宿主载荷合并
+  - per-harness 输出形状严格互斥（claude=`hookSpecificOutput` / cursor=`additional_context` / sdk=`additionalContext`），防双重注入
+  - PreToolUse 强制决策回路：DeterministicTriggersEngine + AntiCheatGuard 在工具执行前 `block`/`approve`
+  - `--export=claude-code`：生成 `hooks/hooks.json`（SessionStart 注入 + PreToolUse/PostToolUse 拦截）+ hook 脚本产物
+  - `--export=opencode`：生成 `.opencode/plugins/puax.js`（Shape B 进程内插件，每 step 自动触发）
+  - `--export=cursor`：生成 `hooks/hooks-cursor.json`
+- 🛡️ **MCP 工具守卫** — `core/tool-guard.ts`：工具分发前调用确定性引擎，防作弊从"建议"变"拦截"
+- 🔒 AntiCheatGuard 新增 `git push` 拦截（对齐 git-guardrails 业界实践）
+- 统一事件枚举 `PuaxHookEvent`（`hooks/hook-event.ts`），补齐 `PreToolUse` 一等公民
+
+### Changed
+- `HookEventType` / `TriggerType` 降级为兼容别名（值对齐统一枚举），新增代码一律用 `PuaxHookEvent`
+- `HookManager` 移除死代码 pub/sub（subscribe/unsubscribe），保留会话生命周期与检测路由
+- `DeterministicTriggersEngine.evaluate` 同步化（去除假异步）
+- 平台导出不再只发 skill 文件，同时发宿主 hook 配置（`PlatformAdapter.generateHooks()`）
+- **触发模式配置外置** — `TRIGGER_PATTERNS` 抽至 `hooks/trigger-patterns.ts`，新增 `hooks/hook-config.ts` 支持 `~/.puax/hooks.json`（或 `PUAX_HOOKS_CONFIG`）组级覆盖，文件缺失/非法一律回退内置
+
+### Tests
+- 新增 `test/unit/hooks/hook-config.test.ts`（配置外置合并/降级语义）
+- 新增 `test/unit/hooks/hook-cli-degradation.test.ts`（spawn 真实进程验证降级契约）
+- 新增 `test/unit/hooks/hook-artifact.test.ts`（junction 模拟已安装环境，验证生成 hook.js 的 stdin 全链路：PreToolUse 拦截/放行、SessionStart、PostToolUse 连续失败升级；polyglot run-hook.cmd 双分支；opencode 插件语法 node --check）
+- 新增 `test/unit/hooks/hook-events.test.ts`（SessionStart 断点恢复注入、Stop 反馈、PreCompact 静默持久化、PreToolUse 路由、evaluate 同步性回归）
+- `hook-export.test.ts` 增加生成产物快照（hooks.json / hooks-cursor.json / puax.js 防漂移）
+
+### Fixed
+- 生成产物 `hooks/hook.js` 误用 `mainHookCli`（不读 stdin）→ 改用 `mainHookCliWithStdin`，修复经生成产物走 PreToolUse 时 stdin 载荷（tool_name/tool_input）被忽略、拦截永远放行的问题
+- `run-hook.cmd` 模板 REM 注释含中文 → cmd.exe 按系统代码页解析 UTF-8 字节导致批处理解析损坏；全部改为 ASCII 注释（对齐 superpowers 原版约定，LF 行尾保持）
+- **`parseHookArgs` 吞值 bug**：未知 flag 会消耗相邻 token（`--foo --message X` 导致 message 丢失）；改为只对已知带值 flag 消耗下一个 token
+- **配置覆盖无校验**：`patterns: "xy"`（字符串）会被 `for...of` 迭代成单字符正则导致灾难性假触发；`hook-config` 现校验子表结构（patterns 必须 string[]、weight 必须有限数字），非法子表整表跳过并告警
+- **opencode 平台双重注册**：`skill-md-platform-adapter` 与专属 `opencode-adapter` 同名注册（行为依赖 import 顺序）；从 skill-md EXTENDED_PLATFORMS 移除 opencode，注册唯一化
+- **opencode 插件 Windows 兼容**：模板 `execFileSync('npx')` 在 Windows 上因 npx 是 npx.cmd 而 ENOENT（插件静默失效）；改为按平台选 `npx.cmd`/`npx`
+- 顺带清理 skill-md 的 `exportFlavor` 未用变量（lint）
+
+### Removed
+- `src/platform-adapters/` 下过期编译产物（base-adapter/cursor-adapter/vscode-adapter 的 .js/.d.ts/.js.map，遮蔽 TS 源码导致 jest 加载旧代码）
+
+### Docs
+- 新增 `docs/HOOK-ARCHITECTURE.md`（Shape A/B/C 路由表 + per-harness JSON 契约 + gotcha 附录）
+- 新增 `docs/polyglot-hooks.md`（跨平台分发方案）
+- `docs/API.md` 补充 Hook CLI 章节与 `PUAX_HOOKS_CONFIG` 环境变量；`distributions/INSTALL.md` 补充原生 Hook 接入指南
+
+### Distribution
+- `distributions/claude-code/` 插件集成原生 hooks（hooks.json + hook.js + run-hook.cmd + 事件脚本），插件安装即得 SessionStart 注入 / PreToolUse 拦截 / PostToolUse 失败升级
+- 新增 `scripts/sync-distribution-hooks.js`（`npm run sync:hooks`）——distribution 与 `--export=claude-code` 单一数据源，防两处漂移（由 `test/unit/platform-adapters/distribution-hooks.test.ts` 断言）
+- 新增 `config/hooks.example.json`（触发模式覆盖格式示例）
+
+### Fixed (review round 2)
+- **TriggerCache 永不命中 + 内存泄漏**：key 含毫秒 `ctx.timestamp` 导致永不重复 → 缓存永不命中且 Map 无限膨胀；key 去掉 timestamp（同会话/触发器/事件/工具 TTL 内只触发一次）+ 惰性清理过期条目 + 上限 1000 保护。同时修复缓存命中跳过 `blocked` 结果导致的"TTL 内二次触达放行"漏洞（block 硬守卫幂等返回）
+- **测试污染真实 `~/.puax/`**：新增 `utils/storage-paths.ts`（`getPuaxHome()`，支持 `PUAX_HOME` 环境变量），state-manager / usage-stats / evolution-engine / custom-role-store / telemetry / hook-config / core-feedback-system 全部改用；jest setup 设置 `PUAX_HOME` 到按 pid 唯一的临时目录，测试不再读写真实用户状态
+- **`readStdinPayload` 200ms 竞态**：收到数据后仍可能被 200ms 兜底超时丢载荷；改为"无数据才超时放行，收到数据等 end"
+
 ## [3.10.1] - 2026-07-04
 
 ### Fixed

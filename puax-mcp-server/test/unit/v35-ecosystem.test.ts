@@ -12,6 +12,8 @@ import '../../src/platform-adapters/vscode-adapter.js';
 import '../../src/platform-adapters/kiro-adapter.js';
 import '../../src/platform-adapters/codebuddy-adapter.js';
 import '../../src/platform-adapters/windsurf-adapter.js';
+import '../../src/platform-adapters/claude-code-adapter.js';
+import '../../src/platform-adapters/opencode-adapter.js';
 
 describe('v3.5 ecosystem', () => {
   describe('tone variants', () => {

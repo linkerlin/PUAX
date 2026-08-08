@@ -5,7 +5,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { getPuaxHome } from '../utils/storage-paths.js';
 import { randomUUID } from 'crypto';
 
 export interface UsageStatsData {
@@ -74,7 +74,7 @@ export class UsageStatsCollector {
   private testModeEnabled = false;
 
   constructor(dataDir?: string) {
-    const dir = dataDir ?? join(homedir(), '.puax');
+    const dir = dataDir ?? getPuaxHome();
     this.filePath = join(dir, 'usage-stats.json');
   }
 

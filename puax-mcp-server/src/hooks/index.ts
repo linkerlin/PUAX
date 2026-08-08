@@ -44,12 +44,17 @@ export {
   ROLE_RECOMMENDATIONS
 } from './trigger-detector-enhanced.js';
 
+// 统一事件枚举
+export {
+  type PuaxHookEvent,
+  PUAX_HOOK_EVENTS,
+  isPuaxHookEvent
+} from './hook-event.js';
+
 // Hook 管理器
 export {
   HookManager,
   hookManager,
-  type HookCallback,
-  type HookSubscription,
   type AutoCheckConfig,
   type HookManagerConfig,
   type SessionContext

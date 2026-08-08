@@ -14,7 +14,8 @@
 
 import { EventEmitter } from 'events';
 import { getGlobalLogger } from '../utils/logger.js';
-import type { ExecutionContext, PressureLevel } from '../agents/index.js';
+import type { PressureLevel } from '../agents/index.js';
+import type { PuaxHookEvent } from './hook-event.js';
 
 const logger = getGlobalLogger();
 
@@ -22,14 +23,21 @@ const logger = getGlobalLogger();
 // Trigger Types
 // ============================================================================
 
+/**
+ * @deprecated 使用 PuaxHookEvent（统一事件枚举，见 hook-event.ts）。
+ * 保留旧名仅作兼容：枚举成员值已对齐 PuaxHookEvent 的 PascalCase 值。
+ */
 export enum TriggerType {
-  POST_TOOL_USE = 'post_tool_use',
-  PRE_TOOL_USE = 'pre_tool_use',
-  USER_PROMPT = 'user_prompt',
-  SESSION_START = 'session_start',
-  PRE_COMPACT = 'pre_compact',
-  STOP = 'stop'
+  POST_TOOL_USE = 'PostToolUse',
+  PRE_TOOL_USE = 'PreToolUse',
+  USER_PROMPT = 'UserPromptSubmit',
+  SESSION_START = 'SessionStart',
+  PRE_COMPACT = 'PreCompact',
+  STOP = 'Stop'
 }
+
+/** 别名：确定性引擎的事件类型与统一枚举同值 */
+export type DeterministicEvent = PuaxHookEvent;
 
 export enum TriggerPriority {
   ANTI_CHEAT = 200,
@@ -100,22 +108,34 @@ interface CachedTrigger {
 export class TriggerCache {
   private cache = new Map<string, CachedTrigger>();
   private ttl = 5000;
+  /** 防极端膨胀：TTL 5s 的缓存超限全清，代价极低 */
+  private static MAX_ENTRIES = 1000;
 
   private generateKey(ctx: TriggerContext, triggerName: string): string {
-    return `${ctx.sessionId}:${triggerName}:${ctx.eventType}:${ctx.toolName || 'none'}:${ctx.timestamp}`;
+    // 不含 ctx.timestamp：历史实现把毫秒时间戳放进 key，导致 key 永不重复、
+    // 缓存永不命中且 Map 无限膨胀（内存泄漏）。
+    // 同一会话 + 触发器 + 事件 + 工具在 TTL 内只触发一次。
+    return `${ctx.sessionId}:${triggerName}:${ctx.eventType}:${ctx.toolName || 'none'}`;
   }
 
   get(ctx: TriggerContext, triggerName: string): TriggerResult | null {
     const key = this.generateKey(ctx, triggerName);
     const entry = this.cache.get(key);
-    if (entry && Date.now() - entry.timestamp < this.ttl) {
-      return entry.result;
+    if (!entry) {
+      return null;
     }
-    return null;
+    if (Date.now() - entry.timestamp >= this.ttl) {
+      this.cache.delete(key); // 惰性清理过期条目
+      return null;
+    }
+    return entry.result;
   }
 
   set(ctx: TriggerContext, triggerName: string, result: TriggerResult): void {
     const key = this.generateKey(ctx, triggerName);
+    if (this.cache.size >= TriggerCache.MAX_ENTRIES) {
+      this.cache.clear();
+    }
     this.cache.set(key, { result, timestamp: Date.now() });
   }
 
@@ -325,7 +345,7 @@ export class DeterministicTriggersEngine extends EventEmitter {
     this.triggers = this.triggers.filter(t => t.name !== name);
   }
 
-  async evaluate(ctx: TriggerContext): Promise<TriggerResult> {
+  evaluate(ctx: TriggerContext): TriggerResult {
     if (!this.enabled) {
       return { triggered: false };
     }
@@ -336,6 +356,11 @@ export class DeterministicTriggersEngine extends EventEmitter {
       const cached = this.cache.get(ctx, trigger.name);
       if (cached) {
         logger.debug(`[DeterministicTriggers] Cache hit: ${trigger.name}`);
+        // block 决策是硬守卫，必须持续生效——缓存命中时直接返回，
+        // 否则同一会话 TTL 内第二次触达会被 continue 跳过而放行。
+        if (cached.blocked) {
+          return cached;
+        }
         continue;
       }
 

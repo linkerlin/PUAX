@@ -11,15 +11,18 @@ import '../platform-adapters/vscode-adapter.js';
 import '../platform-adapters/kiro-adapter.js';
 import '../platform-adapters/codebuddy-adapter.js';
 import '../platform-adapters/windsurf-adapter.js';
+import '../platform-adapters/claude-code-adapter.js';
+import '../platform-adapters/opencode-adapter.js';
 
 const INSTALL_PATHS: Record<string, string> = {
-  cursor: '.cursor/rules/*.mdc',
+  cursor: '.cursor/rules/*.mdc + hooks/hooks-cursor.json',
   vscode: '.github/copilot-instructions.md',
   kiro: '.kiro/steering/*.md',
   codebuddy: 'CodeBuddy skills directory',
   windsurf: '.windsurf/rules/',
   codex: '~/.codex/skills/ or npx skills add',
-  opencode: '~/.config/opencode/skills/',
+  opencode: '~/.config/opencode/skills/ + .opencode/plugins/puax.js',
+  'claude-code': 'hooks/hooks.json + hooks/ 脚本（Claude Code 插件）',
   openclaw: 'OpenClaw skills directory',
   antigravity: 'Google Antigravity agent config',
   trae: 'Trae skills path (see distributions/trae/INSTALL.md)',

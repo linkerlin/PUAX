@@ -10,6 +10,8 @@ import '../platform-adapters/kiro-adapter.js';
 import '../platform-adapters/codebuddy-adapter.js';
 import '../platform-adapters/windsurf-adapter.js';
 import '../platform-adapters/skill-md-platform-adapter.js';
+import '../platform-adapters/claude-code-adapter.js';
+import '../platform-adapters/opencode-adapter.js';
 import { join } from 'path';
 import { getAllSkills } from '../prompts/skill-catalog.js';
 import { getFlavorExportList } from '../core/flavor-methodology.js';
@@ -25,6 +27,7 @@ const logger = getGlobalLogger();
 export type ExportPlatformId =
   | 'cursor' | 'vscode' | 'kiro' | 'codebuddy' | 'windsurf'
   | 'codex' | 'opencode' | 'openclaw' | 'antigravity' | 'trae' | 'pi'
+  | 'claude-code'
   | 'all';
 
 export interface ExportPlatformArgs {

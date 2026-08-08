@@ -53,6 +53,13 @@ global.testHelpers = {
 process.env.NODE_ENV = 'test';
 process.env.PUAX_PROJECT_PATH = process.cwd();
 
+// 测试隔离：所有 ~/.puax 持久化重定向到临时目录（按 pid 唯一），
+// 避免测试污染真实用户状态（session-state / evolution / custom-roles / feedback 等）。
+// 见 src/utils/storage-paths.ts（getPuaxHome）。
+const path = require('path');
+const os = require('os');
+process.env.PUAX_HOME = process.env.PUAX_HOME || path.join(os.tmpdir(), `puax-test-${process.pid}`);
+
 // 控制台输出捕获（可选）
 const originalError = console.error;
 global.console.error = (...args) => {

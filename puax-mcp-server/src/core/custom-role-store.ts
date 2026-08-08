@@ -5,7 +5,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { getPuaxHome } from '../utils/storage-paths.js';
 import { getGlobalLogger } from '../utils/logger.js';
 import { getManifestEntryById } from '../prompts/prompts-bundle.js';
 import type { BundledSkill, SkillManifestEntry } from '../prompts/bundle-types.js';
@@ -73,7 +73,7 @@ export class CustomRoleStore {
   private registry: CustomRoleRegistry;
 
   constructor(customDir?: string) {
-    this.baseDir = customDir || join(homedir(), '.puax');
+    this.baseDir = customDir || getPuaxHome();
     this.registryFile = join(this.baseDir, 'custom-roles.json');
     this.ensureDirectory();
     this.registry = this.loadRegistry();
@@ -173,7 +173,8 @@ export class CustomRoleStore {
   }
 
   toManifestEntry(record: CustomRoleRecord): SkillManifestEntry {
-    const { content: _content, ...entry } = this.toBundledSkill(record);
+    const { content, ...entry } = this.toBundledSkill(record);
+    void content; // 清单条目不含正文（content 被剔除）
     return entry;
   }
 

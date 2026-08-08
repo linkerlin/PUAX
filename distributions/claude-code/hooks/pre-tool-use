@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# PUAX hook: pre-tool-use（由 puax 平台适配器生成）
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+exec node "${SCRIPT_DIR}/hook.js" pre-tool-use "$@"

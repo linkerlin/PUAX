@@ -5,7 +5,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { getPuaxHome } from '../utils/storage-paths.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -110,7 +110,7 @@ export class FeedbackCollector {
   private initialized: boolean = false;
 
   constructor() {
-    this.dataDir = join(homedir(), '.puax', 'feedback');
+    this.dataDir = join(getPuaxHome(), 'feedback');
     this.init();
   }
 

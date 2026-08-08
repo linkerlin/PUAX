@@ -53,6 +53,13 @@ export interface ExportResult {
   warnings: string[];
 }
 
+/** 原生 hook 产物文件（配置或脚本），写入导出目录 */
+export interface HookFile {
+  /** 相对输出目录的路径，如 'hooks/hooks.json' */
+  path: string;
+  content: string;
+}
+
 // ============================================================================
 // 抽象基类
 // ============================================================================
@@ -103,6 +110,15 @@ export abstract class PlatformAdapter {
     roles: RoleExportData[],
     config: PlatformExportConfig
   ): string;
+
+  /**
+   * 生成原生 hook 配置/脚本（默认不生成）。
+   * 实现方返回相对输出目录的 HookFile 列表，export() 会写入并计入 exportedFiles。
+   * 见 Hook机制演进方案.md Phase 1：从"只发 skill 文件"升级为"同时发宿主 hook 配置"。
+   */
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    return [];
+  }
 
   /**
    * 执行导出流程
@@ -159,7 +175,10 @@ export abstract class PlatformAdapter {
             const content = this.exportFlavor(flavor, config);
             const fileName = this.getFlavorFileName(flavor);
             const filePath = join(config.outputPath, fileName);
-            
+            const dir = dirname(filePath);
+            if (!existsSync(dir)) {
+              mkdirSync(dir, { recursive: true });
+            }
             writeFileSync(filePath, content, 'utf-8');
             result.exportedFiles.push(filePath);
           } catch (error) {
@@ -174,12 +193,32 @@ export abstract class PlatformAdapter {
         const configContent = this.generateConfig(filteredRoles, config);
         const configFileName = this.getConfigFileName();
         const configPath = join(config.outputPath, configFileName);
+        const configDir = dirname(configPath);
+        if (!existsSync(configDir)) {
+          mkdirSync(configDir, { recursive: true });
+        }
         
         writeFileSync(configPath, configContent, 'utf-8');
         result.exportedFiles.push(configPath);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : 'Unknown error';
         result.errors.push(`Failed to generate config: ${errorMsg}`);
+      }
+
+      // 生成原生 hook 配置/脚本（Phase 1：运行时强制接入）
+      for (const hookFile of this.generateHooks(config)) {
+        try {
+          const hookPath = join(config.outputPath, hookFile.path);
+          const dir = dirname(hookPath);
+          if (!existsSync(dir)) {
+            mkdirSync(dir, { recursive: true });
+          }
+          writeFileSync(hookPath, hookFile.content, 'utf-8');
+          result.exportedFiles.push(hookPath);
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          result.errors.push(`Failed to generate hook file ${hookFile.path}: ${errorMsg}`);
+        }
       }
 
       // 更新成功状态

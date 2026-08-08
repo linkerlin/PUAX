@@ -11,8 +11,8 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
 import { getGlobalLogger } from '../utils/logger.js';
+import { getPuaxHome } from '../utils/storage-paths.js';
 
 const logger = getGlobalLogger();
 
@@ -89,7 +89,7 @@ export class StateManager {
   private inMemoryCache: Map<string, SessionState> = new Map();
 
   constructor(customDir?: string) {
-    this.baseDir = customDir || join(homedir(), '.puax');
+    this.baseDir = customDir || getPuaxHome();
     this.stateFile = join(this.baseDir, 'session-state.json');
     this.failureFile = join(this.baseDir, 'failure-count.json');
     this.triggerFile = join(this.baseDir, 'trigger-history.json');

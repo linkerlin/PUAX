@@ -22,15 +22,6 @@ const logger = getGlobalLogger();
 // 类型定义
 // ============================================================================
 
-export type HookCallback = (result: EnhancedTriggerResult, context: TriggerContext) => void | Promise<void>;
-
-export interface HookSubscription {
-  id: string;
-  eventType: HookEventType | 'all';
-  callback: HookCallback;
-  filter?: (result: EnhancedTriggerResult) => boolean;
-}
-
 export interface AutoCheckConfig {
   enabled: boolean;
   intervalMs: number;
@@ -63,7 +54,6 @@ export interface HookManagerDeps {
 }
 
 export class HookManager {
-  private subscriptions: Map<string, HookSubscription> = new Map();
   private sessions: Map<string, SessionContext> = new Map();
   private checkIntervals: Map<string, NodeJS.Timeout> = new Map();
   private config: HookManagerConfig;
@@ -90,49 +80,13 @@ export class HookManager {
   }
 
   // ============================================================================
-  // 订阅管理
-  // ============================================================================
-
-  /**
-   * 订阅 Hook 事件
-   */
-  subscribe(
-    eventType: HookEventType | 'all',
-    callback: HookCallback,
-    filter?: (result: EnhancedTriggerResult) => boolean
-  ): string {
-    const id = `sub_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-    
-    this.subscriptions.set(id, {
-      id,
-      eventType,
-      callback,
-      filter
-    });
-
-    return id;
-  }
-
-  /**
-   * 取消订阅
-   */
-  unsubscribe(subscriptionId: string): boolean {
-    return this.subscriptions.delete(subscriptionId);
-  }
-
-  /**
-   * 清除所有订阅
-   */
-  clearSubscriptions(): void {
-    this.subscriptions.clear();
-  }
-
-  // ============================================================================
   // 事件发布
   // ============================================================================
 
   /**
-   * 发布事件
+   * 发布事件：路由到增强触发检测器。检测结果即返回值（供 MCP 工具消费）。
+   * 原 pub/sub 订阅机制已在 v3.11 移除（生产代码零订阅，属死代码，
+   * 见 Hook机制演进方案.md Phase 0.2）。
    */
   emit(eventType: HookEventType, context: Omit<TriggerContext, 'eventType'>): EnhancedTriggerResult {
     const fullContext: TriggerContext = {
@@ -140,36 +94,7 @@ export class HookManager {
       eventType,
     };
 
-    const result = enhancedTriggerDetector.detect(fullContext);
-
-    if (result.triggered) {
-      this.notifySubscribers(eventType, result, fullContext);
-    }
-
-    return result;
-  }
-
-  /**
-   * 通知订阅者（支持 sync/async 回调，不阻塞 emit）
-   */
-  private notifySubscribers(
-    eventType: HookEventType,
-    result: EnhancedTriggerResult,
-    context: TriggerContext
-  ): void {
-    for (const sub of this.subscriptions.values()) {
-      if (sub.eventType !== 'all' && sub.eventType !== eventType) {
-        continue;
-      }
-
-      if (sub.filter && !sub.filter(result)) {
-        continue;
-      }
-
-      void Promise.resolve(sub.callback(result, context)).catch(error => {
-        logger.error(`[HookManager] Subscription ${sub.id} error:`, error);
-      });
-    }
+    return enhancedTriggerDetector.detect(fullContext);
   }
 
   // ============================================================================

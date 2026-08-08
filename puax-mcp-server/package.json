@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "npm run generate-bundle && tsc",
+    "sync:hooks": "node scripts/sync-distribution-hooks.js",
     "generate-bundle": "node src/prompts/generate-bundle.js",
     "generate-guides": "node scripts/generate-methodology-guides.js",
     "prepublishOnly": "npm run build",

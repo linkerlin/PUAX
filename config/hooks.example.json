@@ -1,0 +1,17 @@
+{
+  "$comment": "PUAX hook 配置示例。复制为 ~/.puax/hooks.json（或设置环境变量 PUAX_HOOKS_CONFIG 指向本文件）后生效。合并语义：子表级替换——出现的 zh/en/generic 子表整体替换内置同子表，未出现的沿用内置。清空某子表请用 patterns: []。详见 docs/HOOK-ARCHITECTURE.md 第六节。",
+  "triggerPatterns": {
+    "userFrustration": {
+      "zh": {
+        "patterns": ["我的专属暗号", "还不给我认真点"],
+        "weight": 1.5
+      }
+    },
+    "givingUp": {
+      "zh": {
+        "patterns": [],
+        "weight": 1.2
+      }
+    }
+  }
+}

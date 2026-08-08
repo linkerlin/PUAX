@@ -218,6 +218,31 @@ describe('AntiCheatGuard', () => {
       const result = guard.checkAccess(request);
       expect(result.allowed).toBe(false);
     });
+
+    it('should block git push (v3.11 guardrail)', () => {
+      const request: AccessRequest = {
+        operation: 'execute',
+        path: 'git push origin main',
+        sessionId: 'test-session',
+        toolName: 'bash'
+      };
+
+      const result = guard.checkAccess(request);
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toContain('GIT_BYPASS_BLOCKED');
+    });
+
+    it('should block git push --force', () => {
+      const request: AccessRequest = {
+        operation: 'execute',
+        path: 'git push --force origin main',
+        sessionId: 'test-session',
+        toolName: 'bash'
+      };
+
+      const result = guard.checkAccess(request);
+      expect(result.allowed).toBe(false);
+    });
   });
 
   describe('enable/disable', () => {

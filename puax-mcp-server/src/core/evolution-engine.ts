@@ -5,7 +5,7 @@
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { homedir } from 'os';
+import { getPuaxHome } from '../utils/storage-paths.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -78,7 +78,7 @@ export class EvolutionEngine {
   private readonly baseDir: string;
 
   constructor(customDir?: string) {
-    this.baseDir = customDir || join(homedir(), '.puax');
+    this.baseDir = customDir || getPuaxHome();
     this.evolutionFile = join(this.baseDir, 'evolution.json');
     this.ensureDirectory();
   }
