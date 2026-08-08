@@ -102,7 +102,9 @@ describe('Performance Tests', () => {
 
       expect(result1.metadata.cache_hit).toBe(false);
       expect(result2.metadata.cache_hit).toBe(true);
-      expect(duration2).toBeLessThanOrEqual(duration1);
+      // 缓存命中语义由 cache_hit 标志保证；耗时断言允许 ±5ms 容差，
+      // 避免机器负载抖动导致 0ms 级比较间歇失败（flaky）
+      expect(duration2).toBeLessThanOrEqual(duration1 + 5);
     });
   });
 

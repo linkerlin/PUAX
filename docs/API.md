@@ -1,6 +1,6 @@
 # PUAX MCP API 参考
 
-> **版本**: 3.10.0 | **MCP 工具**: 42 | **内置角色**: 50 + 自定义  
+> **版本**: 3.11.0 | **MCP 工具**: 42 | **内置角色**: 50 + 自定义  
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)
 
 ---

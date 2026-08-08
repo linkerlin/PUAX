@@ -133,14 +133,29 @@ describe('polyglot run-hook.cmd', () => {
     expect(result.stdout).toContain('{}');
   });
 
-  const gitBash = ['C:\\Program Files\\Git\\bin\\bash.exe', 'C:\\Program Files (x86)\\Git\\bin\\bash.exe']
-    .find(p => existsSync(p));
-  (gitBash ? it : it.skip)('bash branch (Git for Windows): runs without crash, exit 0', () => {
-    const result = spawnSync(gitBash!, [join(dir, 'run-hook.cmd'), 'session-start', '--harness', 'claude'], {
+  // 探测常见真 bash 安装（Git for Windows / MSYS2 / Cygwin / WSL 发行版）
+  const gitBash = [
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files (x86)\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+    'C:\\msys64\\usr\\bin\\bash.exe',
+    'C:\\cygwin64\\bin\\bash.exe'
+  ].find(p => existsSync(p));
+  (gitBash ? it : it.skip)('bash branch (Git for Windows / MSYS2 / Cygwin): degrades to {} exit 0', () => {
+    // 非登录 shell 不加载 /etc/profile：显式补 MSYS 核心工具（dirname）与 node
+    // （/c/... MSYS 路径格式对 Git Bash / MSYS2 / Cygwin 均有效）
+    const bashScript = [
+      'export PATH="/usr/bin:/bin:/c/Program Files/nodejs:$PATH"',
+      `cd '${dir.replace(/\\/g, '/')}'`,
+      'bash run-hook.cmd session-start --harness claude'
+    ].join('\n');
+    const result = spawnSync(gitBash!, ['-c', bashScript], {
       encoding: 'utf8',
       timeout: 60000
     });
     expect(result.status).toBe(0);
+    // 依赖缺失 → hook.js 兜底 {}（Unix 分支经 exec node 输出）
+    expect(result.stdout).toContain('{}');
   });
 });
 

@@ -49,6 +49,10 @@ describe('Hook CLI full-path degradation (spawn)', () => {
   });
 
   if (existsSync(BUILD_ENTRY)) {
+    // 唯一 session ID：并行 worker 共享同一 PUAX_HOME 状态文件，
+    // 固定 ID 可能撞上冷却窗口或并发写竞态（间歇失败根因）
+    const e2eSession = `degrade-e2e-${process.pid}-${Date.now()}`;
+
     it('unknown event → {} exit 0', () => {
       const { stdout, status } = runNode([BUILD_ENTRY, 'hook', 'bogus-event']);
       expect(stdout.trim()).toBe('{}');
@@ -57,7 +61,7 @@ describe('Hook CLI full-path degradation (spawn)', () => {
 
     it('valid event via real process → host JSON exit 0', () => {
       const { stdout, status } = runNode(
-        [BUILD_ENTRY, 'hook', 'user-prompt', '--session-id', 'degrade-e2e', '--message', 'try harder', '--harness', 'sdk']
+        [BUILD_ENTRY, 'hook', 'user-prompt', '--session-id', e2eSession, '--message', 'try harder', '--harness', 'sdk']
       );
       const payload = JSON.parse(stdout.trim());
       expect(payload.additionalContext).toBeDefined();
@@ -66,7 +70,7 @@ describe('Hook CLI full-path degradation (spawn)', () => {
 
     it('PreToolUse block decision survives full process path', () => {
       const { stdout, status } = runNode(
-        [BUILD_ENTRY, 'hook', 'pre-tool-use', '--session-id', 'degrade-e2e', '--tool', 'Bash', '--tool-args', '{"command":"git push origin main"}', '--harness', 'claude']
+        [BUILD_ENTRY, 'hook', 'pre-tool-use', '--session-id', e2eSession, '--tool', 'Bash', '--tool-args', '{"command":"git push origin main"}', '--harness', 'claude']
       );
       const payload = JSON.parse(stdout.trim());
       expect(payload.hookSpecificOutput.decision).toBe('block');
