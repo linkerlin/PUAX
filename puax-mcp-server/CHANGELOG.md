@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.13.0] - 2026-08-19
+
+### Fixed
+- **`npm run validate` 全绿**：lint 错误 118 → 0
+  - 删除 `base-agent.ts` 孤儿类（TechLeadAgent/CtoAgent，已被 `hierarchy/` 版本取代）及十余处未用导入/常量
+  - `benchmark-runner.ts` 去除无谓 async；`agent-team-protocol.ts` 修复 `never` 模板串；移除冗余类型断言
+  - eslint：生成物 `prompts-bundle.ts` 入 ignorePatterns；测试关闭 `await-thenable`；死码层（`agents/`、`commands/`、`interactive-shell`）局部降规
+- 测试计数更新：913 Jest（68 套件）+ 12 项 evals 守门
+
+### Docs
+- `README_en.md` / `docs/API.md` / `puax-mcp-server/README.md` 同步 v3.12：徽章 3.12、59 skills、45 工具；API.md 新增 GHM 三梦境工具文档与调用示例
+
 ## [3.12.0] - 2026-08-19
 
 ### Added
