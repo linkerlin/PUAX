@@ -1,6 +1,6 @@
 # PUAX MCP API 参考
 
-> **版本**: 3.11.0 | **MCP 工具**: 42 | **内置角色**: 50 + 自定义  
+> **版本**: 3.12.0 | **MCP 工具**: 45 | **内置角色**: 59 + 自定义  
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)
 
 ---
@@ -64,7 +64,7 @@ puax_start_session
 
 ---
 
-## MCP 工具索引（42）
+## MCP 工具索引（45）
 
 ### SKILL / 角色管理（5）
 
@@ -162,6 +162,16 @@ puax_start_session
 | `puax_set_usage_stats_opt_out` | 关闭/恢复统计 | `opt_out` |
 | `puax_flush_telemetry` | 刷出 OTel span | — |
 
+### GHM 导引幻梦法（3，v3.12）
+
+| 工具 | 说明 | 主要参数 |
+|------|------|----------|
+| `puax_enter_dreamscape` | 入梦：注入 `[DREAM]` 协议 + boundary 预算硬顶 | `role`（庄周八梦之一）, `boundary`（`objective`/`max_turns`/`max_hypotheses`/`min_hypotheses`/`kill_criteria`）, `dream_depth`(1–5), `session_id` |
+| `puax_awaken` | 醒梦：产物强制三分类，缺引用或超限全部拒收作废 | `dream_context_ref`, `artifacts[]`（`content` 须含 `[DREAM]` 印 + `category`：HYPOTHESIS/INSIGHT/DISCARDED）, `handover_notes` |
+| `puax_convergence_audit` | 虚假收敛审计：高精度低召回，疑似时仅注入 L1 提醒 | `context`, `evidence_sample[]` |
+
+**安全铁律**：标记权在工具层（`[DREAM]` 印不可自补，无印产物强制作废）；HYPOTHESIS 永不自动升格为结论，醒后必经 `puax_confidence_check` + `puax_verify_completion`；INSIGHT 只可启发，禁入事实层；`max_hypotheses` 超限则全部产物作废（非宽容收尾）。详见 [GHM.md](GHM.md)。
+
 ### Legacy 别名（4）
 
 | 工具 | 说明 |
@@ -250,6 +260,33 @@ puax_start_session
   "content": "# 你是 API 连接调试专家…",
   "recommended_for_triggers": ["consecutive_failures", "user_frustration"],
   "task_types": ["debugging"]
+}
+```
+
+### GHM 入梦 → 醒梦
+
+```json
+// puax_enter_dreamscape
+{
+  "role": "dream-butterfly",
+  "boundary": {
+    "objective": "为连接超时找出 3 种以上互斥解释",
+    "max_turns": 8,
+    "max_hypotheses": 8,
+    "min_hypotheses": 3,
+    "kill_criteria": "开始为单一方案辩护而非发散"
+  },
+  "dream_depth": 3
+}
+
+// puax_awaken
+{
+  "dream_context_ref": "dream-xxxx-xxxxxxxxxxxxxxxx",
+  "artifacts": [
+    { "content": "[DREAM] 假设一：DNS 解析随机超时", "category": "HYPOTHESIS" },
+    { "content": "[DREAM] 或许该看连接池耗尽", "category": "INSIGHT" }
+  ],
+  "handover_notes": "TLS 握手路径未排查"
 }
 ```
 

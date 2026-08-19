@@ -490,7 +490,7 @@ export class FlavorRegistry {
   private activeFlavor: FlavorKey = 'alibaba';
 
   get(id: string): FlavorDefinition | undefined {
-    return this.flavors[id as FlavorKey];
+    return this.flavors[id];
   }
 
   getAll(): Record<string, FlavorDefinition> {

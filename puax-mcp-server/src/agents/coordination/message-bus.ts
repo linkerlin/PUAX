@@ -8,7 +8,6 @@ import { getGlobalLogger } from '../../utils/logger.js';
 import {
   AgentMessage,
   AgentRole,
-  ExecutionContext,
   globalAgentRegistry,
   AgentRegistry
 } from '../base-agent.js';

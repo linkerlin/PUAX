@@ -1,10 +1,10 @@
 # PUAX — AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.11.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.12.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
-  <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-42-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
+  <img src="https://img.shields.io/badge/MCP%20tools-45-purple.svg" alt="MCP Tools">
 </p>
 
 <p align="center">
@@ -22,8 +22,9 @@
 PUAX drives **effective agent behavior**, not just better prompts:
 
 - **Hybrid trigger detection** — YAML regex + TF-IDF/semantic fallback
-- **50 roles + custom roles** — smart recommendation with `score_explanation`
+- **59 roles + custom roles** — smart recommendation with `score_explanation`
 - **Behavior loop** — diagnosis-first, confidence gate, failure switching, task contracts
+- **GHM Guided Hallucination** — 8 Zhuangzi dream roles + enter/awaken/convergence-audit tools (v3.12)
 - **Hook System** — session state, L0–L4 pressure, breakthrough de-escalation
 - **11 company flavors** — rhetoric + behavior constraints
 - **Observability** — anonymous local usage stats + OTel-compatible spans
@@ -67,8 +68,8 @@ And it appears to be real~
 | Doc | Description |
 |-----|-------------|
 | [README.md](README.md) | Main doc (Chinese) |
-| [puax-mcp-server/README.md](puax-mcp-server/README.md) | MCP setup & 42 tools |
-| [API Reference](docs/API.md) | 42 MCP tools (v3.10) |
+| [puax-mcp-server/README.md](puax-mcp-server/README.md) | MCP setup & 45 tools |
+| [API Reference](docs/API.md) | 45 MCP tools (v3.12) |
 | [User Guide](docs/USER-GUIDE.md) | Scenario workflows |
 
 ---

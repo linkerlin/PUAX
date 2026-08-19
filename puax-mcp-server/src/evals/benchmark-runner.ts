@@ -227,7 +227,7 @@ export class BenchmarkRunner {
     this.antiCheatGuard = new AntiCheatGuard();
   }
 
-  async run(scenarioNames?: string[]): Promise<BenchmarkReport> {
+  run(scenarioNames?: string[]): BenchmarkReport {
     const scenariosToRun = scenarioNames
       ? this.scenarios.filter(s => scenarioNames.includes(s.name))
       : this.scenarios;
@@ -237,14 +237,14 @@ export class BenchmarkRunner {
     const results: BenchmarkResult[] = [];
 
     for (const scenario of scenariosToRun) {
-      const result = await this.runScenario(scenario);
+      const result = this.runScenario(scenario);
       results.push(result);
     }
 
     return this.generateReport(results);
   }
 
-  private async runScenario(scenario: BenchmarkScenario): Promise<BenchmarkResult> {
+  private runScenario(scenario: BenchmarkScenario): BenchmarkResult {
     const sessionId = `benchmark-${scenario.name}-${Date.now()}`;
     const context = this.createContext(sessionId, scenario);
 

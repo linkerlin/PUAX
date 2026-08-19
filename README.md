@@ -134,7 +134,7 @@ npx puax-mcp-server --list-platforms
 
 ```bash
 node evals/run-all.js          # 12 项协议守门（无 LLM）
-cd puax-mcp-server && npm test # 578+ 单元/集成测试
+cd puax-mcp-server && npm test # 900+ 单元/集成测试
 node evals/benchmark.js        # 性能基准
 ```
 

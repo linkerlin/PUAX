@@ -16,7 +16,7 @@ export type {
 } from '../types.js';
 
 // Import types for internal use
-import type { TriggerPattern, TriggerDefinition, TriggerCatalog } from '../types.js';
+import type { TriggerDefinition, TriggerCatalog } from '../types.js';
 
 export class TriggerLoader {
   private triggersDir: string;

@@ -6,9 +6,7 @@
  */
 
 import { getGlobalLogger } from '../utils/logger.js';
-import { FlavorRegistry, globalFlavorRegistry } from '../core/flavors/enterprise-flavors.js';
-
-const logger = getGlobalLogger();
+import { FlavorRegistry } from '../core/flavors/enterprise-flavors.js';
 
 // ============================================================================
 // Command Types

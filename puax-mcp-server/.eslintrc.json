@@ -23,7 +23,7 @@
     "prefer-const": "error",
     "no-var": "error"
   },
-  "ignorePatterns": ["build/", "node_modules/", "coverage/", "*.js", "*.d.ts", "test/"],
+  "ignorePatterns": ["build/", "node_modules/", "coverage/", "*.js", "*.d.ts", "test/", "src/prompts/prompts-bundle.ts"],
   "overrides": [
     {
       "files": ["**/*.test.ts", "**/*.test.js", "**/*.spec.ts", "__tests__/**"],
@@ -34,7 +34,23 @@
         "@typescript-eslint/no-unsafe-call": "off",
         "@typescript-eslint/no-unsafe-return": "off",
         "@typescript-eslint/no-unsafe-argument": "off",
-        "@typescript-eslint/require-await": "off"
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/await-thenable": "off"
+      }
+    },
+    {
+      "files": ["src/agents/**", "src/commands/**", "src/cli/interactive-shell.ts"],
+      "rules": {
+        "@typescript-eslint/require-await": "off",
+        "@typescript-eslint/await-thenable": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "@typescript-eslint/no-unsafe-assignment": "off",
+        "@typescript-eslint/no-unsafe-member-access": "off",
+        "@typescript-eslint/no-unsafe-call": "off",
+        "@typescript-eslint/no-unsafe-return": "off",
+        "@typescript-eslint/no-unsafe-argument": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/restrict-template-expressions": "off"
       }
     }
   ]

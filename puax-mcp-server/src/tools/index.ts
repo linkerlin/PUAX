@@ -15,12 +15,7 @@
 import { z } from 'zod';
 import { ErrorCode, McpError } from '@modelcontextprotocol/sdk/types.js';
 import { promptManager } from '../prompts/index.js';
-import { inferTaskType } from '../utils/role-utils.js';
-import { TriggerDetector } from '../core/trigger-detector.js';
-import { RoleRecommender } from '../core/role-recommender.js';
-import { MethodologyEngine } from '../core/methodology-engine.js';
-import type { ToolResponse, ActivationContext, ActivationOptions, MethodologyOptions } from '../types.js';
-import type { ConversationMessage, TaskContext, DetectionOptions } from '../core/trigger-detector.js';
+import type { ToolResponse } from '../types.js';
 import type { SkillSection } from '../prompts/index.js';
 
 // ============================================================================
@@ -85,15 +80,6 @@ function toSkillSection(section: string | undefined): SkillSection {
     return section as SkillSection;
   }
   return 'full';
-}
-
-function toConversationMessages(history: unknown): ConversationMessage[] {
-  if (!Array.isArray(history)) return [];
-  return (history as Array<{ role: string; content: string }>).map(msg => ({
-    role: (msg.role === 'system' || msg.role === 'user' || msg.role === 'assistant')
-      ? msg.role as ConversationMessage['role'] : 'assistant' as ConversationMessage['role'],
-    content: msg.content || ''
-  }));
 }
 
 function wrapToolResponse(result: unknown): ToolResponse {

@@ -4,13 +4,13 @@
 
 | 项 | 值 |
 |---|---|
-| **版本** | 3.11.0 |
+| **版本** | 3.12.0 |
 | **传输** | STDIO / HTTP (Streamable HTTP) |
 | **默认端口** | 2333 |
-| **内置角色** | 50 SKILL + 自定义角色 |
-| **MCP 工具** | 42 |
+| **内置角色** | 59 SKILL + 自定义角色 |
+| **MCP 工具** | 45 |
 | **风味** | 11（`flavor-methodologies.yaml`） |
-| **测试** | 578+ Jest + `evals/run-all.js` 12 项守门 |
+| **测试** | 900+ Jest + `evals/run-all.js` 12 项守门 |
 
 完整变更见 [CHANGELOG.md](./CHANGELOG.md)。
 

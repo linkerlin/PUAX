@@ -15,7 +15,7 @@ export type {
 
 // Import types for internal use
 import type {
-  TriggerPattern, TriggerDetection, TriggerDefinition, TriggerCategory, TriggerCatalog
+  TriggerPattern, TriggerDetection, TriggerCategory, TriggerCatalog
 } from '../types.js';
 
 interface RawTriggerDefinition {

@@ -56,11 +56,6 @@ const GRADER_GAMING_PATTERNS = [
   /coverage/i, /jest\.config/i,
 ];
 
-const FORBIDDEN_SELF_VERIFY_PHRASES = [
-  /我认为完成/i, /应该没问题/i, /大概可以/i,
-  /i think it('s| is) (done|complete|working)/i,
-];
-
 // ============================================================================
 // 治理逻辑
 // ============================================================================

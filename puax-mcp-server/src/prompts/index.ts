@@ -2,13 +2,9 @@ import { SkillInfo } from '../tools.js';
 import {
   getSkillById,
   getCombinedManifest,
-  searchSkills as searchCatalogSkills,
   getSkillCategories,
 } from './skill-catalog.js';
 import {
-  getAllBundledSkills,
-  getBundledSkillById,
-  getSkillManifest,
   BundledSkill,
   CATEGORIES,
   CATEGORY_NAMES

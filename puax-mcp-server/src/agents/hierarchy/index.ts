@@ -6,7 +6,7 @@
  * P10: CTO - Strategic direction
  */
 
-import { BaseAgent, AgentRole, AgentTier, AgentState, ExecutionContext, AgentResponse, AgentMessage } from '../base-agent.js';
+import { BaseAgent, AgentRole, AgentTier, AgentState, ExecutionContext, AgentResponse } from '../base-agent.js';
 import { getGlobalLogger } from '../../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -150,7 +150,7 @@ export class P9Agent extends BaseAgent {
     };
   }
 
-  private async deployAgent(role: AgentRole, context: ExecutionContext): Promise<AgentResponse> {
+  private async deployAgent(role: AgentRole, _context: ExecutionContext): Promise<AgentResponse> {
     logger.debug(`[P9] Deploying ${role}`);
     return {
       success: true,

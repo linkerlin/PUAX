@@ -6,7 +6,6 @@ import {
   agentTeamManager,
   getAvailableTemplates,
   type AgentTeam,
-  type TeamTask,
 } from '../role-levels/agent-team.js';
 import { stateManager } from '../hooks/state-manager.js';
 
@@ -156,6 +155,6 @@ export function orchestrateTeam(req: OrchestrateTeamRequest): OrchestrateTeamRes
     }
 
     default:
-      return { success: false, action: req.action, message: `未知 action: ${req.action}` };
+      return { success: false, action: req.action, message: `未知 action: ${String(req.action)}` };
   }
 }

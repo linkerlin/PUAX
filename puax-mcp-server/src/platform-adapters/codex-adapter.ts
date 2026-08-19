@@ -69,7 +69,7 @@ export class CodexAdapter extends PlatformAdapter {
     return '';
   }
 
-  generateConfig(roles: RoleExportData[], config: PlatformExportConfig): string {
+  generateConfig(roles: RoleExportData[], _config: PlatformExportConfig): string {
     const configObj = {
       version: '3.5.0',
       platform: 'codex',
