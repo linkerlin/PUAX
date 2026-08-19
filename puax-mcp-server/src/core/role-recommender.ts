@@ -308,7 +308,7 @@ export class RoleRecommender {
     }
     if (category === 'military') return 'aggressive';
     if (category === 'shaman' || category === 'silicon' || category === 'p10') return 'analytical';
-    if (category === 'special' || category === 'theme') return 'creative';
+    if (category === 'special' || category === 'theme' || category === 'dream') return 'creative';
     return 'supportive';
   }
 

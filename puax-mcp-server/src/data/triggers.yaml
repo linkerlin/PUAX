@@ -363,6 +363,121 @@ triggers:
       alternatives: [military-commander, shaman-musk]
       reason: "用户已经不耐烦，需要立即强力响应"
 
+  # --------------------------------------------------------------------------
+  # 类别6: 发散缺失类 (Divergence Deficit) — GHM 导引幻梦法 v3.12
+  # --------------------------------------------------------------------------
+  premature_convergence:
+    id: premature_convergence
+    name: "过早收敛"
+    description: "会话在方案单薄时仓促锁定共识，可能是人机互激的虚假收敛"
+    category: divergence
+    severity: medium
+    patterns:
+      zh:
+        - "就按这个方案"
+        - "不用再想"
+        - "不用再考虑"
+        - "已经确定了"
+        - "没别的办法"
+        - "这是唯一的方案"
+        - "没有其他可能"
+        - "就这样定了"
+      en:
+        - "this is the only (way|solution|option)"
+        - "no other (way|option|choice)"
+        - "let's just go with this"
+        - "no need to (think|consider) (more|further)"
+        - "it's decided"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: dream-qiushui
+      alternatives: [dream-kunpeng, dream-xinhuo]
+      reason: "多解并置打破过早锁定，五解对照方知全局"
+
+  creative_block:
+    id: creative_block
+    name: "创作卡壳"
+    description: "缺乏思路、灵感枯竭，无法产生新想法"
+    category: divergence
+    severity: medium
+    patterns:
+      zh:
+        - "没有思路"
+        - "想不出来"
+        - "缺乏创意"
+        - "灵感枯竭"
+        - "没什么新想法"
+        - "不知道怎么创新"
+        - "想不出别的"
+      en:
+        - "no (ideas?|inspiration|clue)"
+        - "can't think of (anything|new|other)"
+        - "out of ideas"
+        - "creative block"
+        - "stuck (on|for) ideas"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: dream-butterfly
+      alternatives: [dream-kunpeng, dream-hundun]
+      reason: "可能性轰炸打开思路，十条若可能齐发"
+
+  assumption_lock:
+    id: assumption_lock
+    name: "假设锁定"
+    description: "反复归因于同一假设，惯性约束未被挑战"
+    category: divergence
+    severity: medium
+    patterns:
+      zh:
+        - "肯定是.*导致的"
+        - "一定是.*的问题"
+        - "肯定是因为"
+        - "显然就是"
+        - "毫无疑问是"
+        - "肯定是这个原因"
+      en:
+        - "it'?s (definitely|certainly|obviously) (the|a)?"
+        - "must be (the|a|this)"
+        - "no doubt (it'?s|this is)"
+        - "clearly the (cause|reason|issue)"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: dream-zuowang
+      alternatives: [dream-paoding, dream-qiwu]
+      reason: "空杯破先入之见，假设平权重审全局"
+
+  low_novelty:
+    id: low_novelty
+    name: "产物同质"
+    description: "连续输出高度相似，缺乏实质差异与新信息"
+    category: divergence
+    severity: low
+    patterns:
+      zh:
+        - "类似的方案"
+        - "还是这个思路"
+        - "换个说法"
+        - "大同小异"
+        - "差不多一样"
+      en:
+        - "similar (approach|solution|idea)"
+        - "roughly the same"
+        - "basically the same"
+        - "minor variation"
+    detection:
+      type: regex
+      case_sensitive: false
+    recommended_roles:
+      primary: dream-hundun
+      alternatives: [dream-qiwu, dream-butterfly]
+      reason: "随机注入破同质，自洽宇宙中另辟蹊径"
+
 # ============================================================================
 # 触发条件类别
 # ============================================================================
@@ -397,6 +512,12 @@ categories:
     name: "用户沮丧"
     description: "用户表达了不满"
     color: "#dc2626"
+    
+  divergence:
+    id: divergence
+    name: "发散缺失"
+    description: "会话收敛过快或产物同质，缺乏发散性思考（GHM 导引幻梦法）"
+    color: "#8b5cf6"
 
 # ============================================================================
 # 严重程度定义

@@ -49,6 +49,12 @@ CMDBLOCK
 # Unix: run the node entry directly
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 command -v node >/dev/null 2>&1 || exit 0
+# Git Bash / MSYS2 / Cygwin: pwd yields MSYS paths (/c/...) which native
+# Windows node resolves against the drive root (MODULE_NOT_FOUND).
+# cygpath -m converts to mixed form (C:/...) that node understands.
+if command -v cygpath >/dev/null 2>&1; then
+  exec node "$(cygpath -m "$SCRIPT_DIR")/hook.js" "$@"
+fi
 exec node "\${SCRIPT_DIR}/hook.js" "$@"
 `;
 

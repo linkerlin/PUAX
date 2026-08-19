@@ -47,3 +47,6 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Git repo backup (2026-08-19 repair)
+.git.bak-20260819/

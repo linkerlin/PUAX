@@ -21,7 +21,8 @@ const categoryLoaders: Record<string, () => BundledSkill[]> = {
   "sillytavern": () => require('./bundles/bundle-sillytavern').bundledSkills as BundledSkill[],
   "theme": () => require('./bundles/bundle-theme').bundledSkills as BundledSkill[],
   "self-motivation": () => require('./bundles/bundle-self-motivation').bundledSkills as BundledSkill[],
-  "special": () => require('./bundles/bundle-special').bundledSkills as BundledSkill[]
+  "special": () => require('./bundles/bundle-special').bundledSkills as BundledSkill[],
+  "dream": () => require('./bundles/bundle-dream').bundledSkills as BundledSkill[]
 };
 
 const loadedCategories = new Map<string, BundledSkill[]>();

@@ -39,7 +39,7 @@ export const ListSkillsTool: Tool = {
       category: {
         type: "string",
         description: "Filter SKILLs by category",
-        enum: ["all", "shaman", "military", "p10", "silicon", "sillytavern", "theme", "self-motivation", "special"],
+        enum: ["all", "shaman", "military", "p10", "silicon", "sillytavern", "theme", "self-motivation", "special", "dream"],
         default: "all"
       },
       includeCapabilities: {

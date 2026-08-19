@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.12.0] - 2026-08-19
+
+### Added
+- 🦋 **GHM 导引幻梦法（Guided Hallucination Methodology）** — 详见 [docs/GHM.md](../docs/GHM.md)
+  - 核心命题：「被动幻觉是错误，主动幻觉是创造」。在既有"防幻觉"收敛纪律之上，补一层"驭幻觉"发散引擎
+  - 病机模型：收敛先验→强行收束→互证互强→双向幻觉（人机互激的过早收敛）
+- ✨ **庄周八梦角色套系（dream 类，8 角色）** — `skills/dream-*/SKILL.md`，文言正文，取《庄子》典故
+  - 坐忘(空杯破先入) / 梦蝶(可能性轰炸) / 混沌(自洽宇宙) / 鲲鹏(谶语回溯) / 秋水(渐进升维) / 庖丁(错误重释) / 齐物(假设平权) / 薪火(醒梦验真)
+  - 每角色含五步法（庄子原典词汇）+ 梦境安全协议（四铁律）+ 检查清单；发散七式 `recommended_temperature` 0.8–0.9
+  - 角色总数 51 → 59；`strategy-space.ts` RoleIdentity 与 domain 类型同步扩展
+- 🔧 **3 个梦境 MCP 工具** — `tools/dreamscape.ts`
+  - `puax_enter_dreamscape`：知情入梦 + boundary 预算硬顶（objective/max_turns/max_hypotheses/min_hypotheses/kill_criteria）+ `[DREAM]` 协议注入（标记权在工具层）
+  - `puax_awaken`：醒梦强制三分类（HYPOTHESIS/INSIGHT/DISCARDED）；缺引用拒收、缺印作废、超限全废、HYPOTHESIS 永不自动升格为结论
+  - `puax_convergence_audit`：虚假收敛审计（检测人机互激的过早收敛）；高精度低召回，疑似时仅注入 L1 提醒级信号，不打断工作流
+- 🎯 **4 个新触发条件** — `triggers.yaml`：`premature_convergence`（过早收敛）/ `creative_block`（创作卡壳）/ `assumption_lock`（假设锁定）/ `low_novelty`（产物同质），含 zh/en 正则与新 `divergence` 触发类别
+- 🗺️ **role-mappings 扩展**：4 触发→八梦映射、creative/analysis 任务类型入池、8 角色 role_metadata、2 个角色组合（庄周全梦组合/庖丁解牛组合）
+- 📄 **docs/GHM.md 方法论白皮书**：病机→八术映射→八梦→安全铁律机制化→工具用法→操控识别防御篇（八术仅限 Agent 内部认知操作，人际应用版本不发布）
+
+### Design
+- 本版本经「创造派 vs 验证派」双 Agent 设计评审 PK 定稿：标记权归工具层（防自评权复辟）、预算硬顶与配额并行、审计挂接 L1 压力级、审计只杀重复空洞不杀离奇、INSIGHT 禁入事实层、验证分层（序薪按成本×价值排序）
+
+### Fixed
+- **polyglot `run-hook.cmd` bash 分支在 Git Bash 下 exit 1**：`pwd` 输出 MSYS 路径（`/c/...`），Windows 原生 node 将其解析为盘符根路径导致 `MODULE_NOT_FOUND`。bash 分支现经 `cygpath -m` 转换为 mixed 路径（`C:/...`）后再 exec node；无 cygpath 环境（Linux/macOS）保持原逻辑。`distributions/claude-code/hooks/run-hook.cmd` 单一数据源副本同步更新
+
+### Tests
+- 新增 `test/tools/dreamscape.test.ts`（13 项）：三工具全链路 + 验证派四红线（无印拒收不可补票 / 永不自动升格 / 超预算全部作废 / 宁漏报勿误伤）
+- 新增 `test/tools/dream-registration.test.ts`（21 项）：四触发 zh/en 检测 + 目录定义 + 推荐链路 + bundle 注册 + manifest 一致性 + 策略空间 + category 枚举
+
 ## [3.11.0] - 2026-08-08
 
 ### Added

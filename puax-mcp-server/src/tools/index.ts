@@ -27,7 +27,7 @@ import type { SkillSection } from '../prompts/index.js';
 // 工具 Schema 定义
 // ============================================================================
 
-const SKILL_CATEGORIES = ['all', 'shaman', 'military', 'p10', 'silicon', 'sillytavern', 'theme', 'self-motivation', 'special', 'custom'] as const;
+const SKILL_CATEGORIES = ['all', 'shaman', 'military', 'p10', 'silicon', 'sillytavern', 'theme', 'self-motivation', 'special', 'dream', 'custom'] as const;
 
 const ListSkillsInputSchema = z.object({
   category: z.enum(SKILL_CATEGORIES)
@@ -287,6 +287,7 @@ export { updateReasoningStateTool } from './update-reasoning-state.js';
 export { orchestrateTeamTool } from './orchestrate-team.js';
 export { listPlatformsTool } from './list-platforms.js';
 export { exportPlatform, exportAllPlatforms, handleExportCommand } from './export-platform.js';
+export { enterDreamscapeTool, awakenTool, convergenceAuditTool, dreamscapeTools } from './dreamscape.js';
 
 // ============================================================================
 // 统一工具列表
@@ -312,6 +313,7 @@ import { orchestrateTeamTool } from './orchestrate-team.js';
 import { listPlatformsTool } from './list-platforms.js';
 import { customRoleTools } from './custom-role.js';
 import { observabilityTools } from './usage-stats.js';
+import { dreamscapeTools } from './dreamscape.js';
 import { buildHookToolHandlers, type ToolHandler } from './registry.js';
 
 /**
@@ -355,6 +357,9 @@ export const allTools = [
 
   // v3.10 可观测性 + 使用统计
   ...observabilityTools,
+
+  // v3.12 GHM 导引幻梦法（庄周八梦）
+  ...dreamscapeTools,
 
   // Legacy Role 工具
   ListRolesTool,

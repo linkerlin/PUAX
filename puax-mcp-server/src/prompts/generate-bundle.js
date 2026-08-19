@@ -14,7 +14,8 @@ const CATEGORIES = [
   'sillytavern',
   'theme',
   'self-motivation',
-  'special'
+  'special',
+  'dream'
 ];
 
 const CATEGORY_NAMES = {
@@ -26,7 +27,8 @@ const CATEGORY_NAMES = {
   sillytavern: 'SillyTavern Series',
   theme: 'Theme Scenarios',
   'self-motivation': 'Self-Motivation',
-  special: 'Special Roles & Tools'
+  special: 'Special Roles & Tools',
+  dream: 'Zhuangzi Dream Series (GHM)'
 };
 
 function parseYAMLFrontmatter(content) {

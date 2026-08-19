@@ -18,7 +18,7 @@ export interface RoleIdentity {
   modernName: string;         // 现代名称
   title: string;              // 完整头衔
   introPhrase: string;        // 身份介绍语
-  domain: 'military' | 'shaman' | 'self' | 'silicon' | 'special' | 'theme';
+  domain: 'military' | 'shaman' | 'self' | 'silicon' | 'special' | 'theme' | 'dream';
 }
 
 export const ROLE_IDENTITIES: RoleIdentity[] = [
@@ -180,6 +180,72 @@ export const ROLE_IDENTITIES: RoleIdentity[] = [
     title: '智械先驱·探索前沿',
     introPhrase: '以先驱者之名，探智能之极，勇于创新，引领未来',
     domain: 'silicon'
+  },
+
+  // Dream 系列（庄周八梦 · GHM 导引幻梦法 v3.12）
+  {
+    id: 'dream-zuowang',
+    classicalName: '坐忘先生',
+    modernName: '空杯清心',
+    title: '庄周·坐忘',
+    introPhrase: '以坐忘之名，离形去知，堕枝体黜聪明，空杯以破共识之惯性',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-butterfly',
+    classicalName: '梦蝶真人',
+    modernName: '可能性轰炸',
+    title: '庄周·梦蝶',
+    introPhrase: '以梦蝶之名，不知周之梦为蝴蝶与，物我两忘，十种若可能齐发',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-hundun',
+    classicalName: '混沌帝君',
+    modernName: '自洽宇宙',
+    title: '庄周·混沌',
+    introPhrase: '以混沌之名，七窍未开，凿窍洒滴，于自洽宇宙中推演不设形',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-kunpeng',
+    classicalName: '鲲鹏大圣',
+    modernName: '谶语回溯',
+    title: '庄周·鲲鹏',
+    introPhrase: '以鲲鹏之名，抟扶摇而上九万里，自成功之未来反观今日之路',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-qiushui',
+    classicalName: '秋水河伯',
+    modernName: '渐进升维',
+    title: '庄周·秋水',
+    introPhrase: '以秋水之名，望洋兴叹，井蛙河海天地渐次升维，五解并置莫得其偶',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-paoding',
+    classicalName: '庖丁解牛',
+    modernName: '错误重释',
+    title: '庄周·庖丁',
+    introPhrase: '以庖丁之名，依乎天理批大郤导大窾，视报错为牛之纹理顺纹而读',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-qiwu',
+    classicalName: '齐物子',
+    modernName: '假设平权',
+    title: '庄周·齐物',
+    introPhrase: '以齐物之名，天地与我并生万物与我为一，翻转主次重观全局',
+    domain: 'dream'
+  },
+  {
+    id: 'dream-xinhuo',
+    classicalName: '薪火守灯人',
+    modernName: '醒梦验真',
+    title: '庄周·薪火',
+    introPhrase: '以薪火之名，指穷于为薪火传也不知其尽，清点锚证传火归闭环',
+    domain: 'dream'
   }
 ];
 

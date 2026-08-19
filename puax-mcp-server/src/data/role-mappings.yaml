@@ -61,6 +61,23 @@ trigger_role_mappings:
     primary: military-warrior
     alternatives: [military-commander, shaman-musk]
 
+  # GHM 导引幻梦法触发映射 (v3.12)
+  premature_convergence:
+    primary: dream-qiushui
+    alternatives: [dream-kunpeng, dream-xinhuo]
+    
+  creative_block:
+    primary: dream-butterfly
+    alternatives: [dream-kunpeng, dream-hundun]
+    
+  assumption_lock:
+    primary: dream-zuowang
+    alternatives: [dream-paoding, dream-qiwu]
+    
+  low_novelty:
+    primary: dream-hundun
+    alternatives: [dream-qiwu, dream-butterfly]
+
 # ============================================================================
 # 任务类型到角色的映射
 # ============================================================================
@@ -84,11 +101,11 @@ task_type_role_mappings:
     
   creative:
     primary: [shaman-musk, special-creative-spark, theme-alchemy]
-    secondary: [shaman-davinci, shaman-jobs, shaman-einstein]
+    secondary: [shaman-davinci, shaman-jobs, shaman-einstein, dream-butterfly, dream-hundun, dream-kunpeng]
     
   analysis:
     primary: [shaman-einstein, military-scout, shaman-buffett, silicon-auditor]
-    secondary: [shaman-sun-tzu, military-commander, silicon-throne]
+    secondary: [shaman-sun-tzu, military-commander, silicon-throne, dream-zuowang, dream-qiushui, dream-qiwu]
     
   emergency:
     primary: [military-militia, special-urgent-sprint, military-warrior]
@@ -472,11 +489,72 @@ role_metadata:
     intensity: medium
     suitable_for: [planning, design, architecture]
 
+  # GHM 导引幻梦法 · 庄周八梦 (v3.12)
+  dream-zuowang:
+    category: dream
+    tone: creative
+    intensity: medium
+    suitable_for: [unlearning, assumption-breaking, fresh-eyes]
+    
+  dream-butterfly:
+    category: dream
+    tone: creative
+    intensity: high
+    suitable_for: [divergence, brainstorming, perspective-flip]
+    
+  dream-hundun:
+    category: dream
+    tone: creative
+    intensity: high
+    suitable_for: [thought-experiment, counterfactual, paradox-holding]
+    
+  dream-kunpeng:
+    category: dream
+    tone: creative
+    intensity: high
+    suitable_for: [backcasting, scale-shift, extrapolation]
+    
+  dream-qiushui:
+    category: dream
+    tone: creative
+    intensity: medium
+    suitable_for: [multi-solution, progressive-widening, gap-finding]
+    
+  dream-paoding:
+    category: dream
+    tone: analytical
+    intensity: medium
+    suitable_for: [error-hermeneutics, constraint-analysis, reframing]
+    
+  dream-qiwu:
+    category: dream
+    tone: analytical
+    intensity: medium
+    suitable_for: [assumption-parity, salience-flip, simplification]
+    
+  dream-xinhuo:
+    category: dream
+    tone: analytical
+    intensity: high
+    suitable_for: [convergence, verification-handoff, safety-valve]
+
 # ============================================================================
 # 角色组合建议
 # ============================================================================
 
 role_combinations:
+  dream_divergence_full:
+    name: "庄周全梦组合"
+    roles: [dream-zuowang, dream-butterfly, dream-xinhuo]
+    sequence: sequential
+    description: "先坐忘清空，再梦蝶发散，终薪火验真——完整的入梦-造梦-醒梦闭环"
+    
+  dream_debug_reframe:
+    name: "庖丁解牛组合"
+    roles: [dream-paoding, dream-zuowang]
+    sequence: fallback
+    description: "先庖丁顺纹理解读报错，若仍锁定则坐忘清空重来"
+    
   debugging_deep_dive:
     name: "深度调试组合"
     roles: [military-scout, shaman-einstein, military-technician]

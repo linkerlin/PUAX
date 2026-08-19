@@ -1,10 +1,10 @@
 # PUAX — AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.11.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.12.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
-  <img src="https://img.shields.io/badge/skills-50-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-42-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
+  <img src="https://img.shields.io/badge/MCP%20tools-45-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
@@ -25,8 +25,9 @@ PUAX 是面向 AI Agent 的**激励与行为驱动**系统，核心能力包括�
 | 能力 | 说明 |
 |------|------|
 | **混合触发检测** | YAML 正则 + TF-IDF/子串语义（paraphrase 可命中） |
-| **智能角色推荐** | 50 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
+| **智能角色推荐** | 59 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
 | **行为有效性闭环** | 诊断先行、信心门控、失败后切换、Task Contract、独立验证 |
+| **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具（v3.12） |
 | **Hook System** | 会话状态、L0–L4 压力、突破降压、Compaction 推理保护 |
 | **自进化** | `~/.puax/evolution.json` 跨会话基线与段位 |
 | **11 种大厂风味** | 语气 + 行为约束（非仅修辞） |
@@ -111,9 +112,11 @@ npx puax-mcp-server --list-platforms
   - 平台导出：`--export=claude-code|cursor|opencode` 自动生成宿主 hook 配置与脚本
   - 详见 [docs/HOOK-ARCHITECTURE.md](docs/HOOK-ARCHITECTURE.md)
 
-### 50 激励角色 + 自定义角色
+### 59 激励角色 + 自定义角色
 
-8 大分类：军事、萨满、P10、硅基、主题、SillyTavern、自激励、特殊。
+9 大分类：军事、萨满、P10、硅基、主题、SillyTavern、自激励、特殊、**庄周八梦（dream，v3.12）**。
+
+庄周八梦 · GHM 导引幻梦法：坐忘 / 梦蝶 / 混沌 / 鲲鹏 / 秋水 / 庖丁 / 齐物 / 薪火——从认知操控机制逆向工程八术，让 Agent 主动利用受控幻觉进行发散思考与创作创新（详见 [docs/GHM.md](docs/GHM.md)）。
 
 自定义角色：`puax_register_custom_role` → 写入 `~/.puax/custom-roles.json`，自动进入推荐池。
 
@@ -139,7 +142,7 @@ node evals/benchmark.js        # 性能基准
 
 ---
 
-## MCP 工具概览（42 个）
+## MCP 工具概览（45 个）
 
 | 类别 | 代表工具 |
 |------|----------|
@@ -147,6 +150,7 @@ node evals/benchmark.js        # 性能基准
 | 检测与推荐 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
 | 行为协议 | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
 | 会话/压力 | `puax_start_session`, `puax_get_pressure_level`, `puax_handle_breakthrough` |
+| GHM 导引幻梦法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit`（v3.12） |
 | 自进化 | `puax_get_evolution_baseline`, `puax_record_evolution` |
 | 自定义角色 | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
 | 可观测性 | `puax_get_usage_stats`, `puax_flush_telemetry` |
@@ -189,8 +193,9 @@ PUAX/
 
 | 文档 | 说明 |
 |------|------|
+| [GHM 导引幻梦法](docs/GHM.md) | 驭幻觉发散引擎：病机、八术映射、庄周八梦、安全铁律 |
 | [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
-| [API 参考](docs/API.md) | **42 个 MCP 工具**参数与示例（v3.10） |
+| [API 参考](docs/API.md) | **45 个 MCP 工具**参数与示例（v3.12） |
 | [使用指南](docs/USER-GUIDE.md) | 场景化工作流 |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
