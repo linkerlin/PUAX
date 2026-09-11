@@ -30,6 +30,14 @@ run('场景 JSON 结构', () => {
   execSync('node evals/validate-scenarios.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
+run('AMB v0 记分卡', () => {
+  execSync('node evals/amb-scorecard.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('硅基剧场本机演练', () => {
+  execSync('node evals/silicon-theater.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
 run('元数据一致性', () => {
   execSync('node scripts/validate-metadata.js', { cwd: MCP, stdio: 'pipe' });
 });
@@ -41,10 +49,27 @@ run('协议合规 Jest', () => {
   });
 });
 
-run('CHANGELOG 含 v3.8', () => {
+run('CHANGELOG 含 v3.8 与 v4.0', () => {
   const changelog = readFileSync(join(MCP, 'CHANGELOG.md'), 'utf-8');
   if (!changelog.includes('3.10.0')) throw new Error('CHANGELOG 缺少 3.10.0');
   if (!changelog.includes('3.10.1')) throw new Error('CHANGELOG 缺少 3.10.1');
+  if (!changelog.includes('4.0.0')) throw new Error('CHANGELOG 缺少 4.0.0');
+});
+
+run('GHM 离线铁律', () => {
+  execSync('node evals/test-ghm-offline.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('GHM 发散度指标', () => {
+  execSync('node evals/test-ghm-divergence.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('GHM 泄漏源码门', () => {
+  execSync('node evals/test-ghm-leakage.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('GHM 梦系离线对照', () => {
+  execSync('node evals/test-ghm-contrast.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
 run('方法论指南已生成', () => {
@@ -79,6 +104,26 @@ run('L4 治理评测（无 LLM）', () => {
 
 run('会话心跳评测（无 LLM）', () => {
   execSync('node evals/test-heartbeat.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('v4 心跳 + AMP', () => {
+  execSync('node evals/test-tick-heartbeat.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('TTF 冷启动', () => {
+  execSync('node evals/test-ttf.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('Hook 路径 TTF', () => {
+  execSync('node evals/test-hook-ttf.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('Hook PostToolUse 失败', () => {
+  execSync('node evals/test-hook-posttool.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
+run('使用指南心跳优先', () => {
+  execSync('node evals/test-userguide-v4.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
 run('性能基准（无 LLM）', () => {

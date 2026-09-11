@@ -9,10 +9,12 @@ import {
   FlavorExportData, 
   PlatformExportConfig,
   ExportResult,
-  globalAdapterRegistry
+  globalAdapterRegistry,
+  type HookFile,
 } from './base-adapter.js';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
+import { generateCopilotHarnessHooks } from './hook-templates.js';
 
 export class VSCodeAdapter extends PlatformAdapter {
   constructor() {
@@ -208,6 +210,14 @@ ${roles.slice(0, 10).map(r => `| ${r.name} | ${r.taskTypes[0] || '通用'} | /pu
       writeFileSync(configPath, configContent, 'utf-8');
       result.exportedFiles.push(configPath);
 
+      for (const hookFile of this.generateHooks(config)) {
+        const hookPath = join(config.outputPath, hookFile.path);
+        const hookDir = dirname(hookPath);
+        if (!existsSync(hookDir)) mkdirSync(hookDir, { recursive: true });
+        writeFileSync(hookPath, hookFile.content, 'utf-8');
+        result.exportedFiles.push(hookPath);
+      }
+
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       result.errors.push(errorMsg);
@@ -252,6 +262,10 @@ ${role.systemPrompt.substring(0, 1000)}...
 
   protected getRoleFileName(role: RoleExportData): string {
     return `instructions/${role.id}.instructions.md`;
+  }
+
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    return generateCopilotHarnessHooks('hooks/hooks-vscode.json');
   }
 }
 

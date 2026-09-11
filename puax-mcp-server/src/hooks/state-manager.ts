@@ -38,6 +38,8 @@ export interface SessionState {
   activeTask?: string;
   peakPressureLevel: number;
   lastCheckpointTime?: number;
+  /** v4：首次压力发生的 epoch ms。用于 Time-to-First-Pressure。 */
+  firstPressureAt?: number;
 }
 
 export interface FailureRecord {

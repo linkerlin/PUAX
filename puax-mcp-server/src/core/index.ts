@@ -25,6 +25,15 @@ export {
 export type { CoreServices } from './service-registry.js';
 export { RoleRecommender, roleRecommender } from './role-recommender.js';
 export { MethodologyEngine, methodologyEngine } from './methodology-engine.js';
+export { runEvolveCycle, normalizeTriggerId } from './evolve-cycle.js';
+export { arenaStore } from './arena.js';
+export { compileThinPrompt } from './thin-prompt.js';
+export { SHAMAN_ROLE_IDS, KERNEL_ROLE_IDS, isShamanRole } from './role-kernel.js';
+export { compileCouncilItinerary, DREAM_COUNCIL_LEGS } from './dream-council.js';
+export { distinctN, semanticRadius } from './ghm-metrics.js';
+export { getTtfSummary } from './ttf.js';
+export { toAmpEnvelope, ampSpecDoc, AMP_SPEC } from './amp.js';
+export { runSiliconTheater, planSiliconTheater } from './silicon-theater.js';
 
 // 导出类型
 export type {

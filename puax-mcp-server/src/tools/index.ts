@@ -300,6 +300,9 @@ import { listPlatformsTool } from './list-platforms.js';
 import { customRoleTools } from './custom-role.js';
 import { observabilityTools } from './usage-stats.js';
 import { dreamscapeTools } from './dreamscape.js';
+import { puaxTickTool } from './tick.js';
+import { puaxSetArenaTool } from './arena.js';
+import { puaxEvolveTool } from './evolve-cycle.js';
 import { buildHookToolHandlers, type ToolHandler } from './registry.js';
 
 /**
@@ -346,6 +349,11 @@ export const allTools = [
 
   // v3.12 GHM 导引幻梦法（庄周八梦）
   ...dreamscapeTools,
+
+  // v4.0 真正的产品：心跳、处境、进化
+  puaxTickTool,
+  puaxSetArenaTool,
+  puaxEvolveTool,
 
   // Legacy Role 工具
   ListRolesTool,

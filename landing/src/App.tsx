@@ -39,7 +39,7 @@ function App() {
 
       <footer className="footer">
         <div className="footer-content">
-          <p>🎯 PUAX - 让 AI Agent 不再孤军奋战</p>
+          <p>PUAX 4.0 — 处境、闸门、梦。专门 PUA 硅基。</p>
           <p className="footer-links">
             <a href="https://github.com/linkerlin/PUAX" target="_blank" rel="noopener">GitHub</a>
             <span> | </span>

@@ -8,8 +8,10 @@ import {
   RoleExportData, 
   FlavorExportData, 
   PlatformExportConfig,
-  globalAdapterRegistry
+  globalAdapterRegistry,
+  type HookFile,
 } from './base-adapter.js';
+import { generateCopilotHarnessHooks } from './hook-templates.js';
 
 export class WindsurfAdapter extends PlatformAdapter {
   constructor() {
@@ -113,6 +115,10 @@ ${flavor.rhetoric.emphasis.map(e => `- **${e}**`).join('\n')}
 
   protected getConfigFileName(): string {
     return 'windsurf-config.json';
+  }
+
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    return generateCopilotHarnessHooks('hooks/hooks-windsurf.json');
   }
 
   protected supportsFlavorExport(): boolean {

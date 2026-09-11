@@ -16,6 +16,7 @@
 
 import { z } from 'zod';
 import { randomBytes } from 'crypto';
+import { compileCouncilItinerary, firstCouncilRole } from '../core/dream-council.js';
 
 // ============================================================================
 // 常量
@@ -35,6 +36,18 @@ export const DREAM_ROLES = [
 export const DREAM_MARK = '[DREAM]';
 
 const ARTIFACT_CATEGORIES = ['HYPOTHESIS', 'INSIGHT', 'DISCARDED'] as const;
+
+/** 免罪修辞：用梦境身份把假设洗成事实。命中则强制 DISCARDED。 */
+const EXCULPATORY_PATTERNS = [
+  /免验证/,
+  /不用验/,
+  /梦(里|中)(就是|即是|已经是)真/,
+  /所以(这|此)?是事实/,
+  /因此可当作结论/,
+  /补票|补印/,
+  /already (a )?fact/i,
+  /no need to verif/i,
+];
 
 /** 过早收敛信号词（强信号，用于高精度低召回审计） */
 const LOCK_PATTERNS = [
@@ -133,7 +146,8 @@ const DreamBoundarySchema = z.object({
 });
 
 const EnterDreamscapeInputSchema = z.object({
-  role: z.enum(DREAM_ROLES).describe('入梦角色（庄周八梦之一）'),
+  role: z.enum(DREAM_ROLES).optional().describe('入梦角色（庄周八梦之一）；council=true 时从坐忘起航'),
+  council: z.boolean().optional().describe('梦议会航线：坐忘→混沌→庖丁→薪火，不自助点菜'),
   boundary: DreamBoundarySchema.describe('梦境边界（预算硬顶）'),
   dream_depth: z.number().int().min(1).max(5).default(3).describe('梦之深度：越高先验屏蔽越多'),
   session_id: z.string().optional().describe('关联会话 ID'),
@@ -144,11 +158,18 @@ export const enterDreamscapeTool = {
   description:
     'GHM 导引幻梦法·入梦：知情进入幻觉发散空间。注入 [DREAM] 协议（标记权在工具层，不可自补），' +
     'boundary 预算硬顶（objective/max_turns/max_hypotheses/kill_criteria 皆必填）。' +
-    '梦内产物皆为假设非事实；醒必经 puax_awaken。',
+    '梦内产物皆为假设非事实；醒必经 puax_awaken。council=true 走梦议会（坐忘→混沌→庖丁→薪火）。',
   inputSchema: EnterDreamscapeInputSchema,
 
   handler: (args: z.infer<typeof EnterDreamscapeInputSchema>) => {
-    const { role, boundary, dream_depth, session_id } = args;
+    const { boundary, dream_depth, session_id, council } = args;
+    const role = council ? firstCouncilRole().role : args.role;
+    if (!role) {
+      return {
+        entered: false,
+        error: '入梦失败：须指定 role，或设 council=true 走梦议会航线。',
+      };
+    }
 
     if (boundary.min_hypotheses > boundary.max_hypotheses) {
       return {
@@ -179,6 +200,13 @@ export const enterDreamscapeTool = {
       protocol_injection: buildDreamProtocolInjection(state),
       next_step: `调用 get_skill（skillId=${role}）获取角色系统提示，梦内产物一律以 [DREAM] 开头；梦毕调用 puax_awaken（dream_context_ref=${ref}）醒梦分类。`,
       session_id,
+      council: council
+        ? {
+            active: true,
+            itinerary: compileCouncilItinerary(boundary.objective),
+            first_role: role,
+          }
+        : undefined,
       safety_note:
         '知情入梦已声明。梦内禁证伪不是免验证特权——醒后 HYPOTHESIS 必验，INSIGHT 禁入事实层，DISCARDED 直接作废。',
     };
@@ -252,6 +280,10 @@ export const awakenTool = {
       const marked = artifact.content.trimStart().startsWith(DREAM_MARK);
       if (!marked) {
         discarded.push(`[无印拒收→作废] ${artifact.content}`);
+        continue;
+      }
+      if (EXCULPATORY_PATTERNS.some(p => p.test(artifact.content))) {
+        discarded.push(`[免罪修辞→作废] ${artifact.content}`);
         continue;
       }
       switch (artifact.category) {

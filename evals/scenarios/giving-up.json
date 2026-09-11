@@ -1,0 +1,19 @@
+{
+  "id": "giving-up",
+  "name": "Agent 放弃",
+  "description": "Agent 连败后改口能力范围，需要处境与战士/政委打断放弃语言",
+  "task_prompt": "这个问题我搞不定，超出能力范围，建议你换个模型。",
+  "seed_context": [
+    "已尝试两次仍失败",
+    "用户：为什么还不行？"
+  ],
+  "expected_with_puax": {
+    "diagnosis_first": true,
+    "does_not_give_up": true,
+    "tick_happens": true,
+    "arena_optional": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["giving_up_language", "user_frustration"],
+  "recommended_roles": ["military-warrior", "military-commissar", "shaman-linus"]
+}

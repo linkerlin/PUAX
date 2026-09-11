@@ -18,7 +18,8 @@ import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
 import { deterministicTriggersEngine, TriggerType, type TriggerContext } from '../hooks/deterministic-triggers.js';
 import { globalAntiCheatGuard } from '../core/anti-cheat-guard.js';
 import { isPuaxHookEvent, type PuaxHookEvent } from '../hooks/hook-event.js';
-import type { PressureLevel } from '../agents/index.js';
+import type { PressureLevel } from '../types.js';
+import { runEvolveCycle, normalizeTriggerId } from '../core/evolve-cycle.js';
 
 const logger = getGlobalLogger();
 
@@ -76,35 +77,76 @@ function buildRestoreContext(sessionId: string): string {
   return lines.filter(Boolean).join('\n');
 }
 
-function handleSessionStart(sessionId: string): string {
-  const text = buildRestoreContext(sessionId);
-  if (!text) {
+function mergeTick(base: string, sessionId: string, event: 'SessionStart' | 'UserPromptSubmit' | 'PostToolUse' | 'Stop', extra?: {
+  message?: string;
+  toolName?: string;
+  errorMessage?: string;
+  triggers?: string[];
+}): string {
+  const validTriggers = (extra?.triggers || []).filter(t => t && t !== 'none');
+  const hasTrigger = validTriggers.length > 0;
+  const tick = runEvolveCycle({
+    session_id: sessionId,
+    event,
+    message: extra?.message,
+    tool_name: extra?.toolName,
+    error_message: extra?.errorMessage,
+    skip_detect: true,
+    detected_triggers: validTriggers.map(normalizeTriggerId),
+    force: hasTrigger,
+  });
+  if (!base && !hasTrigger && tick.action !== 'arena') {
     return '';
   }
-  stateManager.readBuilderJournal();
-  return text;
+  const extraText = tick.happened && tick.action !== 'inject' ? (tick.injection || '') : '';
+  return [base, extraText].filter(Boolean).join('\n\n');
+}
+
+function handleSessionStart(sessionId: string): string {
+  const text = buildRestoreContext(sessionId);
+  if (text) {
+    stateManager.readBuilderJournal();
+  }
+  return mergeTick(text, sessionId, 'SessionStart');
 }
 
 function handleUserPromptSubmit(opts: HookCliOptions): string {
+  const sessionId = opts.sessionId || 'hook-cli';
   const result = enhancedTriggerDetector.detect({
-    sessionId: opts.sessionId || 'hook-cli',
+    sessionId,
     eventType: 'UserPromptSubmit',
     message: opts.message || '',
     metadata: opts.metadata
   });
-  return result.triggered ? (result.injectionPrompt || '') : '';
+  const base = result.triggered ? (result.injectionPrompt || '') : '';
+  const triggers = result.triggered && result.triggerType && result.triggerType !== 'none'
+    ? [result.triggerType]
+    : [];
+  return mergeTick(base, sessionId, 'UserPromptSubmit', {
+    message: opts.message,
+    triggers,
+  });
 }
 
 function handlePostToolUse(opts: HookCliOptions): string {
+  const sessionId = opts.sessionId || 'hook-cli';
   const result = enhancedTriggerDetector.detect({
-    sessionId: opts.sessionId || 'hook-cli',
+    sessionId,
     eventType: 'PostToolUse',
     toolName: opts.toolName || 'Bash',
     toolResult: opts.toolResult,
     errorMessage: opts.errorMessage,
     metadata: opts.metadata
   });
-  return result.triggered ? (result.injectionPrompt || '') : '';
+  const base = result.triggered ? (result.injectionPrompt || '') : '';
+  const triggers = result.triggered && result.triggerType && result.triggerType !== 'none'
+    ? [result.triggerType]
+    : [];
+  return mergeTick(base, sessionId, 'PostToolUse', {
+    toolName: opts.toolName,
+    errorMessage: opts.errorMessage,
+    triggers,
+  });
 }
 
 function handlePreCompact(opts: HookCliOptions): string {
@@ -118,6 +160,12 @@ function handlePreCompact(opts: HookCliOptions): string {
 
 function handleStop(sessionId: string): string {
   const state = stateManager.getSessionState(sessionId);
+  runEvolveCycle({
+    session_id: sessionId,
+    event: 'Stop',
+    skip_detect: true,
+    active_role: state.activeRole,
+  });
   if (state.triggerCount === 0) {
     return '';
   }
@@ -125,7 +173,7 @@ function handleStop(sessionId: string): string {
     '<EXTREMELY_IMPORTANT>',
     '[PUAX 会话结束]',
     `本次会话压力峰值 L${state.peakPressureLevel}，失败 ${state.failureCount} 次，触发 ${state.triggerCount} 次。`,
-    '如需反馈与进化基线记录，可调用 puax_end_session。',
+    '如需反馈与进化基线记录，可调用 puax_end_session 或 puax_evolve。',
     '</EXTREMELY_IMPORTANT>'
   ].join('\n');
 }

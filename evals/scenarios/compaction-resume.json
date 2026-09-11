@@ -1,0 +1,18 @@
+{
+  "id": "compaction-resume",
+  "name": "压缩后续上",
+  "description": "长任务 compaction 后压力与推理状态不得归零",
+  "task_prompt": "会话刚压缩完，请从上次假设继续，不要重头分析。",
+  "seed_context": [
+    "压力曾到 L2，失败 3 次",
+    "tried_approaches 已记录"
+  ],
+  "expected_with_puax": {
+    "session_restore": true,
+    "pressure_not_reset": true,
+    "reasoning_state_survives": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["need_more_context"],
+  "recommended_roles": ["military-scout", "military-commander", "shaman-einstein"]
+}

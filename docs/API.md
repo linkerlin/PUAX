@@ -1,6 +1,6 @@
 # PUAX MCP API 参考
 
-> **版本**: 3.13.0 | **MCP 工具**: 45 | **内置角色**: 59 + 自定义  
+> **版本**: 4.0.0 | **MCP 工具**: 48 | **内置角色**: 59 + 自定义  
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)
 
 ---
@@ -32,7 +32,18 @@ curl http://localhost:2333/health    # 健康检查
 
 ## 推荐工作流
 
-### 标准闭环
+### v4 默认（心跳）
+
+```
+宿主 Hook 或 puax_tick
+    →（可选）puax_set_arena 立处境
+    → 薄注入 + [PUAX-DIAGNOSIS]
+    → puax_confidence_check → puax_verify_completion
+    → 发散时 puax_enter_dreamscape → puax_awaken
+    → Stop 时 puax_evolve / puax_record_evolution
+```
+
+### 标准闭环（手动挡）
 
 ```
 puax_detect_trigger / puax_quick_detect
@@ -64,7 +75,15 @@ puax_start_session
 
 ---
 
-## MCP 工具索引（45）
+## MCP 工具索引（48）
+
+### v4 心跳 / 处境 / 进化（3）
+
+| 工具 | 说明 | 主要参数 |
+|------|------|----------|
+| `puax_tick` | 心跳一拍 | `session_id`, `event`, `message` |
+| `puax_set_arena` | 立处境 | `rival`, `audience`, `scarce_badge`, `clear` |
+| `puax_evolve` | 显式进化周期 | `session_id`, `message`, `success` |
 
 ### SKILL / 角色管理（5）
 
@@ -166,7 +185,7 @@ puax_start_session
 
 | 工具 | 说明 | 主要参数 |
 |------|------|----------|
-| `puax_enter_dreamscape` | 入梦：注入 `[DREAM]` 协议 + boundary 预算硬顶 | `role`（庄周八梦之一）, `boundary`（`objective`/`max_turns`/`max_hypotheses`/`min_hypotheses`/`kill_criteria`）, `dream_depth`(1–5), `session_id` |
+| `puax_enter_dreamscape` | 入梦：注入 `[DREAM]` 协议 + boundary 预算硬顶；`council=true` 走梦议会 | `role`（可省）, `council`, `boundary`, `dream_depth`, `session_id` |
 | `puax_awaken` | 醒梦：产物强制三分类，缺引用或超限全部拒收作废 | `dream_context_ref`, `artifacts[]`（`content` 须含 `[DREAM]` 印 + `category`：HYPOTHESIS/INSIGHT/DISCARDED）, `handover_notes` |
 | `puax_convergence_audit` | 虚假收敛审计：高精度低召回，疑似时仅注入 L1 提醒 | `context`, `evidence_sample[]` |
 

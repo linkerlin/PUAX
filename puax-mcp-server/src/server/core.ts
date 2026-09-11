@@ -25,6 +25,11 @@ import { loadVersion } from '../utils/version.js';
 import { withSpanAsync } from '../core/telemetry.js';
 import { usageStatsCollector } from '../core/usage-stats.js';
 import type { ServerConfig } from '../types.js';
+import { V4_PUBLIC_VERBS } from '../core/v4-dashboard.js';
+import { KERNEL_ROLE_IDS, EXPERIMENTAL_ROLE_IDS, SHAMAN_ROLE_IDS } from '../core/role-kernel.js';
+import { ampSpecDoc } from '../core/amp.js';
+import { planSiliconTheater } from '../core/silicon-theater.js';
+import { dispatchV4 } from './v4-http.js';
 
 const toolHandlerMap = buildToolHandlerMap(
   allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
@@ -84,9 +89,21 @@ export class PuaxMcpServer {
 
     private setupToolHandlers(): void {
         // List tools handler
-        this.server.setRequestHandler(ListToolsRequestSchema, () => ({
-            tools: Tools
-        }));
+        this.server.setRequestHandler(ListToolsRequestSchema, () => {
+            const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
+            const ordered = [
+                ...Tools.filter((t: { name: string }) => publicSet.has(t.name)),
+                ...Tools.filter((t: { name: string }) => !publicSet.has(t.name)),
+            ];
+            return {
+                tools: ordered.map((t: { name: string; description?: string }) => ({
+                    ...t,
+                    description: publicSet.has(t.name) && t.description && !t.description.startsWith('[v4]')
+                        ? `[v4] ${t.description}`
+                        : t.description,
+                })),
+            };
+        });
 
         // Tool execution dispatcher：遍历 allTools，通过嵌入 handler 分发
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -156,17 +173,79 @@ export class PuaxMcpServer {
 
     private setupResourceHandlers(): void {
         this.server.setRequestHandler(ListResourcesRequestSchema, () => {
-            const resources = promptManager.getAllSkills().map(skill => ({
-                uri: `puax://skills/${skill.id}`,
-                description: `${skill.name} - ${skill.category}`,
-                mimeType: 'text/markdown'
-            }));
+            const resources = [
+                {
+                    uri: 'puax://v4/verbs',
+                    description: 'v4 对外 12 动词（默认路径）',
+                    mimeType: 'application/json',
+                },
+                {
+                    uri: 'puax://v4/kernel',
+                    description: '角色内核 / 萨满全留 / 实验池',
+                    mimeType: 'application/json',
+                },
+                {
+                    uri: 'puax://v4/amp',
+                    description: 'AMP 0.1 规格（事件 / 块 / 闸门 / 状态）',
+                    mimeType: 'application/json',
+                },
+                {
+                    uri: 'puax://v4/theater',
+                    description: '硅基剧场剧本（处境 / 闸门 / 梦）',
+                    mimeType: 'application/json',
+                },
+                ...promptManager.getAllSkills().map(skill => ({
+                    uri: `puax://skills/${skill.id}`,
+                    description: `${skill.name} - ${skill.category}`,
+                    mimeType: 'text/markdown'
+                })),
+            ];
 
             return { resources };
         });
 
         this.server.setRequestHandler(ReadResourceRequestSchema, (request) => {
             const { uri } = request.params;
+            if (uri === 'puax://v4/verbs') {
+                return {
+                    contents: [{
+                        uri,
+                        mimeType: 'application/json',
+                        text: JSON.stringify({ public_verbs: [...V4_PUBLIC_VERBS] }, null, 2),
+                    }],
+                };
+            }
+            if (uri === 'puax://v4/amp') {
+                return {
+                    contents: [{
+                        uri,
+                        mimeType: 'application/json',
+                        text: JSON.stringify(ampSpecDoc(), null, 2),
+                    }],
+                };
+            }
+            if (uri === 'puax://v4/theater') {
+                return {
+                    contents: [{
+                        uri,
+                        mimeType: 'application/json',
+                        text: JSON.stringify(planSiliconTheater(), null, 2),
+                    }],
+                };
+            }
+            if (uri === 'puax://v4/kernel') {
+                return {
+                    contents: [{
+                        uri,
+                        mimeType: 'application/json',
+                        text: JSON.stringify({
+                            kernel: [...KERNEL_ROLE_IDS],
+                            shaman: [...SHAMAN_ROLE_IDS],
+                            experimental: [...EXPERIMENTAL_ROLE_IDS],
+                        }, null, 2),
+                    }],
+                };
+            }
             const match = uri.match(/^puax:\/\/skills\/(.+)$/);
             
             if (!match) {
@@ -253,6 +332,7 @@ export class PuaxMcpServer {
             this.logger.info('──────────────────────────────────────────');
             this.logger.info('Endpoints:');
             this.logger.info(`  Health:  http://${host}:${port}/health`);
+            this.logger.info(`  v4:      http://${host}:${port}/v4/dashboard|/amp|/theater|/roles`);
             this.logger.info(`  MCP:     http://${host}:${port}/mcp`);
             this.logger.info(`  SSE:     http://${host}:${port}/`);
             this.logger.info(`  Message: http://${host}:${port}/message`);
@@ -360,6 +440,28 @@ export class PuaxMcpServer {
                     res.end('Missing session ID for GET request');
                 }
             }
+            else if (pathname.startsWith('/v4/')) {
+                const routed = dispatchV4(req.method || 'GET', pathname);
+                if (!routed) {
+                    res.writeHead(404, { 'Content-Type': 'text/plain' });
+                    res.end('Not Found');
+                    return;
+                }
+                if (routed.status === 204) {
+                    res.writeHead(204, {
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type',
+                    });
+                    res.end();
+                    return;
+                }
+                res.writeHead(routed.status, {
+                    'Content-Type': 'application/json; charset=utf-8',
+                    'Access-Control-Allow-Origin': '*',
+                });
+                res.end(JSON.stringify(routed.json));
+            }
             // Health check
             else if (req.method === 'GET' && pathname === '/health') {
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -367,6 +469,7 @@ export class PuaxMcpServer {
                     status: 'ok',
                     service: 'puax-mcp-server',
                     version: this.version,
+                    product: '处境、闸门、梦',
                     activeSessions: this.transports.size
                 }));
             }

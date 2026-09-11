@@ -1,14 +1,14 @@
 # PUAX — AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.13.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-45-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP Tools">
 </p>
 
 <p align="center">
-  <b>When AI Agents stall, PUAX provides roles, methodologies, and behavior protocols</b>
+  <b>A cognitive runtime for silicon minds: situation, gates, and guided dreams.</b>
 </p>
 
 <p align="center">

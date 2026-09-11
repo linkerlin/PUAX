@@ -76,7 +76,9 @@ export class FeedbackSystem {
   private triggerFeedback: TriggerFeedback[] = [];
   private featureRequests: FeatureRequest[] = [];
 
-  constructor(dataDir: string = './feedback/data') {
+  constructor(dataDir: string = process.env.PUAX_HOME
+    ? join(process.env.PUAX_HOME, 'feedback')
+    : './feedback/data') {
     this.dataDir = dataDir;
     this.ensureDataDir();
     this.loadData();

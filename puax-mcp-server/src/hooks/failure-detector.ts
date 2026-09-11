@@ -7,7 +7,7 @@
 
 import { EventEmitter } from 'events';
 import { getGlobalLogger } from '../utils/logger.js';
-import type { PressureLevel } from '../agents/index.js';
+import type { PressureLevel } from '../types.js';
 
 const logger = getGlobalLogger();
 

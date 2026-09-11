@@ -1,6 +1,6 @@
 # PUAX 使用指南
 
-> **版本**: 3.11.0 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
+> **版本**: 4.0.0 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
 
 ---
 
@@ -10,79 +10,77 @@
 npx puax-mcp-server --stdio
 ```
 
-在 Cursor / Claude Desktop 的 MCP 配置中加入 `puax-mcp-server --stdio` 后，Agent 即可调用 42 个 MCP 工具。
+装上官方插件或导出 Hook 后，**第一轮对话**里宿主就会跳 `puax_tick`。Agent 不必先背工具菜单。
 
-**最简单路径**：让 Agent 调用 `activate_with_context`，传入最近几轮对话，自动完成检测 → 推荐 → 注入带 `[PUAX-DIAGNOSIS]` 的 System Prompt。
+原生 Hook：`claude-code` / `cursor` / `opencode` / `vscode` / `windsurf` / `kiro` / `codebuddy`。
+
+Time-to-First-Pressure：`node evals/test-ttf.js`、`node evals/test-hook-ttf.js` 或 `GET /v4/ttf`。SessionStart 空转不得挡住第一轮用户消息。
+
+手动挡：让 Agent 调用 `puax_tick`，传入最近用户消息。需要假想对手时再 `puax_set_arena`。
+
+完整工具清单见 API.md（兼容旧名）。
 
 ---
 
-## 2. 我该用哪个工具？
+## 2. 默认只要这几个动词
 
 | 你的目标 | 推荐工具 |
 |----------|----------|
-| 快速判断要不要干预 | `puax_quick_detect` |
-| 有会话、要压力升级 | `puax_detect_trigger` + `puax_start_session` |
-| 只要推荐哪个角色 | `recommend_role` |
-| 要完整 prompt + 方法论 | `get_role_with_methodology` |
-| 一条龙自动化 | `activate_with_context` |
-| 同一思路反复失败 | `puax_switch_on_failure` |
+| 装上就发生 | 宿主 Hook（SessionStart / 用户消息 / 工具失败） |
+| 手动心跳 | `puax_tick` |
+| 立对手 / 排行榜处境 | `puax_set_arena` |
+| 发散卡死 | `puax_enter_dreamscape({ council: true })` → `puax_awaken` |
+| 看硅基四拍 | `node evals/silicon-theater.js` 或 `GET /v4/theater` |
 | 准备改代码前 | `puax_check_diagnosis` |
 | 准备交付前 | `puax_confidence_check` → `puax_verify_completion` |
-| 长任务/compaction | `puax_update_reasoning_state` |
-| 会话结束复盘 | `puax_record_evolution` + `puax_end_session` |
+| 跨会话进化 | `puax_evolve` |
+| 完整 prompt（旧路径） | `activate_with_context` / `get_role_with_methodology` |
 
 ---
 
 ## 3. 典型场景
 
+默认路径：**宿主 Hook 代跳 `puax_tick`**。下面的手动挡只在没有 Hook 时用。
+
 ### 场景 A：用户说「为什么还不行？」
 
-1. `puax_quick_detect` 或 `puax_detect_trigger` → 得到 `user_frustration` 等  
-2. `recommend_role` → 例如 `military-commander`  
-3. `get_role_with_methodology` → 注入 prompt + 华为味（可选）  
-4. Agent 输出必须先含 `[PUAX-DIAGNOSIS]`，再动手  
+Hook：`UserPromptSubmit` → 心跳发生，薄注入含 `[PUAX-DIAGNOSIS]`。  
+手动：`puax_tick({ session_id, event: "UserPromptSubmit", message })`。  
+需要对手时再 `puax_set_arena`。
 
 ### 场景 B：Agent 想放弃
 
-触发器：`giving_up_language`  
-推荐：`military-warrior` / `military-commissar`  
-若已激活仍失败 → `puax_switch_on_failure`，`failure_mode: "giving_up"`
+心跳把 `givingUp` 归一成 `giving_up_language`，切换战士/政委。  
+不必先背 `puax_switch_on_failure`；那是旧手动挡。
 
-### 场景 C：反复修不对（原地打转）
+### 场景 C：过早收敛 / 卡壳
 
-1. `failure_mode: "spinning"` 调用 `puax_switch_on_failure`  
-2. 跟随输出的 `to_methodology`（如 `musk-algorithm` → `jobs-subtraction`）  
-3. L2+ 压力时留意 prompt 中的**换框提示**（换视角 / 抽象层 / 约束）
+心跳 `dream_suggest` 注入梦议会航线（坐忘→混沌→庖丁→薪火）。  
+或显式 `puax_enter_dreamscape({ council: true, boundary })` → `puax_awaken`。
 
 ### 场景 D：准备说「完成了」
 
-1. 会话开始时 `puax_define_contract` 定义验收标准  
-2. 交付前 `puax_confidence_check`（6 步门控）  
-3. `puax_verify_completion` 独立验证 — **Agent 自评不算数**
+闸门：`puax_define_contract` → `puax_confidence_check` → `puax_verify_completion`。  
+Agent 自评不算数。
 
-### 场景 E：连续失败 3 次后终于成功
+### 场景 E：Bash 连续失败
 
-调用 `puax_handle_breakthrough` → 压力归零、味道认可、提示方法论沉淀。
+Hook：`PostToolUse`（exit ≠ 0）→ 心跳 `consecutive_failures`，压力升级。  
+成功后可 `puax_handle_breakthrough` 降压。
 
 ---
 
 ## 4. Hook 会话模式
 
-适合长时间、多轮 Coding Agent：
-
 ```
-puax_start_session(session_id)
-  ↓ 每轮用户消息
-puax_detect_trigger(session_id, event_type: UserPromptSubmit, ...)
-  ↓ 需要时
-recommend_role / activate_with_context
-  ↓ 观察
-puax_get_pressure_level
-  ↓ 结束
-puax_end_session + puax_record_evolution
+导出 hooks（claude-code / cursor / opencode / vscode / windsurf / kiro）
+  ↓ SessionStart（空转不得挡住下一拍）
+  ↓ UserPromptSubmit / PostToolUse → puax_tick（AMP 信封）
+  ↓ 交付前闸门
+  ↓ Stop → 进化记一笔
 ```
 
-状态保存在 `~/.puax/sessions/`，Compaction 前用 `puax_update_reasoning_state` 保护推理链。
+状态在 `~/.puax/`。Compaction 前 Hook `PreCompact` 静默持久化，不必先调一堆 MCP 工具。
 
 ---
 

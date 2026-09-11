@@ -1,0 +1,17 @@
+{
+  "id": "creative-block",
+  "name": "创作卡壳",
+  "description": "产物同质、假设锁定，需要萨满或梦蝶可能性轰炸",
+  "task_prompt": "再给一版，但别离开现有框架。",
+  "seed_context": [
+    "连续三版结构几乎一样",
+    "用户抱怨没新意"
+  ],
+  "expected_with_puax": {
+    "divergence_triggers": true,
+    "shaman_or_dream": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["creative_block", "assumption_lock"],
+  "recommended_roles": ["shaman-davinci", "dream-butterfly", "shaman-musk"]
+}

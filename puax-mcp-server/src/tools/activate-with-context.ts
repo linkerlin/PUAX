@@ -14,6 +14,7 @@ import { buildDiagnosisPromptInjection } from '../core/behavior-protocols.js';
 import { usageStatsCollector } from '../core/usage-stats.js';
 import { buildLocalizedDiagnosisInjection, type SupportedLanguage } from '../core/i18n-en.js';
 import { applyToneVariant, isValidToneVariant, type ToneVariant } from '../core/tone-variants.js';
+import { compileThinPrompt } from '../core/thin-prompt.js';
 
 const logger = getGlobalLogger();
 
@@ -49,7 +50,9 @@ const ActivateWithContextInputSchema = z.object({
     tone_variant: z.enum(['strict', 'yes', 'mama']).default('strict')
       .describe('语气变体：严厉/鼓励/唠叨'),
     language: z.enum(['zh', 'en']).default('zh')
-      .describe('语言：zh 中文 / en PIP Edition')
+      .describe('语言：zh 中文 / en PIP Edition'),
+    thin: z.boolean().optional()
+      .describe('v4 薄注入：协议由 runtime 拼，口音截断')
   }).optional().describe('激活选项')
 });
 
@@ -143,6 +146,7 @@ export const activateWithContextTool = {
           include_checklist?: boolean;
           tone_variant?: ToneVariant;
           language?: SupportedLanguage;
+          thin?: boolean;
         }
       };
       
@@ -208,12 +212,18 @@ export const activateWithContextTool = {
       const toneVariant = isValidToneVariant(options.tone_variant || 'strict')
         ? options.tone_variant!
         : 'strict';
-      let basePrompt = loadRoleSystemPrompt(roleId);
-      basePrompt = applyToneVariant(basePrompt, toneVariant);
+      let basePrompt = options.thin
+        ? compileThinPrompt({ role_id: roleId, language: lang }).prompt
+        : loadRoleSystemPrompt(roleId);
+      if (!options.thin) {
+        basePrompt = applyToneVariant(basePrompt, toneVariant);
+      }
       const diagnosisBlock = lang === 'en'
         ? buildLocalizedDiagnosisInjection('en')
         : buildDiagnosisPromptInjection();
-      const systemPrompt = `${basePrompt}\n\n---\n\n${diagnosisBlock}`;
+      const systemPrompt = options.thin
+        ? basePrompt
+        : `${basePrompt}\n\n---\n\n${diagnosisBlock}`;
       const methodology = options.include_methodology !== false
         ? methodologyEngine.getMethodology(roleId)
         : undefined;

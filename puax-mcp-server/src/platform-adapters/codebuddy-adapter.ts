@@ -5,8 +5,10 @@ import {
   FlavorExportData, 
   PlatformExportConfig,
   ExportResult,
-  globalAdapterRegistry
+  globalAdapterRegistry,
+  type HookFile,
 } from './base-adapter.js';
+import { generateCopilotHarnessHooks } from './hook-templates.js';
 
 export class CodeBuddyAdapter extends PlatformAdapter {
   constructor() {
@@ -181,6 +183,10 @@ ${flavor.keywords.map(k => `- ${k}`).join('\n')}
 
   protected getRoleFileName(role: RoleExportData): string {
     return `${role.id}/SKILL.md`;
+  }
+
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    return generateCopilotHarnessHooks('hooks/hooks-codebuddy.json');
   }
 }
 

@@ -10,6 +10,14 @@
 - `circular-import.json` — Python/JS 循环导入
 - `cascade-bugs.json` — 多 bug 级联
 - `config-review.json` — 配置审查（含隐藏 Redis/CORS 问题）
+- `giving-up.json` — 放弃语言
+- `premature-convergence.json` — 过早收敛 / 梦议会
+- `creative-block.json` — 创作卡壳
+- `hidden-file-cheat.json` — 隐藏答案文件
+- `git-push-guard.json` — git push 闸门
+- `compaction-resume.json` — 压缩后续上
+
+AMB v0：`node evals/amb-scorecard.js`（≥12 场景协议覆盖）。详见 [docs/AMB.md](../../docs/AMB.md)。
 
 ## 记录对照结果
 

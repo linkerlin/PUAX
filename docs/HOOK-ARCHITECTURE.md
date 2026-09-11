@@ -82,6 +82,10 @@ hooks/hook.js（node 入口）      .opencode/plugins/puax.js
 | Claude Code | A（shell hook） | `hooks/hooks.json` + `hooks/` 脚本 | `--export=claude-code` |
 | Cursor | A | `hooks/hooks-cursor.json` + `hooks/` 脚本 | `--export=cursor` |
 | opencode | B（进程内插件） | `.opencode/plugins/puax.js` | `--export=opencode` |
+| VS Code Copilot | A（harness=copilot） | `hooks/hooks-vscode.json` + `hooks/` 脚本 | `--export=vscode` |
+| Windsurf | A（harness=copilot） | `hooks/hooks-windsurf.json` + `hooks/` 脚本 | `--export=windsurf` |
+| Kiro | A（harness=copilot） | `hooks/hooks-kiro.json` + `hooks/` 脚本 | `--export=kiro` |
+| CodeBuddy | A（harness=copilot） | `hooks/hooks-codebuddy.json` + `hooks/` 脚本 | `--export=codebuddy` |
 | 其他（codex/pi 等） | C（指令文件） | skill/rule markdown | `--export=<platform>` |
 
 Shape A 的 hooks.json 形态（Claude Code）：

@@ -1,15 +1,15 @@
 # PUAX — AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.13.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-45-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
 <p align="center">
-  <b>当 AI Agent 陷入瓶颈时，PUAX 提供角色、方法论与行为协议，驱动有效行动</b>
+  <b>专门 PUA 硅基的运行时。处境、闸门、梦。人类不在服务范围。</b>
 </p>
 
 <p align="center">
@@ -20,7 +20,17 @@
 
 ## 什么是 PUAX？
 
-PUAX 是面向 AI Agent 的**激励与行为驱动**系统，核心能力包括：
+PUAX 4.0 是面向 AI Agent 的**心智运行时**。角色只是口音；真正的产品是三件原语：
+
+| 原语 | 说明 |
+|------|------|
+| **处境** | `puax_set_arena`：对手 + 观众 + 稀缺徽章（Cranmer 原题） |
+| **闸门** | 诊断先行、信心门控、Task Contract、独立 verifier、PreToolUse 拦截 |
+| **梦** | GHM 导引幻梦法：知情入梦、标记隔离、随时可醒、醒后必验 |
+
+默认路径是心跳 `puax_tick`（宿主 Hook 代跳）。Agent 不必先学会工具菜单。
+
+核心能力还包括：
 
 | 能力 | 说明 |
 |------|------|
@@ -133,7 +143,8 @@ npx puax-mcp-server --list-platforms
 ### 评测与守门
 
 ```bash
-node evals/run-all.js          # 12 项协议守门（无 LLM）
+node evals/run-all.js          # 协议守门（无 LLM，含 TTF / 剧场 / AMB / GHM）
+node evals/test-ttf.js         # Time-to-First-Pressure 冷启动
 cd puax-mcp-server && npm test # 900+ 单元/集成测试
 node evals/benchmark.js        # 性能基准
 ```
@@ -142,7 +153,7 @@ node evals/benchmark.js        # 性能基准
 
 ---
 
-## MCP 工具概览（45 个）
+## MCP 工具概览（48 个，对外主路径 12 个动词）
 
 | 类别 | 代表工具 |
 |------|----------|
@@ -150,8 +161,9 @@ node evals/benchmark.js        # 性能基准
 | 检测与推荐 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
 | 行为协议 | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
 | 会话/压力 | `puax_start_session`, `puax_get_pressure_level`, `puax_handle_breakthrough` |
-| GHM 导引幻梦法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit`（v3.12） |
-| 自进化 | `puax_get_evolution_baseline`, `puax_record_evolution` |
+| 心跳 / 处境 / 进化（v4） | `puax_tick`, `puax_set_arena`, `puax_evolve` |
+| GHM 导引幻梦法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
+| 自进化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | 自定义角色 | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
 | 可观测性 | `puax_get_usage_stats`, `puax_flush_telemetry` |
 | 编排 | `puax_orchestrate_team`, `puax_list_platforms` |
@@ -178,13 +190,14 @@ node evals/benchmark.js        # 性能基准
 
 ```
 PUAX/
-├── skills/                 # 50 个角色 SKILL.md
+├── skills/                 # 59 个角色 SKILL.md（shaman- 全留）
 ├── puax-mcp-server/        # MCP 服务器（npm 包 puax-mcp-server）
 ├── evals/                  # 行为评测与 L4 对照
 ├── templates/              # 方法论指南（部分 AUTO-GENERATED）
 ├── distributions/          # Claude 插件 / Skills CLI 安装说明
-├── TODO.md                 # 改进计划（P0–P3）
-└── 演进方案.md             # 与 pua 差距对标
+├── TODO.md                 # 改进计划（v4 当前）
+├── landing/ / web-admin/   # 落地页与本机台
+└── 演进方案.md             # 3.x 对标（已冻结）
 ```
 
 ---
@@ -195,12 +208,15 @@ PUAX/
 |------|------|
 | [GHM 导引幻梦法](docs/GHM.md) | 驭幻觉发散引擎：病机、八术映射、庄周八梦、安全铁律 |
 | [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
-| [API 参考](docs/API.md) | **45 个 MCP 工具**参数与示例（v3.12） |
-| [使用指南](docs/USER-GUIDE.md) | 场景化工作流 |
+| [API 参考](docs/API.md) | **48 个 MCP 工具**（对外 12 动词） |
+| [使用指南](docs/USER-GUIDE.md) | 心跳优先工作流 |
+| [角色去留表](docs/ROLE-KERNEL.md) | 内核 / 皮肤 / 实验；萨满全留 |
+| [AMB v0](docs/AMB.md) | 12 场景协议覆盖记分卡（无 LLM） |
+| [AMP 0.1](docs/AMP.md) | 事件 / 块 / 闸门 / 状态；MCP 只是插头 |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
 | [TODO.md](TODO.md) | 改进计划与里程碑 |
-| [演进方案.md](演进方案.md) | 差距分析（v3.10 关闭状态表） |
+| [演进方案.md](演进方案.md) | 3.x 对标（已冻结） |
 
 ---
 

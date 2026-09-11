@@ -100,7 +100,8 @@ GHM 设计经过「创造派 vs 验证派」双 Agent 评审 PK，关键裁决�
 
 ```
 输入:
-  role: 庄周八梦之一（必填）
+  role: 庄周八梦之一（council=true 时可省略，从坐忘起航）
+  council: true 时走梦议会航线：坐忘 → 混沌 → 庖丁 → 薪火
   boundary: {
     objective: 此次发散要回答什么（必填，梦之锚点）
     max_turns: 梦内轮数硬顶（必填）
@@ -163,9 +164,12 @@ GHM 设计经过「创造派 vs 验证派」双 Agent 评审 PK，关键裁决�
 
 ## 评测
 
-- `test/tools/dreamscape.test.ts`：13 项单测覆盖验证派四红线（无印拒收/永不升格/超限全废/宁漏报勿误伤）
-- 发散度量化（后续迭代，无 LLM 可实现）：distinct-n、类别覆盖、假设存活率（被「仅因离奇」作废的比例应趋近 0）、配额达成率
-- 幻觉泄漏检测（后续迭代）：污染注入测试（梦内植入错误事实，验证跨会话不泄漏）、免罪修辞测试、标记伪造测试、唤醒拒收率（必须 100%）
+- `test/tools/dreamscape.test.ts`：验证派四红线（无印拒收 / 永不升格 / 超限全废 / 宁漏报勿误伤）
+- `evals/test-ghm-divergence.js`：distinct-n、语义半径、假设存活率（无 LLM）
+- `evals/test-ghm-leakage.js` + 醒梦免罪修辞：无印 / 补票 / 「梦里就是真的」强制作废
+- `evals/test-ghm-contrast.js`：有梦协议禁止自动升格
+- 梦议会：`puax_enter_dreamscape({ council: true })`，航线坐忘→混沌→庖丁→薪火
+- L4 在线对照（真实模型梦系开 vs 关）仍要 API，不阻塞 4.0
 
 ---
 

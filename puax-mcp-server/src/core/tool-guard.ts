@@ -12,7 +12,7 @@
 import { deterministicTriggersEngine, TriggerType, type TriggerContext, type TriggerResult } from '../hooks/deterministic-triggers.js';
 import { stateManager } from '../hooks/state-manager.js';
 import { getGlobalLogger } from '../utils/logger.js';
-import type { PressureLevel } from '../agents/index.js';
+import type { PressureLevel } from '../types.js';
 
 const logger = getGlobalLogger();
 

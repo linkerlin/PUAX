@@ -13,6 +13,7 @@ import { getFlavorBehaviorInjection } from '../core/flavor-methodology.js';
 import { applyToneVariant, isValidToneVariant } from '../core/tone-variants.js';
 import { applyPipEdition } from '../core/i18n-en.js';
 import { getGlobalLogger } from '../utils/logger.js';
+import { compileThinPrompt } from '../core/thin-prompt.js';
 
 const logger = getGlobalLogger();
 
@@ -31,12 +32,14 @@ const GetRoleWithMethodologyInputSchema = z.object({
       .describe('是否包含检查清单'),
     include_flavor: z.string().optional()
       .describe('叠加的大厂风味，如 huawei, alibaba, musk'),
-    format: z.enum(['full', 'compact', 'prompt_only']).default('full')
-      .describe('输出格式'),
+    format: z.enum(['full', 'compact', 'prompt_only', 'thin']).default('full')
+      .describe('输出格式；thin = 运行时协议 + 短口音'),
     tone_variant: z.enum(['strict', 'yes', 'mama']).optional()
       .describe('语气变体'),
     language: z.enum(['zh', 'en']).optional()
       .describe('PIP Edition 英文'),
+    thin: z.boolean().optional()
+      .describe('v4 薄注入：协议由 runtime 拼，口音截断'),
   }).optional().describe('选项')
 });
 
@@ -127,14 +130,20 @@ export const getRoleWithMethodologyTool = {
           include_flavor?: string;
           tone_variant?: string;
           language?: 'zh' | 'en';
+          format?: 'full' | 'compact' | 'prompt_only' | 'thin';
+          thin?: boolean;
         }
       };
       
       // 获取角色元数据
       const metadata = roleRecommender.getRoleMetadata(role_id);
 
+      const useThin = options.thin === true || options.format === 'thin';
+
       // 加载System Prompt
-      let systemPrompt = loadRoleSystemPrompt(role_id);
+      let systemPrompt = useThin
+        ? compileThinPrompt({ role_id, language: options.language }).prompt
+        : loadRoleSystemPrompt(role_id);
       const displayName = getRoleDisplayName(role_id);
 
       if (options.language === 'en') {

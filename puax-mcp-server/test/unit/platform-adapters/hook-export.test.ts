@@ -9,6 +9,10 @@ import '../../../src/platform-adapters/claude-code-adapter.js';
 import { OpenCodeAdapter } from '../../../src/platform-adapters/opencode-adapter.js';
 import '../../../src/platform-adapters/cursor-adapter.js';
 import '../../../src/platform-adapters/skill-md-platform-adapter.js';
+import '../../../src/platform-adapters/vscode-adapter.js';
+import '../../../src/platform-adapters/windsurf-adapter.js';
+import '../../../src/platform-adapters/kiro-adapter.js';
+import '../../../src/platform-adapters/codebuddy-adapter.js';
 
 describe('Platform adapter hook generation', () => {
   it('should register claude-code and opencode adapters', () => {
@@ -98,5 +102,24 @@ describe('Platform adapter hook generation', () => {
     const normalize = (p: string) => p.replace(/\\/g, '/');
     expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/skills/military-warrior.md'))).toBe(true);
     expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/plugins/puax.js'))).toBe(true);
+  });
+
+  it('v4：七宿主均可生成 hook 产物', () => {
+    const expected: Record<string, string> = {
+      'claude-code': 'hooks/hooks.json',
+      cursor: 'hooks/hooks-cursor.json',
+      opencode: '.opencode/plugins/puax.js',
+      vscode: 'hooks/hooks-vscode.json',
+      windsurf: 'hooks/hooks-windsurf.json',
+      kiro: 'hooks/hooks-kiro.json',
+      codebuddy: 'hooks/hooks-codebuddy.json',
+    };
+    for (const [platform, path] of Object.entries(expected)) {
+      const adapter = globalAdapterRegistry.get(platform);
+      expect(adapter).toBeDefined();
+      const hooks = adapter!.generateHooks({ outputPath: '/tmp/x' } as never);
+      expect(hooks.some(h => h.path === path)).toBe(true);
+      expect(hooks.some(h => h.path === 'hooks/hook.js' || h.path.endsWith('puax.js'))).toBe(true);
+    }
   });
 });

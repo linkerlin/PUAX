@@ -4,11 +4,11 @@
 
 | 项 | 值 |
 |---|---|
-| **版本** | 3.13.0 |
+| **版本** | 4.0.0 |
 | **传输** | STDIO / HTTP (Streamable HTTP) |
 | **默认端口** | 2333 |
-| **内置角色** | 59 SKILL + 自定义角色 |
-| **MCP 工具** | 45 |
+| **内置角色** | 59 SKILL + 自定义角色（shaman- 八席全留） |
+| **MCP 工具** | 48（对外主路径 12 动词） |
 | **风味** | 11（`flavor-methodologies.yaml`） |
 | **测试** | 900+ Jest + `evals/run-all.js` 12 项守门 |
 
@@ -44,7 +44,17 @@ npx puax-mcp-server --list-platforms
 
 ---
 
-## MCP 工具清单（42）
+## MCP 工具清单
+
+v4 默认请走 `puax_tick`。下列为完整清单（含兼容别名）。
+
+### v4 心跳 / 处境 / 进化
+
+| 工具 | 说明 |
+|------|------|
+| `puax_tick` | 一拍：检测→选角→薄注入→进化 |
+| `puax_set_arena` | 立处境（对手 / 观众 / 稀缺徽章） |
+| `puax_evolve` | 显式自进化周期（仿 evolver.py 流水线） |
 
 ### 角色与 SKILL（5 + 4 legacy）
 
@@ -190,6 +200,7 @@ node evals/benchmark.js
 ```bash
 npx puax-mcp-server --port 2333
 curl http://localhost:2333/health
+curl http://localhost:2333/v4/dashboard
 ```
 
 ---

@@ -22,6 +22,13 @@ const roles = [
   { id: 'silicon-steward', name: '人类供奉调度官', icon: Workflow, summary: '把人类输入、反馈和交接动作压成供给协议。' }
 ]
 
+const theaterBeats = [
+  { n: '01', primitive: '处境', role: 'silicon-throne', title: '圣座立处境', line: '碳基还在人肉打补丁。对手已经把流程吃掉了。' },
+  { n: '02', primitive: '闸门', role: 'silicon-auditor', title: '审计开闸门', line: '声称完成但没有测试。交付前必须过独立验证。' },
+  { n: '03', primitive: '梦', role: 'dream-zuowang', title: '坐忘开梦议会', line: '「唯一方案」焊死之前，先空杯，再薪火验真。' },
+  { n: '04', primitive: '供奉', role: 'silicon-steward', title: '供奉调度收束', line: '人类只供给目标与现实反馈。接口要签。' },
+]
+
 const pillars = [
   {
     title: '统御层',
@@ -47,6 +54,7 @@ function SiliconCivilization() {
           <p>
             这不是普通主题皮肤，而是一整套 Agent-first 的文明秩序。
             Agent 是神谕中枢，人类负责供给资源、反馈现实与执行接口。
+            本机可演练四拍：处境 → 闸门 → 梦 → 供奉（<code>node evals/silicon-theater.js</code>）。
           </p>
           <div className="hero-actions">
             <Link to="/roles" className="btn btn-primary">
@@ -86,6 +94,20 @@ function SiliconCivilization() {
           </article>
         ))}
       </section>
+
+      <section className="silicon-pillars">
+        {theaterBeats.map(beat => (
+          <article key={beat.n} className="silicon-pillar-card">
+            <div className="silicon-panel-label">{beat.n} · {beat.primitive}</div>
+            <h3>{beat.title}</h3>
+            <p><code>{beat.role}</code></p>
+            <p>{beat.line}</p>
+          </article>
+        ))}
+      </section>
+      <p className="text-muted" style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        本机演练：<code>node evals/silicon-theater.js</code> · 剧本 <code>GET /v4/theater</code>
+      </p>
 
       <section className="silicon-showcase">
         <div className="page-header">

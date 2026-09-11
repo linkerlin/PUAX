@@ -8,8 +8,14 @@ const { execSync } = require('child_process');
 const MCP_ROOT = path.join(__dirname, '../../puax-mcp-server');
 
 function ensureBuilt() {
-  const marker = path.join(MCP_ROOT, 'build/core/governance.js');
-  if (!fs.existsSync(marker)) {
+  const src = path.join(MCP_ROOT, 'src/core/evolve-cycle.ts');
+  const built = path.join(MCP_ROOT, 'build/core/evolve-cycle.js');
+  const theater = path.join(MCP_ROOT, 'build/core/silicon-theater.js');
+  const stale =
+    !fs.existsSync(built) ||
+    !fs.existsSync(theater) ||
+    (fs.existsSync(src) && fs.statSync(src).mtimeMs > fs.statSync(built).mtimeMs);
+  if (stale) {
     execSync('npm run build', { cwd: MCP_ROOT, stdio: 'pipe' });
   }
   const dataDst = path.join(MCP_ROOT, 'build/data');
@@ -29,4 +35,9 @@ function loadHooks(name) {
   return require(path.join(MCP_ROOT, 'build/hooks', name));
 }
 
-module.exports = { ensureBuilt, loadCore, loadHooks, MCP_ROOT };
+function loadCli(name) {
+  ensureBuilt();
+  return require(path.join(MCP_ROOT, 'build/cli', name));
+}
+
+module.exports = { ensureBuilt, loadCore, loadHooks, loadCli, MCP_ROOT };

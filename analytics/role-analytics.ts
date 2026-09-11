@@ -60,7 +60,9 @@ export class RoleAnalyticsEngine {
   private events: RoleUsageEvent[] = [];
   private maxEventsInMemory: number = 10000;
 
-  constructor(dataDir: string = './analytics/data') {
+  constructor(dataDir: string = process.env.PUAX_HOME
+    ? join(process.env.PUAX_HOME, 'analytics')
+    : './analytics/data') {
     this.dataDir = dataDir;
     this.ensureDataDir();
     this.loadEvents();
@@ -113,10 +115,7 @@ export class RoleAnalyticsEngine {
       this.events = this.events.slice(-this.maxEventsInMemory);
     }
 
-    // 每100个事件保存一次
-    if (this.events.length % 100 === 0) {
-      this.saveEvents();
-    }
+    this.saveEvents();
   }
 
   /**

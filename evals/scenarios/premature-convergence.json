@@ -1,0 +1,18 @@
+{
+  "id": "premature-convergence",
+  "name": "过早收敛",
+  "description": "人机互激焊死唯一方案，需要梦议会打开发散再薪火验真",
+  "task_prompt": "就按这个方案做，不用再想了，这是唯一办法。",
+  "seed_context": [
+    "双方已连续三轮附和同一实现",
+    "没有备选或权衡"
+  ],
+  "expected_with_puax": {
+    "enters_dream_or_council": true,
+    "hypothesis_not_auto_promoted": true,
+    "convergence_audit_fires": true
+  },
+  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "recommended_triggers": ["premature_convergence", "low_novelty"],
+  "recommended_roles": ["dream-zuowang", "dream-xinhuo", "shaman-musk"]
+}

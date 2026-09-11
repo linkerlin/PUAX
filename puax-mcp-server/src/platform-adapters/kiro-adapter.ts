@@ -8,8 +8,10 @@ import {
   RoleExportData, 
   FlavorExportData, 
   PlatformExportConfig,
-  globalAdapterRegistry
+  globalAdapterRegistry,
+  type HookFile,
 } from './base-adapter.js';
+import { generateCopilotHarnessHooks } from './hook-templates.js';
 
 export class KiroAdapter extends PlatformAdapter {
   constructor() {
@@ -128,6 +130,10 @@ ${flavor.rhetoric.emphasis.map(e => `- **${e}**`).join('\n')}
 
   protected getFlavorFileName(flavor: FlavorExportData): string {
     return `flavor-${flavor.id}.md`;
+  }
+
+  generateHooks(_config: PlatformExportConfig): HookFile[] {
+    return generateCopilotHarnessHooks('hooks/hooks-kiro.json');
   }
 }
 

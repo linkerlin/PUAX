@@ -14,12 +14,14 @@ import { enhancedTriggerDetector } from '../../../src/hooks/trigger-detector-enh
 import { DeterministicTriggersEngine } from '../../../src/hooks/deterministic-triggers.js';
 import type { TriggerContext } from '../../../src/hooks/deterministic-triggers.js';
 import { TriggerType } from '../../../src/hooks/deterministic-triggers.js';
+import { arenaStore } from '../../../src/core/arena.js';
 
 const SESSION = `hook-events_${Date.now()}`;
 
 describe('SessionStart restore injection', () => {
   beforeEach(() => {
     stateManager.clearSessionState(SESSION);
+    arenaStore.clear();
   });
 
   it('injects restore context when prior pressure/failures exist', async () => {

@@ -2,15 +2,16 @@ import { useState } from 'react'
 import Dashboard from './components/Dashboard'
 import RoleEditor from './components/RoleEditor'
 import StatsView from './components/StatsView'
+import TheaterView from './components/TheaterView'
 import './App.css'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'roles' | 'stats'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'roles' | 'stats' | 'theater'>('dashboard')
 
   return (
     <div className="admin-app">
       <header className="admin-header">
-        <h1>🎯 PUAX 管理后台</h1>
+        <h1>PUAX v4 本机台</h1>
         <nav>
           <button 
             className={activeTab === 'dashboard' ? 'active' : ''}
@@ -30,6 +31,12 @@ function App() {
           >
             数据统计
           </button>
+          <button 
+            className={activeTab === 'theater' ? 'active' : ''}
+            onClick={() => setActiveTab('theater')}
+          >
+            剧场
+          </button>
         </nav>
       </header>
 
@@ -37,6 +44,7 @@ function App() {
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'roles' && <RoleEditor />}
         {activeTab === 'stats' && <StatsView />}
+        {activeTab === 'theater' && <TheaterView />}
       </main>
     </div>
   )

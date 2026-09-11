@@ -16,10 +16,10 @@ import '../platform-adapters/opencode-adapter.js';
 
 const INSTALL_PATHS: Record<string, string> = {
   cursor: '.cursor/rules/*.mdc + hooks/hooks-cursor.json',
-  vscode: '.github/copilot-instructions.md',
-  kiro: '.kiro/steering/*.md',
-  codebuddy: 'CodeBuddy skills directory',
-  windsurf: '.windsurf/rules/',
+  vscode: '.github/copilot-instructions.md + hooks/hooks-vscode.json',
+  kiro: '.kiro/steering/*.md + hooks/hooks-kiro.json',
+  codebuddy: 'CodeBuddy skills + hooks/hooks-codebuddy.json',
+  windsurf: '.windsurf/rules/ + hooks/hooks-windsurf.json',
   codex: '~/.codex/skills/ or npx skills add',
   opencode: '~/.config/opencode/skills/ + .opencode/plugins/puax.js',
   'claude-code': 'hooks/hooks.json + hooks/ 脚本（Claude Code 插件）',

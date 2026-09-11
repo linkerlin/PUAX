@@ -1,7 +1,8 @@
 /**
- * PUAX Interactive CLI
+ * PUAX Interactive CLI（legacy）
  *
- * Interactive shell for PUAX commands with readline support.
+ * v4 默认路径是宿主 Hook + puax_tick，不是这套 slash 交互壳。
+ * 保留以兼容既有测试与手工调试。
  */
 
 import * as readline from 'readline';

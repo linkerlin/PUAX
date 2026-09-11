@@ -11,6 +11,8 @@ import { getAllBundledSkills } from '../prompts/prompts-bundle';
 import { getCustomRoleStore } from './custom-role-store.js';
 import { getRoleDisplayName } from '../utils/role-utils.js';
 import { getGlobalLogger } from '../utils/logger.js';
+import { outcomeStore } from './outcome-store.js';
+import { isExperimentalRole, isShamanRole } from './role-kernel.js';
 
 const logger = getGlobalLogger();
 
@@ -354,8 +356,13 @@ export class RoleRecommender {
    * 推荐角色
    */
   recommend(request: RecommendationRequest): RoleRecommendation {
+    const merged: RecommendationRequest = {
+      ...request,
+      session_history: request.session_history ?? outcomeStore.asSessionHistory(),
+    };
+
     // 检查缓存
-    const cacheKey = this.generateCacheKey(request);
+    const cacheKey = this.generateCacheKey(merged);
     const cached = this.getFromCache(cacheKey);
     if (cached) {
       cached.metadata.cache_hit = true;
@@ -363,14 +370,14 @@ export class RoleRecommender {
     }
 
     // 计算各角色分数
-    const scoredRoles = this.calculateScores(request);
+    const scoredRoles = this.calculateScores(merged);
 
     // 排序并选择最佳角色
     const sortedRoles = scoredRoles.sort((a, b) => b.total_score - a.total_score);
     const topRoles = sortedRoles.slice(0, 4); // 主推荐 + 3个备选
 
     // 构建推荐结果
-    const result = this.buildRecommendation(topRoles, request);
+    const result = this.buildRecommendation(topRoles, merged);
 
     // 存入缓存
     this.setCache(cacheKey, result);
@@ -429,6 +436,9 @@ export class RoleRecommender {
 
     for (const roleId of allRoles) {
       if (request.user_preferences?.blacklisted_roles?.includes(roleId)) {
+        continue;
+      }
+      if (isExperimentalRole(roleId) && !isShamanRole(roleId)) {
         continue;
       }
 

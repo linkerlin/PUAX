@@ -5,6 +5,68 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.0.0] - 2026-09-12
+
+### Added
+- **心智运行时（真正的产品）**：处境、闸门、梦。默认路径是心跳，不是 45 工具菜单。
+  - `puax_tick`：一拍检测 / 升压 / 选角 / 薄注入 / 进化
+  - `puax_set_arena`：Cranmer 处境原语（对手 + 观众 + 稀缺徽章）
+  - `puax_evolve`：显式自进化周期
+- **自进化流水线**（仿 `evolver.py`，零依赖）：preflight → collect → signals → select → autopoiesis → dispatch → solidify
+  - `memory_graph.jsonl`、`outcome-weights.json`、命名 Agent（`~/.puax/agents/<name>/`）
+  - 结局回写推荐权重；冷却 / 饱和门
+- **薄注入** `compileThinPrompt`：协议由 runtime 持有，口音截断。`get_role_with_methodology` 支持 `thin` / `format=thin`
+- **角色内核**：`shaman-` 八角色全部保留进默认池；煤气灯/媳妇类移出默认推荐（仍在目录）
+- HTTP：`GET /v4/dashboard`、`GET /v4/roles`（CORS），给 web-admin 诚实本机数据
+- 原生 Hook 在 SessionStart / UserPromptSubmit / PostToolUse / Stop 上并入心跳（inject 不双写）
+
+### Changed
+- 推荐器默认吃结局权重；实验角色不进默认推荐
+- 落地页 / 管理后台 / 市场 / 文档按 v4 产品重写，去掉假用户排行榜
+- 文言文策略空间改口：高密度行为协议，不再表述为越狱
+
+### Added (4.0.0 续)
+- **梦议会**：`puax_enter_dreamscape({ council: true })` 航线坐忘→混沌→庖丁→薪火；tick 的 dream_suggest 注入同一航线
+- **GHM 评测**：distinct-n / 语义半径 / 假设存活率；免罪修辞泄漏作废；梦系离线对照
+- **Time-to-First-Pressure**：会话首次压力记入 `ttf.jsonl`，dashboard / `puax_tick` 回传摘要
+- MCP 资源 `puax://v4/verbs`、`puax://v4/kernel`；[docs/ROLE-KERNEL.md](../docs/ROLE-KERNEL.md)
+- `activate_with_context({ thin: true })` 走薄注入
+
+### Changed (4.0.0 续)
+- PressureLevel 类型从 `agents/` 解耦到 `types.ts`（Hook 不再依赖死层身份）
+- interactive-shell / slash command-registry 标明 legacy，默认路径仍是 Hook + tick
+
+### Added (4.0.0 续 2)
+- **AMB v0**：12 个顶层场景 + `evals/amb-scorecard.js` 无 LLM 记分卡（`evals/results/amb-v0.json`）
+- **Hook 六宿主**：vscode / windsurf / kiro 导出 `hooks/hooks-*.json` + 共享 `hook.js`（与 claude-code / cursor / opencode 并列）
+- `list_tools` 把 12 个对外动词排在前面
+- [docs/AMB.md](../docs/AMB.md)
+
+### Added (4.0.0 续 3)
+- **AMP 0.1**：`puax_tick.amp` 信封（事件 / 块 / 闸门 / 状态）；`GET /v4/amp`、MCP `puax://v4/amp`；[docs/AMP.md](../docs/AMP.md)
+- **硅基剧场**：四拍本机演练处境→闸门→梦→供奉（`node evals/silicon-theater.js`）；`GET /v4/theater`
+- v4 HTTP 抽到 `dispatchV4`，单测不需起监听
+
+### Added (4.0.0 续 4)
+- **TTF 冷启动评测** `evals/test-ttf.js`：新会话第一拍记样，同会话不重复
+- **v4 心跳评测** `evals/test-tick-heartbeat.js`：失败信号下发生 + AMP 信封
+- `GET /v4/ttf`；web-admin 剧场页；落地页硅基四拍可视化
+
+### Fixed (4.0.0 续 5)
+- **冷却按会话、静默不占冷却**：SessionStart 空转不再挡住紧随其后的第一轮 UserPromptSubmit（TTF 死结）
+- Hook 在已检出触发时 `force` 心跳，保证第一拍发生
+
+### Added (4.0.0 续 5)
+- `evals/test-hook-ttf.js`：宿主 Hook 路径的 TTF
+- 仪表盘展示 TTF 中位；`list_tools` 对外动词加 `[v4]` 前缀
+
+### Changed (4.0.0 续 6)
+- USER-GUIDE 典型场景改为心跳优先，不再导购 45 工具
+
+### Added (4.0.0 续 6)
+- CodeBuddy 导出原生 Hook；`evals/test-hook-posttool.js` 覆盖 Bash 失败路径
+- `puax_evolve` 同样返回 AMP 信封
+
 ## [3.13.0] - 2026-08-19
 
 ### Fixed

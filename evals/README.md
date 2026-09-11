@@ -8,7 +8,7 @@
 # 场景结构校验
 node evals/validate-scenarios.js
 
-# 全量协议守门（场景 + 元数据 + Jest + L4 离线）
+# 全量协议守门（场景 + 元数据 + Jest + L4 离线 + GHM 铁律）
 node evals/run-all.js
 
 # L4 离线自检（无需 API Key）
@@ -70,6 +70,17 @@ MCP Server 默认在本地收集匿名计数（工具调用、触发、角色）
 | L3 治理 | `test-governance.js` | Task Contract、防作弊、诊断/信心门控 |
 | L3 心跳 | `test-heartbeat.js` | 会话状态、断点恢复、压力升级 |
 | L3 性能 | `benchmark.js` | 触发/推荐/方法论耗时守门 |
+| GHM 铁律 | `test-ghm-offline.js` | 知情入梦 / 标记 / 可醒 / 必验 |
+| GHM 发散 | `test-ghm-divergence.js` | distinct-n / 语义半径 / 假设存活率 |
+| GHM 泄漏 | `test-ghm-leakage.js` | 无印 / 免罪修辞源码门 |
+| GHM 对照 | `test-ghm-contrast.js` | 梦系协议禁止自动升格 |
+| AMB v0 | `amb-scorecard.js` | ≥12 场景协议覆盖（无 LLM） |
+| 硅基剧场 | `silicon-theater.js` | 四拍本机演练 + AMP 信封 |
+| TTF | `test-ttf.js` | 冷启动第一拍记样，同会话不重复 |
+| v4 心跳 | `test-tick-heartbeat.js` | tick 发生 + AMP 信封 |
+| Hook TTF | `test-hook-ttf.js` | SessionStart 不得挡住第一轮沮丧注入 |
+| Hook PostToolUse | `test-hook-posttool.js` | Bash 失败注入 + TTF |
+| 指南 | `test-userguide-v4.js` | 心跳写在 recommend_role 前面 |
 | L4 对照 | `run-l4.js` | 有/无 PUAX DeepSeek 对照 + 行为指标 |
 
 ## CI 集成

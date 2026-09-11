@@ -9,6 +9,12 @@ import { RoleRecommender } from '../../src/core/role-recommender.js';
 import { assertSafeOutputPath, PathTraversalError } from '../../src/utils/path-security.js';
 import { checkDiagnosis, checkConfidenceGate } from '../../src/core/behavior-protocols.js';
 
+const REQUIRED_V4_TOOLS = [
+  'puax_tick',
+  'puax_set_arena',
+  'puax_evolve',
+];
+
 const REQUIRED_V3_TOOLS = [
   'puax_switch_on_failure',
   'puax_check_diagnosis',
@@ -31,6 +37,13 @@ describe('protocol compliance (evals)', () => {
   it('应注册全部 v3.3-v3.5 行为工具', () => {
     const names = allTools.map(t => t.name);
     for (const tool of REQUIRED_V3_TOOLS) {
+      expect(names).toContain(tool);
+    }
+  });
+
+  it('应注册 v4 心跳/处境/进化工具', () => {
+    const names = allTools.map(t => t.name);
+    for (const tool of REQUIRED_V4_TOOLS) {
       expect(names).toContain(tool);
     }
   });

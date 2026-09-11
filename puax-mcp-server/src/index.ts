@@ -118,7 +118,7 @@ function showHelp(): void {
     logger.write(`
 PUAX MCP Server v${version}
 
-为 AI Agent 提供 PUAX 角色选择、切换和激活功能的 MCP 服务器
+为 AI Agent 提供处境、闸门、梦（心跳 puax_tick）的 MCP 服务器
 
 用法:
   puax-mcp-server [选项]

@@ -59,6 +59,27 @@ exec node "\${SCRIPT_DIR}/hook.js" "$@"
 `;
 
 /** 无扩展名事件脚本（宿主可能要求脚本文件；内容即转发到 hook.js） */
+/** Copilot / VS Code / Windsurf / Kiro 共用的 Shape A（harness=copilot） */
+export function generateCopilotHarnessHooks(jsonRelPath: string): Array<{ path: string; content: string }> {
+  const spec = {
+    version: 1,
+    harness: 'copilot',
+    hooks: {
+      sessionStart: [{ command: 'node ./hooks/hook.js session-start --harness copilot' }],
+      userPromptSubmit: [{ command: 'node ./hooks/hook.js user-prompt-submit --harness copilot' }],
+      postToolUse: [{ command: 'node ./hooks/hook.js post-tool-use --harness copilot' }],
+    },
+  };
+  return [
+    { path: jsonRelPath, content: JSON.stringify(spec, null, 2) + '\n' },
+    { path: 'hooks/hook.js', content: HOOK_JS },
+    { path: 'hooks/run-hook.cmd', content: RUN_HOOK_CMD },
+    { path: 'hooks/session-start', content: eventScript('session-start') },
+    { path: 'hooks/user-prompt-submit', content: eventScript('user-prompt-submit') },
+    { path: 'hooks/post-tool-use', content: eventScript('post-tool-use') },
+  ];
+}
+
 export function eventScript(event: string): string {
   return `#!/usr/bin/env bash
 # PUAX hook: ${event}（由 puax 平台适配器生成）

@@ -1,8 +1,8 @@
 /**
- * PUAX Slash Commands System
+ * PUAX Slash Commands System（legacy）
  *
- * Provides user-friendly command interface for PUAX operations.
- * Commands: puax, p7, p9, p10, yes, mama, loop, flavor
+ * v4 对外 12 动词见 core/v4-dashboard.ts V4_PUBLIC_VERBS。
+ * 本注册表不是默认路径，仅兼容既有 slash 测试。
  */
 
 import { getGlobalLogger } from '../utils/logger.js';
