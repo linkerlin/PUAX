@@ -40,7 +40,19 @@ node scripts/promote-v2-to-main.js
 node scripts/promote-v2-to-main.js --confirm
 ```
 
-## 升级后验证
+### generate-i18n-readmes.js
+主流语种多语言 README 自动生成与同步（支持 8 种语言：EN, JA, KO, ZH-TW, ES, FR, DE, RU）
+
+```bash
+node scripts/generate-i18n-readmes.js
+```
+
+## 执行顺序
+
+1. 确保角色备份存在
+2. 运行升級腳本
+3. 验证生成内容
+4. 提交变更
 
 ```bash
 cd puax-mcp-server
