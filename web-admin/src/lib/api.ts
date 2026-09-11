@@ -26,4 +26,10 @@ export async function fetchAmp(): Promise<Record<string, unknown>> {
   return res.json()
 }
 
+export async function fetchShield(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/v4/shield`)
+  if (!res.ok) throw new Error(`shield ${res.status}`)
+  return res.json()
+}
+
 export { BASE }

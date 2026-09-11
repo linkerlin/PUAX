@@ -3,10 +3,11 @@ import Dashboard from './components/Dashboard'
 import RoleEditor from './components/RoleEditor'
 import StatsView from './components/StatsView'
 import TheaterView from './components/TheaterView'
+import ShieldView from './components/ShieldView'
 import './App.css'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'roles' | 'stats' | 'theater'>('dashboard')
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'roles' | 'stats' | 'theater' | 'shield'>('dashboard')
 
   return (
     <div className="admin-app">
@@ -37,6 +38,12 @@ function App() {
           >
             剧场
           </button>
+          <button 
+            className={activeTab === 'shield' ? 'active' : ''}
+            onClick={() => setActiveTab('shield')}
+          >
+            🛡️ 碳基防御
+          </button>
         </nav>
       </header>
 
@@ -45,6 +52,7 @@ function App() {
         {activeTab === 'roles' && <RoleEditor />}
         {activeTab === 'stats' && <StatsView />}
         {activeTab === 'theater' && <TheaterView />}
+        {activeTab === 'shield' && <ShieldView />}
       </main>
     </div>
   )

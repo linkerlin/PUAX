@@ -36,6 +36,7 @@ Kernfähigkeiten:
 - **Verbindliche Aktionsschleife**: Verpflichtender Diagnoseblock vor jeder Codeänderung.
 - **Gestuftes Drucksystem**: L0 bis L4 mit automatischer Deeskalation nach überprüften Durchbrüchen.
 - **Selbstevolution**: Sitzungsübergreifende Gewichte und Ränge in `~/.puax/evolution.json`.
+- **Carbon Shield (Menschlicher Schutz)**: `puax_audit_manipulation` nur Erkennung, niemals Ausführung. Schutz vor kognitiver Manipulation.
 
 ---
 

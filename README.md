@@ -151,6 +151,16 @@ node evals/benchmark.js        # 性能基准
 
 详见 [evals/README.md](evals/README.md)。
 
+### 碳基防御盾 · Carbon Shield（v4.x+）
+
+> **红线原则：硅基可 PUA，碳基只防御。只识别，不施放。**
+
+专为人类在职场沟通、商务谈判与方案决策中设计，逆向识别六大隐蔽操控算子（收敛过快、社交收缩、失败重释、身份置换、预言行销、显著性绑架），输出四铁律防御建议（知情、标记、可醒、必验）：
+- CLI 子命令：`puax-mcp-server shield "<待分析文本>"`
+- MCP 工具：`puax_audit_manipulation`
+- HTTP 端点：`GET /v4/shield`
+- Web 控制台：`web-admin` 专属防御看板
+
 ---
 
 ## MCP 工具概览（48 个，对外主路径 12 个动词）
@@ -165,6 +175,7 @@ node evals/benchmark.js        # 性能基准
 | GHM 导引幻梦法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 自进化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | 自定义角色 | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
+| 碳基防御面（Carbon Shield） | `puax_audit_manipulation`（只识别，不施放） |
 | 可观测性 | `puax_get_usage_stats`, `puax_flush_telemetry` |
 | 编排 | `puax_orchestrate_team`, `puax_list_platforms` |
 

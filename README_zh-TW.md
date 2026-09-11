@@ -118,6 +118,7 @@ npx puax-mcp-server --list-platforms
 | 心跳 / 處境 / 進化 (v4) | `puax_tick`, `puax_set_arena`, `puax_evolve` |
 | GHM 導引幻夢法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 自進化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
+| 碳基防禦面（Carbon Shield） | `puax_audit_manipulation`（只識別，不施放） |
 | 可觀測性 | `puax_get_usage_stats`, `puax_flush_telemetry` |
 
 ---

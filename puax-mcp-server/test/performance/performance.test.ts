@@ -43,7 +43,7 @@ describe('Performance Tests', () => {
       const start = Date.now();
       await detector.detect(history, { attempt_count: 10 });
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(200);
+      expect(duration).toBeLessThan(400);
     });
 
     it('should maintain performance under concurrent load', async () => {

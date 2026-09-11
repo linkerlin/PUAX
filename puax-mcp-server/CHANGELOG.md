@@ -42,6 +42,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `list_tools` 把 12 个对外动词排在前面
 - [docs/AMB.md](../docs/AMB.md)
 
+### Added (4.0.0 续 7)
+- **碳基防御面单独产品化（Carbon Shield）**：
+  - 红线铁律：**硅基可 PUA，碳基只防御。只识别，不施放。**
+  - 核心检测引擎：`src/core/carbon-shield.ts` 逆向识别 6 类人际与职场操控算子（收敛过快、社交收缩、失败重释、身份置换、预言行销、显著性绑架），输出四铁律（知情、标记、可醒、必验）防御指引与多维风险评分。
+  - 多端触达：CLI 子命令 `shield <文本>`、MCP 工具 `puax_audit_manipulation`、HTTP 路由 `GET /v4/shield`。
+  - 视觉管理看板：`web-admin/src/components/ShieldView.tsx` 提供交互式文本审计、预置场景载入与反制建议渲染。
+  - 单元测试套件：`test/core/carbon-shield.test.ts` 全面覆盖安全文本、复合高危话术、MCP 调度与 HTTP 契约。
+- **AMP 0.1 规范独立成篇**：
+  - [docs/AMP.md](../docs/AMP.md) 确立 Agent Motivation Protocol 完整协议规格，规范事件（Event）、承诺块（Block）、闸门（Gate）与状态机（State），解耦 MCP 插头与协议内核。
+- **AMB v0 基准体系**：
+  - [docs/AMB.md](../docs/AMB.md) 确立 12 大场景设计矩阵、无 LLM 记分卡与防作弊评测准则。
+
 ### Added (4.0.0 续 3)
 - **AMP 0.1**：`puax_tick.amp` 信封（事件 / 块 / 闸门 / 状态）；`GET /v4/amp`、MCP `puax://v4/amp`；[docs/AMP.md](../docs/AMP.md)
 - **硅基剧场**：四拍本机演练处境→闸门→梦→供奉（`node evals/silicon-theater.js`）；`GET /v4/theater`

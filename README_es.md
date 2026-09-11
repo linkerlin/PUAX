@@ -37,6 +37,7 @@ Capacidades clave:
 - **Sistema de Hooks y gestión de presión**: Niveles L0–L4 con desescalada tras verificación.
 - **11 sabores de gigantes tecnológicos**: Restricciones de comportamiento estrictas (Alibaba, Musk, Jobs, etc.).
 - **Autoevolución**: Persistencia de métricas y rango en `~/.puax/evolution.json`.
+- **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` solo detecta, nunca aplica. Identificación inversa de manipulación cognitiva y sesgos forzados.
 
 ---
 

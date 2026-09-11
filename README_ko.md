@@ -119,6 +119,7 @@ npx puax-mcp-server --list-platforms
 | 하트비트 / 처지 / 진화 (v4) | `puax_tick`, `puax_set_arena`, `puax_evolve` |
 | GHM 도인환몽법 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 자기 진화 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
+| 탄소 기반 방어 (Carbon Shield) | `puax_audit_manipulation` (식별만 수행, 시전 엄금) |
 | 가시성 및 플랫폼 | `puax_get_usage_stats`, `puax_orchestrate_team`, `puax_list_platforms` |
 
 ---

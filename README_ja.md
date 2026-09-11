@@ -139,6 +139,7 @@ MCPランタイムのほか、以下の配信チャンネルも用意されて�
 | GHM 導引幻夢法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 自己進化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | カスタムロール | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
+| 炭素基防御（Carbon Shield） | `puax_audit_manipulation`（検出・防御のみ、施術不可） |
 | オブザーバビリティ | `puax_get_usage_stats`, `puax_flush_telemetry` |
 | 編成・プラットフォーム | `puax_orchestrate_team`, `puax_list_platforms` |
 

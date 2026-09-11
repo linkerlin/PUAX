@@ -36,6 +36,7 @@ Capacités fondamentales :
 - **Boucle d'efficacité d'action** : Diagnostic obligatoire avant toute modification de code.
 - **Gestion de pression hiérarchisée** : Niveaux L0 à L4 avec désescalade après succès vérifié.
 - **Auto-évolution** : Historique et progression de rang dans `~/.puax/evolution.json`.
+- **Carbon Shield (Défense Humaine)** : `puax_audit_manipulation` détecte uniquement, n'applique jamais. Rétro-ingénierie des manipulations cognitives.
 
 ---
 

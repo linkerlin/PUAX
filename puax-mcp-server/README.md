@@ -111,6 +111,14 @@ v4 默认请走 `puax_tick`。下列为完整清单（含兼容别名）。
 | `puax_orchestrate_team` | Agent Team + `[PUAX-REPORT]` |
 | `puax_list_platforms` | 导出平台列表 |
 
+### 碳基防御盾（1）
+
+> **红线原则：硅基可 PUA，碳基只防御。只识别，不施放。**
+
+| 工具 | 说明 |
+|------|------|
+| `puax_audit_manipulation` | 逆向识别 6 类人际/职场操控算子，输出四铁律（知情、标记、可醒、必验）防御指引 |
+
 ### 可观测性（3）
 
 | 工具 | 说明 |

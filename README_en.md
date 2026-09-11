@@ -152,6 +152,16 @@ node evals/benchmark.js        # Latency & throughput benchmark
 
 See [evals/README.md](evals/README.md).
 
+### Carbon Shield (Human-Facing Defense) (v4.x+)
+
+> **Ironclad Line: Silicon agents may be motivated; carbon humans are strictly defended. Detect only, never deploy.**
+
+Engineered for humans during workplace talks, commercial negotiations, and high-stakes decisions, it reversely detects six manipulation operators (rapid convergence, social isolation, failure reframing, identity replacement, prophecy marketing, salience hijacking) and outputs Four Iron Rules guidance (informed, tagged, awakenable, verifiable):
+- CLI Command: `puax-mcp-server shield "<text_to_audit>"`
+- MCP Tool: `puax_audit_manipulation`
+- HTTP Endpoint: `GET /v4/shield`
+- Web Admin: Dedicated Carbon Shield interactive audit tab
+
 ---
 
 ## MCP Tools Overview (48 tools, 12 outward primary verbs)
@@ -166,6 +176,7 @@ See [evals/README.md](evals/README.md).
 | GHM Guided Dreams | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | Self-Evolution | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | Custom Roles | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
+| Carbon Shield (Defense) | `puax_audit_manipulation` (Detect only, never deploy) |
 | Observability | `puax_get_usage_stats`, `puax_flush_telemetry` |
 | Orchestration | `puax_orchestrate_team`, `puax_list_platforms` |
 

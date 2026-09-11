@@ -7,6 +7,7 @@ import { buildV4Dashboard, buildV4RoleCatalog } from '../core/v4-dashboard.js';
 import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater } from '../core/silicon-theater.js';
 import { getTtfSummary } from '../core/ttf.js';
+import { MANIPULATION_PATTERNS } from '../core/carbon-shield.js';
 
 export interface V4Response {
   status: number;
@@ -29,6 +30,21 @@ export function dispatchV4(method: string, pathname: string): V4Response | null 
       return { status: 200, json: planSiliconTheater() };
     case '/v4/ttf':
       return { status: 200, json: getTtfSummary() };
+    case '/v4/shield':
+      return {
+        status: 200,
+        json: {
+          title: 'PUAX 碳基防御盾 (Carbon Shield)',
+          motto: '硅基可 PUA，碳基只防御（只识别，不施放）',
+          patterns: MANIPULATION_PATTERNS.map(p => ({
+            id: p.id,
+            name: p.name,
+            category: p.category,
+            description: p.description,
+            counterAdvice: p.counterAdvice,
+          })),
+        },
+      };
     default:
       return null;
   }

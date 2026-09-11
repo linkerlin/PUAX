@@ -303,6 +303,7 @@ import { dreamscapeTools } from './dreamscape.js';
 import { puaxTickTool } from './tick.js';
 import { puaxSetArenaTool } from './arena.js';
 import { puaxEvolveTool } from './evolve-cycle.js';
+import { puaxAuditManipulationTool } from './carbon-shield.js';
 import { buildHookToolHandlers, type ToolHandler } from './registry.js';
 
 /**
@@ -354,6 +355,9 @@ export const allTools = [
   puaxTickTool,
   puaxSetArenaTool,
   puaxEvolveTool,
+
+  // v4.x 碳基防御：只识别，不施放（面向人类抗话术收敛）
+  puaxAuditManipulationTool,
 
   // Legacy Role 工具
   ListRolesTool,

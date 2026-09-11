@@ -136,6 +136,11 @@ Hook 子命令（原生 hook 引擎共享层）:
         --harness <claude|cursor|copilot|sdk|auto>
   输出: 宿主 JSON（stdout），任何失败降级为 {} 且退出码 0
 
+碳基防御盾子命令（只识别，不施放）:
+  puax-mcp-server shield <待审查文本>
+  npx puax-mcp-server shield "没时间了赶紧定下来按这个执行"
+
+
 服务器选项:
   -p, --port <端口>        指定监听端口 (默认: 2333)
   -H, --host <主机>        指定监听主机 (默认: 127.0.0.1)
@@ -239,6 +244,35 @@ async function main(): Promise<void> {
         const { mainHookCliWithStdin } = await import('./cli/hook-cli.js');
         await mainHookCliWithStdin(args.slice(1));
         return;
+    }
+
+    // 处理 shield 子命令（碳基防御盾：只识别，不施放）
+    if (args[0] === 'shield') {
+        const text = args.slice(1).join(' ').trim();
+        if (!text) {
+            logger.write('用法: puax-mcp-server shield <待审查文本>\n示例: puax-mcp-server shield "没时间了赶紧定下来按这个执行"');
+            process.exit(0);
+        }
+        const { auditManipulation } = await import('./core/carbon-shield.js');
+        const res = auditManipulation(text);
+        logger.write(`\n🛡️ PUAX 碳基防御盾 (Carbon Shield)`);
+        logger.write(`宗旨: 硅基可 PUA，碳基只防御（只识别，不施放）`);
+        logger.write(`\n风险等级: ${res.riskLevel.toUpperCase()} (评分: ${res.score})`);
+        logger.write(`结论: ${res.summary}\n`);
+        if (res.findings.length > 0) {
+            logger.write('检出的操控算子:');
+            for (const f of res.findings) {
+                logger.write(`  - [${f.tacticName}] "${f.matchedText}"`);
+                logger.write(`    破解建议: ${f.counterAdvice}`);
+            }
+            logger.write('');
+        }
+        logger.write('四铁律护盾:');
+        logger.write(`  💡 ${res.fourIronRules.informed}`);
+        logger.write(`  🏷️ ${res.fourIronRules.tagged}`);
+        logger.write(`  🚪 ${res.fourIronRules.awakenable}`);
+        logger.write(`  🔍 ${res.fourIronRules.verifiable}\n`);
+        process.exit(0);
     }
 
     // 处理平台列表请求

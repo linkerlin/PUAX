@@ -32,6 +32,10 @@ export const V4_PUBLIC_VERBS = [
   'recommend_role',
 ] as const;
 
+export const V4_SHIELD_VERBS = [
+  'puax_audit_manipulation',
+] as const;
+
 export function buildV4Dashboard(): Record<string, unknown> {
   const evo = evolutionEngine.load();
   const usage = usageStatsCollector.getSummary(30);
@@ -68,6 +72,7 @@ export function buildV4Dashboard(): Record<string, unknown> {
     },
     outcomes: outcomeStore.load(),
     public_verbs: [...V4_PUBLIC_VERBS],
+    shield_verbs: [...V4_SHIELD_VERBS],
     ttf: getTtfSummary(),
     cloud_leaderboard: false,
     note: '无云端排行榜。分数来自本机 ~/.puax/ 与 evals/，不捏造活跃用户。',

@@ -34,6 +34,8 @@ export { distinctN, semanticRadius } from './ghm-metrics.js';
 export { getTtfSummary } from './ttf.js';
 export { toAmpEnvelope, ampSpecDoc, AMP_SPEC } from './amp.js';
 export { runSiliconTheater, planSiliconTheater } from './silicon-theater.js';
+export { auditManipulation, MANIPULATION_PATTERNS } from './carbon-shield.js';
+export type { ShieldAuditResult, ManipulationFinding, ManipulationPattern } from './carbon-shield.js';
 
 // 导出类型
 export type {
