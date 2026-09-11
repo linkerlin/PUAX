@@ -8,6 +8,12 @@ interface RoleRow {
   category: string
   classification: string
   shaman: boolean
+  amb_benchmark?: {
+    scenario: string
+    delta: string
+    status: string
+    metric: string
+  } | null
 }
 
 export default function RoleEditor() {
@@ -57,6 +63,22 @@ export default function RoleEditor() {
               <p><code>{selected.id}</code></p>
               <p>{selected.description}</p>
               <p>分类 {selected.classification}{selected.shaman ? ' · 萨满内核' : ''}</p>
+              {selected.amb_benchmark ? (
+                <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#0f172a', borderRadius: 8, border: '1px solid #334155' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#38bdf8', fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                    📊 AMB v0 制品基准表现 (带分制品)
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>
+                    <div><strong>基准场景：</strong> <code>{selected.amb_benchmark.scenario}</code></div>
+                    <div><strong>相对基线提升：</strong> <span style={{ color: '#10b981', fontWeight: 'bold' }}>{selected.amb_benchmark.delta}</span></div>
+                    <div><strong>评测指标：</strong> {selected.amb_benchmark.metric} ({selected.amb_benchmark.status === 'verified' ? '✅ 已验证' : '⏳ 待复核'})</div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginTop: '1rem', fontSize: '0.8rem', color: '#94a3b8' }}>
+                  ⚪ 暂无独立 AMB 分数（非主打制品或实验性角色）
+                </div>
+              )}
             </>
           ) : (
             <p>选择一个角色。共 {roles.length} 个。</p>

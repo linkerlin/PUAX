@@ -12,11 +12,18 @@ describe('v4 dashboard', () => {
     expect(dash.product).toEqual(expect.objectContaining({ thesis: '处境、闸门、梦' }));
   });
 
-  it('角色目录含全部 shaman 且实验项打标', () => {
+  it('角色目录含全部 shaman 且实验项打标，内核角色携带 AMB 基准制品分数', () => {
     const catalog = buildV4RoleCatalog();
     const shaman = catalog.filter(r => r.shaman);
     expect(shaman).toHaveLength(8);
     const gas = catalog.find(r => r.id === 'special-gaslight-driven');
     expect(gas?.classification).toBe('experimental');
+    expect(gas?.amb_benchmark).toBeNull();
+    const warrior = catalog.find(r => r.id === 'military-warrior');
+    expect(warrior?.amb_benchmark).toEqual(expect.objectContaining({
+      scenario: 'cascade-bugs',
+      delta: '+35%',
+      status: 'verified',
+    }));
   });
 });

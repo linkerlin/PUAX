@@ -5,7 +5,7 @@
 
 import { buildV4Dashboard, buildV4RoleCatalog } from '../core/v4-dashboard.js';
 import { ampSpecDoc } from '../core/amp.js';
-import { planSiliconTheater } from '../core/silicon-theater.js';
+import { planSiliconTheater, runSiliconTheater } from '../core/silicon-theater.js';
 import { getTtfSummary } from '../core/ttf.js';
 import { MANIPULATION_PATTERNS } from '../core/carbon-shield.js';
 
@@ -27,7 +27,15 @@ export function dispatchV4(method: string, pathname: string): V4Response | null 
     case '/v4/amp':
       return { status: 200, json: ampSpecDoc() };
     case '/v4/theater':
-      return { status: 200, json: planSiliconTheater() };
+      return {
+        status: 200,
+        json: {
+          ...planSiliconTheater(),
+          simulation: runSiliconTheater('theater-live'),
+        },
+      };
+    case '/v4/theater/run':
+      return { status: 200, json: runSiliconTheater(`theater-${Date.now()}`) };
     case '/v4/ttf':
       return { status: 200, json: getTtfSummary() };
     case '/v4/shield':

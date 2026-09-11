@@ -76,6 +76,10 @@ describe('v4 HTTP dispatch', () => {
     const theater = dispatchV4('GET', '/v4/theater');
     expect(theater?.status).toBe(200);
     expect((theater?.json as { title: string }).title).toBe('硅基剧场');
+    expect((theater?.json as { simulation: { beats: unknown[] } }).simulation.beats).toHaveLength(4);
+    const theaterRun = dispatchV4('GET', '/v4/theater/run');
+    expect(theaterRun?.status).toBe(200);
+    expect((theaterRun?.json as { beats: unknown[] }).beats).toHaveLength(4);
     expect(dispatchV4('GET', '/v4/nope')).toBeNull();
     expect(dispatchV4('OPTIONS', '/v4/dashboard')?.status).toBe(204);
     const ttf = dispatchV4('GET', '/v4/ttf');

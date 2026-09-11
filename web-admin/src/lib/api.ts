@@ -32,4 +32,10 @@ export async function fetchShield(): Promise<Record<string, unknown>> {
   return res.json()
 }
 
+export async function runTheaterLive(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/v4/theater/run`)
+  if (!res.ok) throw new Error(`theater/run ${res.status}`)
+  return res.json()
+}
+
 export { BASE }

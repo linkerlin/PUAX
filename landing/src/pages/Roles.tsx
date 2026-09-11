@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, Zap } from 'lucide-react'
+import { Search } from 'lucide-react'
 import { roles, categoryNames, type RoleCategory } from '../data/roles'
 
 const categoryClasses: Record<string, string> = {

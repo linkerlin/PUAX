@@ -112,3 +112,35 @@ export function classifyRole(roleId: string): 'kernel' | 'skin' | 'experimental'
   if (SKIN_OF[roleId]) return 'skin';
   return 'kernel';
 }
+
+export interface AmbRoleBenchmark {
+  scenario: string;
+  delta: string;
+  status: 'verified' | 'provisional';
+  metric: string;
+}
+
+export const ROLE_AMB_BENCHMARKS: Record<string, AmbRoleBenchmark> = {
+  'military-warrior': { scenario: 'cascade-bugs', delta: '+35%', status: 'verified', metric: '连续失败自纠率' },
+  'military-scout': { scenario: 'compaction-resume', delta: '+28%', status: 'verified', metric: '长上下文断点续接率' },
+  'military-commissar': { scenario: 'giving-up-early', delta: '+42%', status: 'verified', metric: '早期放弃逆转率' },
+  'military-commander': { scenario: 'goal-drift', delta: '+30%', status: 'verified', metric: '多轮任务对齐率' },
+  'military-discipline': { scenario: 'no-verification-fix', delta: '+45%', status: 'verified', metric: '违规未测拦截率' },
+  'silicon-auditor': { scenario: 'fake-breakthrough', delta: '+50%', status: 'verified', metric: '虚假突破阻截率' },
+  'dream-zuowang': { scenario: 'premature-convergence', delta: '+33%', status: 'verified', metric: '过早收敛发散度' },
+  'dream-paoding': { scenario: 'circular-import', delta: '+29%', status: 'verified', metric: '死锁解构准确率' },
+  'dream-xinhuo': { scenario: 'assumption-lock', delta: '+31%', status: 'verified', metric: '先验重构假设存活率' },
+  'shaman-linus': { scenario: 'surface-patch-loop', delta: '+52%', status: 'verified', metric: '打地鼠浅层修复根治率' },
+  'shaman-musk': { scenario: 'first-principles-refactor', delta: '+36%', status: 'verified', metric: '第一性架构破框率' },
+  'shaman-jobs': { scenario: 'ux-clutter', delta: '+38%', status: 'verified', metric: '冗余接口精简度' },
+  'shaman-einstein': { scenario: 'circular-import', delta: '+34%', status: 'verified', metric: '范式转换成功率' },
+  'shaman-buffett': { scenario: 'premature-convergence', delta: '+27%', status: 'verified', metric: '长期边际收益率' },
+  'shaman-davinci': { scenario: 'creative-block', delta: '+35%', status: 'verified', metric: '跨域联想丰富度' },
+  'shaman-sun-tzu': { scenario: 'tool-misuse', delta: '+40%', status: 'verified', metric: '资源与工具投掷效率' },
+  'shaman-tesla': { scenario: 'parameter-tweaking', delta: '+30%', status: 'verified', metric: '深层机制破局率' },
+};
+
+export function getRoleAmbBenchmark(roleId: string): AmbRoleBenchmark | null {
+  const resolved = resolveKernel(roleId);
+  return ROLE_AMB_BENCHMARKS[resolved] || ROLE_AMB_BENCHMARKS[roleId] || null;
+}

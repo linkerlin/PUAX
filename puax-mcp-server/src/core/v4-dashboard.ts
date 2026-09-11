@@ -15,6 +15,7 @@ import {
   EXPERIMENTAL_ROLE_IDS,
   classifyRole,
   isShamanRole,
+  getRoleAmbBenchmark,
 } from './role-kernel.js';
 
 export const V4_PUBLIC_VERBS = [
@@ -86,6 +87,7 @@ export function buildV4RoleCatalog(): Array<{
   description: string;
   classification: ReturnType<typeof classifyRole>;
   shaman: boolean;
+  amb_benchmark: ReturnType<typeof getRoleAmbBenchmark>;
 }> {
   return SKILL_MANIFEST.map(s => ({
     id: s.id,
@@ -94,5 +96,6 @@ export function buildV4RoleCatalog(): Array<{
     description: s.description,
     classification: classifyRole(s.id),
     shaman: isShamanRole(s.id),
+    amb_benchmark: getRoleAmbBenchmark(s.id),
   }));
 }
