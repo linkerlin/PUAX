@@ -162,14 +162,9 @@ export const enterDreamscapeTool = {
   inputSchema: EnterDreamscapeInputSchema,
 
   handler: (args: z.infer<typeof EnterDreamscapeInputSchema>) => {
-    const { boundary, dream_depth, session_id, council } = args;
-    const role = council ? firstCouncilRole().role : args.role;
-    if (!role) {
-      return {
-        entered: false,
-        error: '入梦失败：须指定 role，或设 council=true 走梦议会航线。',
-      };
-    }
+    const { boundary, dream_depth, session_id } = args;
+    const isCouncil = args.council ?? (!args.role);
+    const role = isCouncil ? firstCouncilRole().role : args.role!;
 
     if (boundary.min_hypotheses > boundary.max_hypotheses) {
       return {
@@ -200,7 +195,7 @@ export const enterDreamscapeTool = {
       protocol_injection: buildDreamProtocolInjection(state),
       next_step: `调用 get_skill（skillId=${role}）获取角色系统提示，梦内产物一律以 [DREAM] 开头；梦毕调用 puax_awaken（dream_context_ref=${ref}）醒梦分类。`,
       session_id,
-      council: council
+      council: isCouncil
         ? {
             active: true,
             itinerary: compileCouncilItinerary(boundary.objective),

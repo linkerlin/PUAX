@@ -218,6 +218,7 @@ PUAX/
 | 文档 | 说明 |
 |------|------|
 | [GHM 导引幻梦法](docs/GHM.md) | 驭幻觉发散引擎：病机、八术映射、庄周八梦、安全铁律 |
+| [GHM 学术论著与技术报告](docs/GHM-PAPER.md) | **论文级长文**：认知病机模型、八算子逆向工程、梦议会航线与无LLM量化评测 |
 | [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
 | [API 参考](docs/API.md) | **48 个 MCP 工具**（对外 12 动词） |
 | [使用指南](docs/USER-GUIDE.md) | 心跳优先工作流 |

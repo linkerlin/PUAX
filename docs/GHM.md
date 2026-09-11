@@ -1,7 +1,7 @@
 # GHM 导引幻梦法（Guided Hallucination Methodology）
 
 > 版本: v3.12.0 | 状态: production ready
-> 姊妹篇: [README.md](../README.md) · [docs/API.md](API.md) · [演进方案.md](../演进方案.md)
+> 学术论著: [docs/GHM-PAPER.md](GHM-PAPER.md) · [README.md](../README.md) · [docs/API.md](API.md) · [演进方案.md](../演进方案.md)
 
 ---
 

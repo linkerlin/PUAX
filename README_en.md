@@ -219,6 +219,7 @@ PUAX/
 | Document | Description |
 |----------|-------------|
 | [GHM Guided Dreams](docs/GHM.md) | Controlled hallucination engine: pathologies, 8 tactics mapping, Zhuangzi dreams |
+| [GHM Academic Paper & Whitepaper](docs/GHM-PAPER.md) | **Formal Technical Paper**: Pathogenesis, 8 operators reversing, council pipeline, non-LLM evals |
 | [MCP Server README](puax-mcp-server/README.md) | Configuration, tool list, architecture, environment variables |
 | [API Reference](docs/API.md) | **48 MCP tools** reference (12 primary verbs) |
 | [User Guide](docs/USER-GUIDE.md) | Heartbeat-first workflow & scenario guides |

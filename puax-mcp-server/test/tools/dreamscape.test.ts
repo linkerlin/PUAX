@@ -64,6 +64,22 @@ describe('v3.12 dreamscape tools', () => {
       expect(result.entered).toBe(false);
       expect(result.error).toContain('min_hypotheses');
     });
+
+    it('缺省 role 时默认走梦议会航线（坐忘起航）', () => {
+      const result = enterDreamscapeTool.handler({
+        boundary: VALID_BOUNDARY,
+      } as never) as {
+        entered: boolean;
+        role: string;
+        council?: { active: boolean; itinerary: string };
+      };
+      expect(result.entered).toBe(true);
+      expect(result.role).toBe('dream-zuowang');
+      expect(result.council?.active).toBe(true);
+      expect(result.council?.itinerary).toContain('梦议会航线');
+      expect(result.council?.itinerary).toContain('dream-zuowang');
+      expect(result.council?.itinerary).toContain('dream-xinhuo');
+    });
   });
 
   describe('puax_awaken', () => {
