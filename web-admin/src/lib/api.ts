@@ -38,6 +38,22 @@ export async function fetchDoctor(): Promise<Record<string, unknown>> {
   return res.json()
 }
 
+export async function fixHostDoctorApi(host?: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/v4/doctor/fix`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(host ? { host } : {}),
+  })
+  if (!res.ok) throw new Error(`doctor fix ${res.status}`)
+  return res.json()
+}
+
+export async function fetchAmbMatrix(): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/v4/amb`)
+  if (!res.ok) throw new Error(`amb ${res.status}`)
+  return res.json()
+}
+
 export async function runTheaterLive(): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE}/v4/theater/run`)
   if (!res.ok) throw new Error(`theater/run ${res.status}`)

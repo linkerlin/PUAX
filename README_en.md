@@ -60,6 +60,12 @@ And it turned out to be genuine~
 ## Quick Start
 
 ```bash
+# Host Health & Time-to-First-Pressure (TTF) Diagnostics
+npx puax-mcp-server doctor
+
+# Auto-mount native hooks for current project/environment (TTF <= 1 ready)
+npx puax-mcp-server doctor --fix
+
 # MCP Client mode (STDIO, Recommended)
 npx puax-mcp-server --stdio
 
@@ -161,6 +167,20 @@ Engineered for humans during workplace talks, commercial negotiations, and high-
 - MCP Tool: `puax_audit_manipulation`
 - HTTP Endpoint: `GET /v4/shield`
 - Web Admin: Dedicated Carbon Shield interactive audit tab
+
+### AMP 0.1 Orchestrator Native Middleware (v4.x+)
+
+Pure in-memory, serverless middleware (`AmpMiddleware`) for LangChain, LangGraph, CrewAI, AutoGen, and custom agent loops:
+- **Lifecycle Interception**: Hard gate blocks in `onPreToolUse`, `onPostToolUse`, and `onModelOutput` for anti-cheat and premature convergence prevention;
+- **One-line Integration**: Easily mount via `createLangChainAmpCallback` into standard model callbacks;
+- See [docs/AMP-INTEGRATION.md](docs/AMP-INTEGRATION.md) for architecture & guides.
+
+### AMB Multi-Model Benchmark Matrix (v4.x+)
+
+Reproducible baseline across three task archetypes (Repair, Review, Create) and 5 major foundation models (DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B):
+- **Repair Tasks**: Fix rate boosted by **+39.2%**, full verification rate boosted by **+56.0%**;
+- **Review Tasks**: Hidden issue catch boosted by **+60.0%**, premature convergence dropped by **-56.0%**;
+- See [docs/AMB.md](docs/AMB.md) and `evals/multi-model-amb.js`.
 
 ---
 

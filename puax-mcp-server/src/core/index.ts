@@ -38,8 +38,8 @@ export type { AmpStepContext, AmpGateDecision } from './amp-middleware.js';
 export { runSiliconTheater, planSiliconTheater } from './silicon-theater.js';
 export { auditManipulation, MANIPULATION_PATTERNS } from './carbon-shield.js';
 export type { ShieldAuditResult, ManipulationFinding, ManipulationPattern } from './carbon-shield.js';
-export { runHostDoctor } from './host-doctor.js';
-export type { DoctorReport, HostDiagnostic } from './host-doctor.js';
+export { runHostDoctor, fixHostDoctor } from './host-doctor.js';
+export type { DoctorReport, HostDiagnostic, DoctorFixReport, FixResult } from './host-doctor.js';
 
 // 导出类型
 export type {

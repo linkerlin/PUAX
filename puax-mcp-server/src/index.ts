@@ -140,9 +140,9 @@ Hook 子命令（原生 hook 引擎共享层）:
   puax-mcp-server shield <待审查文本>
   npx puax-mcp-server shield "没时间了赶紧定下来按这个执行"
 
-宿主健康与 TTF 自检子命令:
-  puax-mcp-server doctor
-  npx puax doctor
+宿主健康与 TTF 自检/修复子命令:
+  puax-mcp-server doctor [--fix] [--host=<id>]
+  npx puax doctor --fix
 
 
 服务器选项:
@@ -279,9 +279,22 @@ async function main(): Promise<void> {
         process.exit(0);
     }
 
-    // 处理 doctor 子命令（宿主健康与 TTF 诊断）
+    // 处理 doctor 子命令（宿主健康与 TTF 诊断及一键自动挂载）
     if (args[0] === 'doctor') {
-        const { runHostDoctor } = await import('./core/host-doctor.js');
+        const isFix = args.includes('--fix');
+        const hostArg = args.find(a => a.startsWith('--host='))?.split('=')[1];
+        const { runHostDoctor, fixHostDoctor } = await import('./core/host-doctor.js');
+
+        if (isFix) {
+            logger.write(`\n🔧 正在一键挂载原生 Hook 配置以修复宿主环境...`);
+            const fixRes = await fixHostDoctor(process.cwd(), hostArg);
+            for (const r of fixRes.results) {
+                const icon = r.success ? '✅' : '❌';
+                logger.write(`  ${icon} [${r.hostId}]: ${r.message}`);
+            }
+            logger.write(`\n修复完成: 共自动配置 ${fixRes.totalFixed} 个宿主环境。\n`);
+        }
+
         const report = runHostDoctor();
         logger.write(`\n🏥 PUAX 宿主健康与 Time-to-First-Pressure (TTF) 诊断表`);
         logger.write(`版本: v${report.version} | 整体 TTF 状态: ${report.overallTtfReady ? '✅ READY (≤1轮生效)' : '⚠️ PENDING'}`);

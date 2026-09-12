@@ -450,7 +450,7 @@ export class PuaxMcpServer {
                 if (routed.status === 204) {
                     res.writeHead(204, {
                         'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                         'Access-Control-Allow-Headers': 'Content-Type',
                     });
                     res.end();

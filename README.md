@@ -58,6 +58,12 @@ Codex 直接交出了35%的加速方案。
 ## 快速开始
 
 ```bash
+# 宿主健康与 Time-to-First-Pressure (TTF) 诊断
+npx puax-mcp-server doctor
+
+# 一键为当前项目/环境自动挂载原生 Hook (TTF ≤ 1 轮原生生效)
+npx puax-mcp-server doctor --fix
+
 # MCP 客户端（STDIO，推荐）
 npx puax-mcp-server --stdio
 
@@ -160,6 +166,20 @@ node evals/benchmark.js        # 性能基准
 - MCP 工具：`puax_audit_manipulation`
 - HTTP 端点：`GET /v4/shield`
 - Web 控制台：`web-admin` 专属防御看板
+
+### AMP 0.1 编排器原生中间件（v4.x+）
+
+针对 LangChain、LangGraph、CrewAI、AutoGen 或自定义 Agent 循环，提供纯内存、免 MCP 服务器的中间件（`AmpMiddleware`）：
+- **生命周期挂载**：在 `onPreToolUse`、`onPostToolUse`、`onModelOutput` 原生拦截作弊指令与敷衍收敛；
+- **一行代码接入**：通过 `createLangChainAmpCallback` 直接作为模型回调注入；
+- 详见 [docs/AMP-INTEGRATION.md](docs/AMP-INTEGRATION.md)。
+
+### AMB 多模型可复现基准矩阵（v4.x+）
+
+跨三大任务类型（修复 Repair、审查 Review、创造 Create）与 5 大主流模型（DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B）的可复现无偏基准：
+- Repair 任务修复率提升 **+39.2%**，全量验证率提升 **+56.0%**；
+- Review 任务隐蔽问题捕获提升 **+60.0%**，敷衍收敛降幅 **-56.0%**；
+- 详见 [docs/AMB.md](docs/AMB.md) 与 `evals/multi-model-amb.js`。
 
 ---
 
