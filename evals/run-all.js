@@ -140,5 +140,9 @@ run('distributions 存在', () => {
   }
 });
 
+run('全组件版本号一致', () => {
+  execSync('node scripts/check-version-consistency.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
 console.log(`\nPassed: ${pass}, Failed: ${fail}`);
 process.exit(fail > 0 ? 1 : 0);

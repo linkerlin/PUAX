@@ -287,7 +287,7 @@ async function main(): Promise<void> {
 
         if (isFix) {
             logger.write(`\n🔧 正在一键挂载原生 Hook 配置以修复宿主环境...`);
-            const fixRes = await fixHostDoctor(process.cwd(), hostArg);
+            const fixRes = fixHostDoctor(process.cwd(), hostArg);
             for (const r of fixRes.results) {
                 const icon = r.success ? '✅' : '❌';
                 logger.write(`  ${icon} [${r.hostId}]: ${r.message}`);

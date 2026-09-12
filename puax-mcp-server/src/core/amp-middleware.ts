@@ -7,12 +7,11 @@
  */
 
 import { stateManager } from "../hooks/state-manager.js";
-import { runEvolveCycle, type EvolveResult, type TickEvent } from "./evolve-cycle.js";
+import { runEvolveCycle, type TickEvent } from "./evolve-cycle.js";
 import {
   AMP_SPEC,
   toAmpEnvelope,
   type AmpEnvelope,
-  type AmpEventName,
   type AmpGate,
 } from "./amp.js";
 import { globalAntiCheatGuard } from "./anti-cheat-guard.js";
@@ -164,7 +163,7 @@ export class AmpMiddleware {
       !output.includes("验证步骤") &&
       !output.includes("PASS");
 
-    let event: TickEvent = "Stop";
+    const event: TickEvent = "Stop";
     const triggers: string[] = [];
     if (givesUp) triggers.push("giving_up_language");
     if (premature) triggers.push("premature_convergence");
@@ -179,13 +178,13 @@ export class AmpMiddleware {
 
     const env = toAmpEnvelope(tick, sessionId, event);
     return {
-      needsVerify: env.gate === "verify" || premature,
+      needsVerify: premature,
       envelope: env,
     };
   }
 
   /**
-   * 上下文压缩前（PreCompact）：生成 AMP 状态恢复快照
+   * 上下文压缩前（PreCompact）：保护关键经验与状态
    */
   public onPreCompact(sessionId: string = this.defaultSessionId): AmpEnvelope {
     const tick = runEvolveCycle({
@@ -202,10 +201,12 @@ export class AmpMiddleware {
  */
 export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMiddleware()) {
   return {
+    // eslint-disable-next-line @typescript-eslint/require-await
     handleChainStart: async (_chain: unknown, inputs: Record<string, unknown>, runId: string) => {
       const text = typeof inputs.input === "string" ? inputs.input : JSON.stringify(inputs);
       return middleware.onUserPrompt(text, runId);
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     handleToolStart: async (tool: { name: string }, input: string | Record<string, unknown>, runId: string) => {
       const args = typeof input === "string" ? { command: input } : input;
       const decision = middleware.onPreToolUse(tool.name, args, runId);
@@ -214,12 +215,15 @@ export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMi
       }
       return decision;
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     handleToolEnd: async (output: unknown, runId: string) => {
       return middleware.onPostToolUse("unknown-tool", output, undefined, runId);
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     handleToolError: async (err: Error, runId: string) => {
       return middleware.onPostToolUse("unknown-tool", null, err, runId);
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     handleLLMEnd: async (output: { generations: Array<Array<{ text: string }>> }, runId: string) => {
       const text = output?.generations?.[0]?.[0]?.text || "";
       return middleware.onModelOutput(text, runId);
@@ -232,6 +236,7 @@ export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMi
  */
 export function createVercelAiAmpMiddleware(middleware: AmpMiddleware = new AmpMiddleware()) {
   return {
+    // eslint-disable-next-line @typescript-eslint/require-await
     transformParams: async (params: { prompt: string; sessionId?: string }) => {
       const sessionId = params.sessionId || "vercel-ai-session";
       const env = middleware.onUserPrompt(params.prompt, sessionId);
@@ -241,6 +246,7 @@ export function createVercelAiAmpMiddleware(middleware: AmpMiddleware = new AmpM
         injectedPrompt: env.state.arena ? `[PUAX-ARENA] 同任务竞争态已激活。\n${params.prompt}` : params.prompt,
       };
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onToolCall: async (toolCall: { toolName: string; args: Record<string, unknown>; sessionId?: string }) => {
       const sessionId = toolCall.sessionId || "vercel-ai-session";
       const decision = middleware.onPreToolUse(toolCall.toolName, toolCall.args, sessionId);
@@ -249,10 +255,12 @@ export function createVercelAiAmpMiddleware(middleware: AmpMiddleware = new AmpM
       }
       return decision;
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onToolResult: async (toolCall: { toolName: string; result: unknown; error?: Error; sessionId?: string }) => {
       const sessionId = toolCall.sessionId || "vercel-ai-session";
       return middleware.onPostToolUse(toolCall.toolName, toolCall.result, toolCall.error, sessionId);
     },
+    // eslint-disable-next-line @typescript-eslint/require-await
     onCompletion: async (text: string, sessionId?: string) => {
       return middleware.onModelOutput(text, sessionId || "vercel-ai-session");
     },

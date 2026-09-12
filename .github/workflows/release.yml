@@ -7,37 +7,48 @@ on:
 
 jobs:
   release:
+    name: Release & Publish PUAX
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        registry-url: 'https://registry.npmjs.org'
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+          cache-dependency-path: puax-mcp-server/package-lock.json
 
-    - name: Install dependencies
-      working-directory: ./puax-mcp-server
-      run: npm ci
+      - name: Install dependencies
+        working-directory: ./puax-mcp-server
+        run: npm ci
 
-    - name: Build
-      working-directory: ./puax-mcp-server
-      run: npm run build
+      - name: Build MCP Server
+        working-directory: ./puax-mcp-server
+        run: npm run build
 
-    - name: Run tests
-      working-directory: ./puax-mcp-server
-      run: npm test
+      - name: Run 25 Protocol Gates
+        run: node evals/run-all.js
 
-    - name: Publish to NPM
-      working-directory: ./puax-mcp-server
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Run Full Test Suite
+        working-directory: ./puax-mcp-server
+        run: npm test
 
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        generate_release_notes: true
+      - name: Build Frontend Artifacts
+        run: |
+          cd landing && npm ci && npm run build && cd ..
+          cd web-admin && npm ci && npm run build && cd ..
+
+      - name: Publish to NPM
+        working-directory: ./puax-mcp-server
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true

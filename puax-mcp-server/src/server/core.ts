@@ -441,7 +441,7 @@ export class PuaxMcpServer {
                 }
             }
             else if (pathname.startsWith('/v4/')) {
-                let body: any = undefined;
+                let body: unknown = undefined;
                 if (req.method === 'POST') {
                     body = await new Promise((resolve) => {
                         let data = '';

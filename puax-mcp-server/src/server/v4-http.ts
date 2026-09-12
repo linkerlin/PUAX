@@ -40,7 +40,7 @@ function getAmbMatrixData(): unknown {
   };
 }
 
-export function dispatchV4(method: string, pathname: string, body?: any): V4Response | null {
+export function dispatchV4(method: string, pathname: string, body?: unknown): V4Response | null {
   if (method === "OPTIONS" && pathname.startsWith("/v4/")) {
     return { status: 204, json: null };
   }
@@ -84,7 +84,8 @@ export function dispatchV4(method: string, pathname: string, body?: any): V4Resp
       };
     case "/v4/shield/audit":
       if (method === "POST") {
-        const text = typeof body?.text === "string" ? body.text : "";
+        const bodyRecord = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+        const text = typeof bodyRecord.text === "string" ? bodyRecord.text : "";
         const result = auditManipulation(text);
         return {
           status: 200,
@@ -101,11 +102,14 @@ export function dispatchV4(method: string, pathname: string, body?: any): V4Resp
         status: 200,
         json: runHostDoctor(),
       };
-    case "/v4/doctor/fix":
+    case "/v4/doctor/fix": {
+      const bodyRecord = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+      const host = typeof bodyRecord.host === "string" ? bodyRecord.host : undefined;
       return {
         status: 200,
-        json: fixHostDoctor(body?.host),
+        json: fixHostDoctor(undefined, host),
       };
+    }
     default:
       return null;
   }

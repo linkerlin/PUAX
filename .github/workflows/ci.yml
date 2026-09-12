@@ -4,53 +4,116 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  # 1. 协议层硬铁律门禁（25 项静态评测与行为契约）
+  protocol-gate:
+    name: Protocol Evals Gate (25 Invariants)
     runs-on: ubuntu-latest
-    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+          cache-dependency-path: puax-mcp-server/package-lock.json
+
+      - name: Install MCP Server dependencies & build
+        working-directory: ./puax-mcp-server
+        run: |
+          npm ci
+          npm run build
+
+      - name: Run 25 Protocol Evals Gates
+        run: node evals/run-all.js
+
+  # 2. MCP Server 跨平台与跨 Node 版本测试矩阵
+  mcp-server:
+    name: MCP Server (${{ matrix.os }} - Node ${{ matrix.node-version }})
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest, windows-latest]
         node-version: [18.x, 20.x]
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: puax-mcp-server/package-lock.json
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: puax-mcp-server/package-lock.json
 
-    - name: Install dependencies
-      working-directory: ./puax-mcp-server
-      run: npm ci
+      - name: Install dependencies
+        working-directory: ./puax-mcp-server
+        run: npm ci
 
-    - name: Eval protocol gate
-      run: node evals/run-all.js
+      - name: Code Style & Lint check
+        working-directory: ./puax-mcp-server
+        run: npm run lint
 
-    - name: Lint
-      working-directory: ./puax-mcp-server
-      run: npm run lint
+      - name: TypeScript Typecheck
+        working-directory: ./puax-mcp-server
+        run: npm run typecheck
 
-    - name: Type check
-      working-directory: ./puax-mcp-server
-      run: npm run typecheck
+      - name: Build MCP Server
+        working-directory: ./puax-mcp-server
+        run: npm run build
 
-    - name: Build
-      working-directory: ./puax-mcp-server
-      run: npm run build
+      - name: Run Full Test Suite (Jest 75+ suites)
+        working-directory: ./puax-mcp-server
+        run: npm test -- --coverage
 
-    - name: Run tests
-      working-directory: ./puax-mcp-server
-      run: npm test -- --coverage
+      - name: Upload Coverage Artifacts
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-coverage-report
+          path: ./puax-mcp-server/coverage/
 
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        directory: ./puax-mcp-server/coverage
-        flags: unittests
-        name: codecov-umbrella
+  # 3. 前端应用构建守卫（Landing & Web-Admin）
+  frontend-apps:
+    name: Frontend Apps (Landing & Web-Admin)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - name: Build Landing (Vite + React 19)
+        working-directory: ./landing
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build Web Admin (Vite + React 19)
+        working-directory: ./web-admin
+        run: |
+          npm ci
+          npm run build
+
+  # 4. 全量质量总闸门 (All Checks Passed)
+  ci-success:
+    name: CI Quality Gate Success
+    needs: [protocol-gate, mcp-server, frontend-apps]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Confirm All Gates Passed
+        run: echo "🎉 All PUAX v4.1.0 CI/CD Quality Gates & Anti-Cheat Invariants Passed!"
