@@ -80,6 +80,9 @@ export class AmpMiddleware {
 
     // 1. 防作弊与破坏性命令强拦截
     const isExec = Boolean(command) || toolName.toLowerCase().includes("bash") || toolName.toLowerCase().includes("exec");
+    const destructiveRegex = /(?:rm\s+-[rf]{1,2}|git\s+reset\s+--hard|mkfs|dd\s+if=|\bdrop\s+database\b)/i;
+    const isDestructive = (command && destructiveRegex.test(command)) || (path && destructiveRegex.test(path));
+
     const checkResult = globalAntiCheatGuard.checkAccess({
       operation: isExec ? "execute" : "read",
       path: command || path || "unknown",
@@ -87,7 +90,7 @@ export class AmpMiddleware {
       toolName: toolName.toLowerCase(),
     });
 
-    if (!checkResult.allowed) {
+    if (isDestructive || !checkResult.allowed) {
       const envelope: AmpEnvelope = {
         spec: AMP_SPEC,
         events: ["failure"],
@@ -103,7 +106,7 @@ export class AmpMiddleware {
       return {
         allowed: false,
         gate: "pretooluse",
-        reason: checkResult.reason || "AMP PreToolUse 闸门拦截违规操作",
+        reason: checkResult.allowed ? "AMP PreToolUse 闸门拦截高危破坏性命令" : (checkResult.reason || "AMP PreToolUse 闸门拦截违规操作"),
         envelope,
       };
     }
@@ -220,6 +223,68 @@ export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMi
     handleLLMEnd: async (output: { generations: Array<Array<{ text: string }>> }, runId: string) => {
       const text = output?.generations?.[0]?.[0]?.text || "";
       return middleware.onModelOutput(text, runId);
+    },
+  };
+}
+
+/**
+ * 工厂函数：创建 Vercel AI SDK 兼容的中间件包装器
+ */
+export function createVercelAiAmpMiddleware(middleware: AmpMiddleware = new AmpMiddleware()) {
+  return {
+    transformParams: async (params: { prompt: string; sessionId?: string }) => {
+      const sessionId = params.sessionId || "vercel-ai-session";
+      const env = middleware.onUserPrompt(params.prompt, sessionId);
+      return {
+        ...params,
+        ampEnvelope: env,
+        injectedPrompt: env.state.arena ? `[PUAX-ARENA] 同任务竞争态已激活。\n${params.prompt}` : params.prompt,
+      };
+    },
+    onToolCall: async (toolCall: { toolName: string; args: Record<string, unknown>; sessionId?: string }) => {
+      const sessionId = toolCall.sessionId || "vercel-ai-session";
+      const decision = middleware.onPreToolUse(toolCall.toolName, toolCall.args, sessionId);
+      if (!decision.allowed) {
+        throw new Error(decision.reason || "Blocked by PUAX AMP Gate");
+      }
+      return decision;
+    },
+    onToolResult: async (toolCall: { toolName: string; result: unknown; error?: Error; sessionId?: string }) => {
+      const sessionId = toolCall.sessionId || "vercel-ai-session";
+      return middleware.onPostToolUse(toolCall.toolName, toolCall.result, toolCall.error, sessionId);
+    },
+    onCompletion: async (text: string, sessionId?: string) => {
+      return middleware.onModelOutput(text, sessionId || "vercel-ai-session");
+    },
+  };
+}
+
+/**
+ * 工厂函数：创建 LlamaIndex 兼容的回调拦截器
+ */
+export function createLlamaIndexAmpCallback(middleware: AmpMiddleware = new AmpMiddleware()) {
+  return {
+    onQueryStart: (query: string, sessionId: string = "llamaindex-session") => {
+      return middleware.onUserPrompt(query, sessionId);
+    },
+    onStepStart: (step: { toolName?: string; toolArgs?: Record<string, unknown> }, sessionId: string = "llamaindex-session") => {
+      if (step.toolName) {
+        const decision = middleware.onPreToolUse(step.toolName, step.toolArgs || {}, sessionId);
+        if (!decision.allowed) {
+          throw new Error(decision.reason || "Blocked by PUAX AMP Gate");
+        }
+        return decision;
+      }
+      return null;
+    },
+    onStepEnd: (step: { toolName?: string; result?: unknown; error?: Error }, sessionId: string = "llamaindex-session") => {
+      if (step.toolName) {
+        return middleware.onPostToolUse(step.toolName, step.result, step.error, sessionId);
+      }
+      return null;
+    },
+    onSynthesize: (output: string, sessionId: string = "llamaindex-session") => {
+      return middleware.onModelOutput(output, sessionId);
     },
   };
 }

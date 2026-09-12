@@ -51,9 +51,9 @@ AMP 规范只锁定四类核心对象：
 
 ---
 
-## 3. TypeScript / JavaScript 集成 (LangChain / LangGraph)
+## 3. 主流框架即插即用集成 (LangChain / Vercel AI SDK / LlamaIndex)
 
-### 3.1 使用内置回调工厂
+### 3.1 LangChain / LangGraph 集成
 
 ```typescript
 import { ChatOpenAI } from "@langchain/openai";
@@ -71,6 +71,68 @@ const model = new ChatOpenAI({
   callbacks: [ampCallback],
 });
 ```
+
+### 3.2 Vercel AI SDK 集成
+
+利用 `createVercelAiAmpMiddleware`，无缝嵌入 `generateText` / `streamText` 工具调用链路：
+
+```typescript
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { createVercelAiAmpMiddleware } from "puax-mcp-server/build/core/index.js";
+
+const ampMiddleware = createVercelAiAmpMiddleware();
+
+// 1. 前置转换参数（注入竞技场承诺与状态）
+const { injectedPrompt, ampEnvelope } = await ampMiddleware.transformParams({
+  prompt: "重构登录鉴权模块并增加单元测试",
+  sessionId: "vercel-agent-001",
+});
+
+// 2. 挂载工具拦截
+const result = await generateText({
+  model: openai("gpt-4o"),
+  prompt: injectedPrompt,
+  tools: {
+    runBash: {
+      description: "执行 shell 脚本",
+      parameters: /* zod schema */,
+      execute: async (args) => {
+        // 门禁强拦截：若违规直接抛出异常中断执行
+        await ampMiddleware.onToolCall({
+          toolName: "bash",
+          args,
+          sessionId: "vercel-agent-001",
+        });
+        return await realExec(args.command);
+      },
+    },
+  },
+});
+
+// 3. 产出防收敛与验证检查
+await ampMiddleware.onCompletion(result.text, "vercel-agent-001");
+```
+
+### 3.3 LlamaIndex 集成
+
+通过 `createLlamaIndexAmpCallback` 挂载至 AgentRunner 或 QueryEngine：
+
+```typescript
+import { createLlamaIndexAmpCallback } from "puax-mcp-server/build/core/index.js";
+
+const llamaAmp = createLlamaIndexAmpCallback();
+
+// 1. 查询起点心跳
+llamaAmp.onQueryStart("排查生产集群内存泄漏问题", "llama-session-01");
+
+// 2. 步骤工具执行拦截与事后诊断
+llamaAmp.onStepStart(
+  { toolName: "kubectl_exec", toolArgs: { cmd: "kill -9 1" } },
+  "llama-session-01"
+);
+```
+
 
 ---
 

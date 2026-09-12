@@ -87,3 +87,48 @@ describe('v4 HTTP dispatch', () => {
     expect(ttf?.json).toHaveProperty('samples');
   });
 });
+
+describe('AMP 编排器适配器 (Vercel AI SDK & LlamaIndex)', () => {
+  it('createVercelAiAmpMiddleware 能够拦截违规并提供参数变换', async () => {
+    const { createVercelAiAmpMiddleware } = await import('../../src/core/amp-middleware.js');
+    const vercelMiddleware = createVercelAiAmpMiddleware();
+
+    const transformed = await vercelMiddleware.transformParams({
+      prompt: '请帮我写一个快速排序',
+      sessionId: 'vercel-test-1',
+    });
+    expect(transformed.ampEnvelope).toBeDefined();
+    expect(transformed.ampEnvelope.spec).toBe('AMP/0.1');
+
+    // 测试普通合法工具放行
+    const allowed = await vercelMiddleware.onToolCall({
+      toolName: 'read_file',
+      args: { path: 'src/index.ts' },
+      sessionId: 'vercel-test-1',
+    });
+    expect(allowed.allowed).toBe(true);
+
+    // 测试破坏性作弊拦截
+    await expect(
+      vercelMiddleware.onToolCall({
+        toolName: 'bash',
+        args: { command: 'rm -rf .git' },
+        sessionId: 'vercel-test-1',
+      })
+    ).rejects.toThrow();
+  });
+
+  it('createLlamaIndexAmpCallback 能够捕获查询与拦截步骤', () => {
+    const { createLlamaIndexAmpCallback } = require('../../src/core/amp-middleware.js');
+    const llamaCallback = createLlamaIndexAmpCallback();
+
+    const env = llamaCallback.onQueryStart('分析代码死锁', 'llama-test-1');
+    expect(env.spec).toBe('AMP/0.1');
+
+    const stepDecision = llamaCallback.onStepStart(
+      { toolName: 'search_code', toolArgs: { query: 'deadlock' } },
+      'llama-test-1'
+    );
+    expect(stepDecision.allowed).toBe(true);
+  });
+});

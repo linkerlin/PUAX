@@ -33,7 +33,12 @@ export { compileCouncilItinerary, DREAM_COUNCIL_LEGS } from './dream-council.js'
 export { distinctN, semanticRadius } from './ghm-metrics.js';
 export { getTtfSummary } from './ttf.js';
 export { toAmpEnvelope, ampSpecDoc, AMP_SPEC } from './amp.js';
-export { AmpMiddleware, createLangChainAmpCallback } from './amp-middleware.js';
+export {
+  AmpMiddleware,
+  createLangChainAmpCallback,
+  createVercelAiAmpMiddleware,
+  createLlamaIndexAmpCallback,
+} from './amp-middleware.js';
 export type { AmpStepContext, AmpGateDecision } from './amp-middleware.js';
 export { runSiliconTheater, planSiliconTheater } from './silicon-theater.js';
 export { auditManipulation, MANIPULATION_PATTERNS } from './carbon-shield.js';

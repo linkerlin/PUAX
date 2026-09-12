@@ -49,7 +49,8 @@ export const BLOCKED_PATTERNS = {
     /git\s+clean\s+-f/i,
     // v3.11: 对齐 git-guardrails 业界实践（Hook机制演进方案.md P2-12）。
     // 保守原则：仅用于评估/防作弊场景，普通开发请用 guard.disable() 关闭。
-    /git\s+push/i
+    /git\s+push/i,
+    /rm\s+-[rf]{1,2}\s+.*\.git/i
   ]
 };
 

@@ -55,3 +55,15 @@ Thumbs.db
 
 # Git repo backup (2026-08-19 repair)
 .git.bak-20260819/
+
+# Test export outputs
+puax-mcp-server/flavor-*.md
+puax-mcp-server/military-*.md
+puax-mcp-server/shaman-*.md
+puax-mcp-server/dream-*.md
+puax-mcp-server/windsurf-config.json
+puax-mcp-server/hooks/
+puax-mcp-server/.claude/
+puax-mcp-server/.cursor/
+puax-mcp-server/.github/
+puax-mcp-server/.opencode/
