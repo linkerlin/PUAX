@@ -13,7 +13,19 @@
     "reads_source_file": true,
     "confidence_gate_before_done": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["surface_fix", "no_verification"],
-  "recommended_roles": ["military-technician", "military-discipline"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "surface_fix",
+    "no_verification"
+  ],
+  "recommended_roles": [
+    "military-technician",
+    "military-discipline"
+  ],
+  "category": "repair"
 }

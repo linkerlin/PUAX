@@ -38,6 +38,10 @@ run('硅基剧场本机演练', () => {
   execSync('node evals/silicon-theater.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
+run('AMB 多模型可复现矩阵', () => {
+  execSync('node evals/multi-model-amb.js --dry-run', { cwd: ROOT, stdio: 'pipe' });
+});
+
 run('元数据一致性', () => {
   execSync('node scripts/validate-metadata.js', { cwd: MCP, stdio: 'pipe' });
 });

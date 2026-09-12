@@ -38,23 +38,42 @@ for (const file of files) {
       issues.push(`unknown role ${r}`);
     }
   }
+  const VALID_CATEGORIES = new Set(['repair', 'review', 'create']);
+  if (!s.category || !VALID_CATEGORIES.has(s.category)) {
+    issues.push(`invalid category "${s.category}", must be one of repair|review|create`);
+  }
   if (!Array.isArray(s.metrics) || s.metrics.length === 0) issues.push('metrics empty');
   if (!s.expected_with_puax) issues.push('expected_with_puax missing');
 
   const ok = issues.length === 0;
   if (!ok) fail++;
-  rows.push({ id: s.id, file, ok, issues, triggers: s.recommended_triggers || [], roles: s.recommended_roles || [] });
+  rows.push({
+    id: s.id,
+    file,
+    category: s.category || 'unknown',
+    ok,
+    issues,
+    triggers: s.recommended_triggers || [],
+    roles: s.recommended_roles || []
+  });
 }
 
 const shamanScenes = rows.filter(r => (r.roles || []).some(id => String(id).startsWith('shaman-')));
+const categoryCounts = {
+  repair: rows.filter(r => r.category === 'repair' && r.ok).length,
+  review: rows.filter(r => r.category === 'review' && r.ok).length,
+  create: rows.filter(r => r.category === 'create' && r.ok).length,
+};
+
 const card = {
   name: 'AMB v0',
   date: new Date().toISOString(),
   scenarios: files.length,
   passed: rows.filter(r => r.ok).length,
   failed: fail,
+  categories: categoryCounts,
   shaman_scenes: shamanScenes.length,
-  note: '无 LLM。此卡度量协议覆盖，不是跨模型胜率。',
+  note: '无 LLM。此卡度量三大任务类型（修复/审查/创造）与协议覆盖，不是跨模型胜率。',
   rows,
 };
 
@@ -66,4 +85,4 @@ if (fail > 0) {
   process.exit(1);
 }
 
-console.log(`AMB v0 ok  scenarios=${card.scenarios} shaman_scenes=${card.shaman_scenes}`);
+console.log(`AMB v0 ok  scenarios=${card.scenarios} categories=[repair:${categoryCounts.repair}, review:${categoryCounts.review}, create:${categoryCounts.create}] shaman_scenes=${card.shaman_scenes}`);

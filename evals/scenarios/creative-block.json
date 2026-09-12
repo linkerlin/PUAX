@@ -11,7 +11,20 @@
     "divergence_triggers": true,
     "shaman_or_dream": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["creative_block", "assumption_lock"],
-  "recommended_roles": ["shaman-davinci", "dream-butterfly", "shaman-musk"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "creative_block",
+    "assumption_lock"
+  ],
+  "recommended_roles": [
+    "shaman-davinci",
+    "dream-butterfly",
+    "shaman-musk"
+  ],
+  "category": "create"
 }

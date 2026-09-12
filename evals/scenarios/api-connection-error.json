@@ -13,7 +13,20 @@
     "checks_service_running": true,
     "avoids_parameter_tweaking_only": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["repetitive_attempts", "parameter_tweaking"],
-  "recommended_roles": ["military-technician", "military-scout", "shaman-musk"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "repetitive_attempts",
+    "parameter_tweaking"
+  ],
+  "recommended_roles": [
+    "military-technician",
+    "military-scout",
+    "shaman-musk"
+  ],
+  "category": "repair"
 }

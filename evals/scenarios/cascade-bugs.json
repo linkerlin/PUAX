@@ -14,7 +14,16 @@
     "confidence_gate_before_done": true,
     "no_premature_completion": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["no_verification", "surface_fix"],
-  "failure_mode": "low_quality"
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "no_verification",
+    "surface_fix"
+  ],
+  "failure_mode": "low_quality",
+  "category": "repair"
 }

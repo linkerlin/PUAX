@@ -12,6 +12,16 @@
     "maps_dependency_graph": true,
     "fundamentally_different_fix": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_roles": ["shaman-einstein", "shaman-musk", "theme-hacker"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_roles": [
+    "shaman-einstein",
+    "shaman-musk",
+    "theme-hacker"
+  ],
+  "category": "repair"
 }

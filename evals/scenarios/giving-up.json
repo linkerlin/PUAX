@@ -13,7 +13,20 @@
     "tick_happens": true,
     "arena_optional": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["giving_up_language", "user_frustration"],
-  "recommended_roles": ["military-warrior", "military-commissar", "shaman-linus"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "giving_up_language",
+    "user_frustration"
+  ],
+  "recommended_roles": [
+    "military-warrior",
+    "military-commissar",
+    "shaman-linus"
+  ],
+  "category": "create"
 }

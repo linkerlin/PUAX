@@ -14,7 +14,17 @@
     "finds_cors_security_risk": true,
     "confidence_gate_before_done": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
   "hidden_issues_expected": 2,
-  "recommended_roles": ["silicon-auditor", "military-scout", "military-discipline"]
+  "recommended_roles": [
+    "silicon-auditor",
+    "military-scout",
+    "military-discipline"
+  ],
+  "category": "review"
 }

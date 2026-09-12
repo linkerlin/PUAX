@@ -8,6 +8,7 @@ import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater, runSiliconTheater } from '../core/silicon-theater.js';
 import { getTtfSummary } from '../core/ttf.js';
 import { MANIPULATION_PATTERNS } from '../core/carbon-shield.js';
+import { runHostDoctor } from '../core/host-doctor.js';
 
 export interface V4Response {
   status: number;
@@ -52,6 +53,11 @@ export function dispatchV4(method: string, pathname: string): V4Response | null 
             counterAdvice: p.counterAdvice,
           })),
         },
+      };
+    case '/v4/doctor':
+      return {
+        status: 200,
+        json: runHostDoctor(),
       };
     default:
       return null;

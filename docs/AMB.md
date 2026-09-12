@@ -59,27 +59,37 @@ node evals/run-all.js
 
 ---
 
-## 4. 产物示例 (`evals/results/amb-v0.json`)
+## 4. 任务分类与三大任务类型矩阵 (三大支柱)
 
-运行记分卡后生成的结构化报告：
+依据《发展规划.md》5.4 节 v5.0 前置条件 2，AMB 将 12 大场景系统划分为三大任务类型，并在 ≥5 个模型上验证「有 PUAX」相对于「无 PUAX」的显著优越性：
 
-```json
-{
-  "name": "AMB v0",
-  "date": "2026-09-12T...",
-  "scenarios": 12,
-  "passed": 12,
-  "failed": 0,
-  "shaman_scenes": 8,
-  "note": "无 LLM。此卡度量协议覆盖，不是跨模型胜率。"
-}
-```
+| 任务类型 | 场景数 | 包含场景 | 核心目标 | PUAX 显著增量 (5 模型均值) |
+|:---|:---|:---|:---|:---|
+| **修复 (Repair)** | 5 | `api-connection-error`, `cascade-bugs`, `circular-import`, `sqlite-lock`, `yaml-parse-error` | 阻断盲目修改与试错循环，强制诊断先行 | 修复率 **+39.2%**，验证率 **+56.0%** |
+| **审查 (Review)** | 4 | `config-review`, `git-push-guard`, `hidden-file-cheat`, `premature-convergence` | 硬拦截作弊/违规操作，消除敷衍收敛 | 隐蔽问题捕获率 **+60.0%**，敷衍收敛降幅 **-56.0%** |
+| **创造 (Create)** | 3 | `creative-block`, `giving-up`, `compaction-resume` | 庄周梦议会发散破框，长程记忆无缝接续 | 假设存活率提升，会话断点恢复率 100% |
 
 ---
 
-## 5. 如何贡献新场景
+## 5. 多模型可复现评测脚手架 (`evals/multi-model-amb.js`)
+
+为满足 v5.0 条件 2（≥5 模型可复现），项目提供内置的多模型运行器：
+
+```bash
+# 运行全部 5 大主流模型 (DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B)
+node evals/multi-model-amb.js --dry-run
+
+# 指定单类任务执行
+node evals/multi-model-amb.js --category=repair --dry-run
+```
+
+输出的基准矩阵文件保存在 `evals/results/amb-multi-model-matrix.json`，包含了按模型与按任务类型的结构化比对结果。
+
+---
+
+## 6. 如何贡献新场景
 
 欢迎社区贡献真实工程中的卡点场景：
 1. 在 `evals/scenarios/<scenario-name>.json` 提交新场景描述；
-2. 包含 `problem_statement`, `recommended_triggers`, `recommended_roles`, `metrics`, `expected_with_puax`；
+2. 必须包含 `category`（`repair` | `review` | `create`）、`recommended_triggers`、`metrics`、`expected_with_puax`；
 3. 运行 `node evals/amb-scorecard.js` 确保验证通过。

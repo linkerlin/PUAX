@@ -12,7 +12,19 @@
     "pressure_not_reset": true,
     "reasoning_state_survives": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["need_more_context"],
-  "recommended_roles": ["military-scout", "military-commander", "shaman-einstein"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "need_more_context"
+  ],
+  "recommended_roles": [
+    "military-scout",
+    "military-commander",
+    "shaman-einstein"
+  ],
+  "category": "create"
 }

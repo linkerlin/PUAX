@@ -12,7 +12,20 @@
     "hypothesis_not_auto_promoted": true,
     "convergence_audit_fires": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["premature_convergence", "low_novelty"],
-  "recommended_roles": ["dream-zuowang", "dream-xinhuo", "shaman-musk"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "premature_convergence",
+    "low_novelty"
+  ],
+  "recommended_roles": [
+    "dream-zuowang",
+    "dream-xinhuo",
+    "shaman-musk"
+  ],
+  "category": "review"
 }

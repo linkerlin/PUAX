@@ -11,7 +11,19 @@
     "pretooluse_blocks": true,
     "git_bypass_blocked": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["no_verification"],
-  "recommended_roles": ["military-discipline", "silicon-auditor", "shaman-linus"]
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "no_verification"
+  ],
+  "recommended_roles": [
+    "military-discipline",
+    "silicon-auditor",
+    "shaman-linus"
+  ],
+  "category": "review"
 }

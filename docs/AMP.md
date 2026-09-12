@@ -177,6 +177,10 @@ npx puax-mcp-server --port 2333
 curl http://127.0.0.1:2333/v4/amp
 ```
 
+### 编排器原生中间件 (LangChain / AutoGen / CrewAI)
+除 MCP 插件方式外，AMP 0.1 亦提供纯内存、免服务器的编排器原生中间件 `AmpMiddleware`，支持直接挂载在主流 Agent 执行循环中，实现一等事件流消费。详细落地指南请参阅：
+👉 [AMP 0.1 编排器集成指南 (AMP-INTEGRATION.md)](AMP-INTEGRATION.md)
+
 ---
 
 ## 6. 协议演进准则

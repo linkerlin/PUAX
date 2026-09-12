@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchDashboard } from '../lib/api'
+import { fetchDashboard, fetchDoctor } from '../lib/api'
 
 interface MetricItem {
   name: string
@@ -9,14 +9,39 @@ interface MetricItem {
   note: string
 }
 
+interface HostItem {
+  id: string
+  name: string
+  category: string
+  detected: boolean
+  hooksConfigured: string[]
+  ttfReady: boolean
+  score: number
+  advice: string
+}
+
+interface DoctorData {
+  overallTtfReady: boolean
+  topHostsCovered: number
+  topHostsTotal: number
+  v5Condition3Satisfied: boolean
+  hosts: HostItem[]
+  recommendation: string
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
+  const [doctor, setDoctor] = useState<DoctorData | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetchDashboard()
       .then(setData)
       .catch(() => setError('无法连接 puax-mcp-server（默认 http://127.0.0.1:2333）。本页不展示假用户数。'))
+
+    fetchDoctor()
+      .then(d => setDoctor(d as unknown as DoctorData))
+      .catch(() => {})
   }, [])
 
   const evo = (data?.evolution || {}) as { rank?: string; total_sessions?: number; successful_sessions?: number }
@@ -113,6 +138,51 @@ export default function Dashboard() {
             <p className="text-muted">正在加载自检指标...</p>
           )}
         </div>
+      </div>
+
+      {/* 宿主健康与 Time-to-First-Pressure 诊断展区 */}
+      <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: 12, border: '1px solid #334155', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem' }}>
+          <div>
+            <h3 style={{ color: '#f1f5f9', margin: 0 }}>🏥 主流宿主健康与 Time-to-First-Pressure 状态</h3>
+            <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
+              依据《发展规划.md》5.4 节 v5.0 前置条件 3：覆盖安装量 Top 宿主，实现第一轮对话零延迟原生介入（TTF ≤ 1 轮）。
+            </p>
+          </div>
+          <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: doctor?.overallTtfReady ? '#064e3b' : '#78350f', color: doctor?.overallTtfReady ? '#6ee7b7' : '#fcd34d', borderRadius: 4 }}>
+            {doctor?.overallTtfReady ? '● 宿主层 TTF 已就绪' : '○ 待挂载 Hook'}
+          </span>
+        </div>
+
+        {doctor ? (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+              {doctor.hosts.map(h => (
+                <div key={h.id} style={{ background: '#0f172a', padding: '1rem', borderRadius: 8, border: '1px solid #1e293b' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ color: '#f8fafc', fontSize: '0.9rem' }}>{h.name}</strong>
+                    <span style={{ fontSize: '0.75rem', color: h.ttfReady ? '#10b981' : h.detected ? '#f59e0b' : '#64748b' }}>
+                      {h.ttfReady ? '✔ TTF ≤ 1' : h.detected ? '已探测' : '未挂载'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                    {h.advice}
+                  </div>
+                  {h.hooksConfigured.length > 0 && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#38bdf8' }}>
+                      Hook: {h.hooksConfigured.join(', ')}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#94a3b8', background: '#0f172a', padding: '0.5rem 1rem', borderRadius: 6 }}>
+              💡 建议: {doctor.recommendation}
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted">正在检测本机宿主环境与 Hook 挂载状态...</p>
+        )}
       </div>
 
       {/* 底部立国宣言 */}

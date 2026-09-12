@@ -140,6 +140,10 @@ Hook 子命令（原生 hook 引擎共享层）:
   puax-mcp-server shield <待审查文本>
   npx puax-mcp-server shield "没时间了赶紧定下来按这个执行"
 
+宿主健康与 TTF 自检子命令:
+  puax-mcp-server doctor
+  npx puax doctor
+
 
 服务器选项:
   -p, --port <端口>        指定监听端口 (默认: 2333)
@@ -275,7 +279,25 @@ async function main(): Promise<void> {
         process.exit(0);
     }
 
-    // 处理平台列表请求
+    // 处理 doctor 子命令（宿主健康与 TTF 诊断）
+    if (args[0] === 'doctor') {
+        const { runHostDoctor } = await import('./core/host-doctor.js');
+        const report = runHostDoctor();
+        logger.write(`\n🏥 PUAX 宿主健康与 Time-to-First-Pressure (TTF) 诊断表`);
+        logger.write(`版本: v${report.version} | 整体 TTF 状态: ${report.overallTtfReady ? '✅ READY (≤1轮生效)' : '⚠️ PENDING'}`);
+        logger.write(`主流宿主覆盖率: ${report.topHostsCovered}/${report.topHostsTotal} | v5.0 前置条件 3: ${report.v5Condition3Satisfied ? '✅ 达成' : '⚠️ 未达成'}\n`);
+        logger.write('宿主探测详情:');
+        for (const h of report.hosts) {
+            const icon = h.ttfReady ? '✅' : h.detected ? '🟡' : '⚪';
+            logger.write(`  ${icon} [${h.name}] (${h.category}) - ${h.score}分`);
+            logger.write(`     状态: ${h.advice}`);
+            if (h.hooksConfigured.length > 0) {
+                logger.write(`     已挂载 Hook: ${h.hooksConfigured.join(', ')}`);
+            }
+        }
+        logger.write(`\n诊断建议: ${report.recommendation}\n`);
+        process.exit(0);
+    }
     if (args.includes('--list-platforms')) {
         await showPlatforms();
         process.exit(0);

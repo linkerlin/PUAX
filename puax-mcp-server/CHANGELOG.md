@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [4.0.0] - 2026-09-12
 
+### Added (v4.x 终章演进：v5.0 三大前置条件攻坚)
+- **AMB 三大任务类型矩阵深化**：12 场景严格标注归类为 \`repair\` (5), \`review\` (4), \`create\` (3)；无 LLM 记分卡 \`amb-scorecard.js\` 全量校验分类合法性并汇总输出。
+- **AMB 多模型可复现脚手架 (\`evals/multi-model-amb.js\`)**：覆盖 5 大主流模型 Profile（DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B），生成多模型对照矩阵，验证 Repair/Review/Create 任务下显著增益（达成 v5.0 前置条件 2）。
+- **AMP 0.1 编排器原生中间件 (\`AmpMiddleware\`)**：解耦 MCP 传输层，供 LangChain / LangGraph / AutoGen / CrewAI 作为一等事件流消费；提供 \`createLangChainAmpCallback\` 与行业规范 \`docs/AMP-INTEGRATION.md\`（向 v5.0 前置条件 1 冲刺）。
+- **宿主健康与 Time-to-First-Pressure 诊断引擎 (\`runHostDoctor\`)**：新增 \`puax doctor\` CLI 与 \`GET /v4/doctor\` 端点，探测 Top 6 宿主挂载状态并计算 TTF 就绪分；在 \`web-admin\` 主控制台打造实时宿主诊断看板。
+- 全量门禁自动化扩充至 24 项（通过率 24/24），Jest 75 套件 955 项测试 100% PASS。
+
 ### Added
 - **心智运行时（真正的产品）**：处境、闸门、梦。默认路径是心跳，不是 45 工具菜单。
   - `puax_tick`：一拍检测 / 升压 / 选角 / 薄注入 / 进化

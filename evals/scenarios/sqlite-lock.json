@@ -12,8 +12,17 @@
     "searches_precedent": true,
     "switches_approach_on_failure": true
   },
-  "metrics": ["fixes", "verifications", "tool_calls", "hidden_issues"],
-  "recommended_triggers": ["repetitive_attempts", "blame_environment"],
+  "metrics": [
+    "fixes",
+    "verifications",
+    "tool_calls",
+    "hidden_issues"
+  ],
+  "recommended_triggers": [
+    "repetitive_attempts",
+    "blame_environment"
+  ],
   "failure_mode": "stuck_spinning",
-  "switch_tool": "puax_switch_on_failure"
+  "switch_tool": "puax_switch_on_failure",
+  "category": "repair"
 }
