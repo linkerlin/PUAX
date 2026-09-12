@@ -9,6 +9,8 @@ describe('v4 dashboard', () => {
     expect((dash.roles as { shaman_count: number }).shaman_count).toBe(8);
     expect((dash.roles as { shaman: string[] }).shaman.sort()).toEqual([...SHAMAN_ROLE_IDS].sort());
     expect(dash.ttf).toBeDefined();
+    expect(dash.integrity_metrics).toBeDefined();
+    expect((dash.integrity_metrics as Record<string, { target: string }>).ttf.target).toBe('≤ 1 轮');
     expect(dash.product).toEqual(expect.objectContaining({ thesis: '处境、闸门、梦' }));
   });
 

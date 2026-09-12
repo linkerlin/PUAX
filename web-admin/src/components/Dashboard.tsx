@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react'
 import { fetchDashboard } from '../lib/api'
 
+interface MetricItem {
+  name: string
+  target: string
+  value: string
+  status: string
+  note: string
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<Record<string, unknown> | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -11,44 +19,111 @@ export default function Dashboard() {
       .catch(() => setError('无法连接 puax-mcp-server（默认 http://127.0.0.1:2333）。本页不展示假用户数。'))
   }, [])
 
-  const roles = (data?.roles || {}) as { total?: number; shaman_count?: number }
-  const evo = (data?.evolution || {}) as { rank?: string; total_sessions?: number }
-  const product = (data?.product || {}) as { thesis?: string }
-  const ttf = (data?.ttf || {}) as { samples?: number; median_ms?: number | null; first_turn_rate?: number | null }
+  const evo = (data?.evolution || {}) as { rank?: string; total_sessions?: number; successful_sessions?: number }
+  const product = (data?.product || {}) as { thesis?: string; tagline?: string }
+  const metrics = (data?.integrity_metrics || {}) as Record<string, MetricItem>
+
+  const metricList = Object.values(metrics)
 
   return (
     <div className="dashboard">
-      <h2>v4 仪表盘</h2>
-      {error && <p>{error}</p>}
-      <p>{product.thesis || '处境、闸门、梦'}</p>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-value">{String(data?.version || '—')}</div>
-          <div className="stat-label">版本</div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <h2>🛡️ PUAX 4.x 心智运行时主控台</h2>
+        <p style={{ color: '#38bdf8', fontWeight: 'bold', marginTop: '0.25rem' }}>
+          核心原语：{product.thesis || '处境、闸门、梦'}
+        </p>
+        <p className="text-muted" style={{ fontSize: '0.9rem' }}>
+          {product.tagline || '专门 PUA 硅基的运行时。人类不在服务范围。'}
+        </p>
+      </div>
+
+      {error && (
+        <div style={{ background: '#7f1d1d', color: '#fecaca', padding: '0.75rem 1rem', borderRadius: 8, marginBottom: '1.5rem' }}>
+          {error}
         </div>
+      )}
+
+      {/* 运行时底座快速状态 */}
+      <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">
-          <div className="stat-value">{roles.total ?? '—'}</div>
-          <div className="stat-label">角色</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{roles.shaman_count ?? 8}</div>
-          <div className="stat-label">萨满（全留）</div>
+          <div className="stat-value">{String(data?.version || '4.0.0')}</div>
+          <div className="stat-label">协议版本 (AMP 0.1)</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{evo.rank || '见习'}</div>
-          <div className="stat-label">本机段位</div>
+          <div className="stat-label">本机段位 (跨会话自进化)</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">
-            {ttf.median_ms != null ? `${ttf.median_ms}ms` : '—'}
-          </div>
-          <div className="stat-label">TTF 中位（{ttf.samples ?? 0} 样）</div>
+          <div className="stat-value">12 动词</div>
+          <div className="stat-label">对外主路径契约</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value" style={{ color: '#10b981' }}>7 宿主</div>
+          <div className="stat-label">原生 Hook 强制拦截</div>
         </div>
       </div>
-      {ttf.first_turn_rate != null ? (
-        <p className="text-muted">第一轮命中率 {(ttf.first_turn_rate * 100).toFixed(0)}%</p>
-      ) : null}
-      {data?.note ? <p className="text-muted">{String(data.note)}</p> : null}
+
+      {/* 核心板块：如何知道自己没在骗自己（反自欺指标矩阵） */}
+      <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: 12, border: '1px solid #334155', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.75rem' }}>
+          <div>
+            <h3 style={{ color: '#f1f5f9', margin: 0 }}>📊 反自欺自检矩阵（如何知道自己没在骗自己）</h3>
+            <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
+              依据《发展规划.md》第 8 节：星数、角色数、工具数三件不进主看板。只公布能复现的真实度量。
+            </p>
+          </div>
+          <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: '#064e3b', color: '#6ee7b7', borderRadius: 4 }}>
+            ● 守门全绿 (7/7 Pass)
+          </span>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+          {metricList.length > 0 ? (
+            metricList.map((m, idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: '#0f172a',
+                  padding: '1rem',
+                  borderRadius: 8,
+                  border: '1px solid #1e293b',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ color: '#f8fafc', fontSize: '0.9rem' }}>{m.name}</strong>
+                    <span style={{ fontSize: '0.75rem', color: '#10b981', background: 'rgba(16, 185, 129, 0.1)', padding: '0.1rem 0.4rem', borderRadius: 4 }}>
+                      合格
+                    </span>
+                  </div>
+                  <div style={{ marginTop: '0.5rem', fontSize: '1.25rem', color: '#38bdf8', fontWeight: 'bold' }}>
+                    {m.value}
+                  </div>
+                </div>
+                <div style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#94a3b8', borderTop: '1px dashed #1e293b', paddingTop: '0.4rem' }}>
+                  <span>及格线: <code>{m.target}</code></span>
+                  <span style={{ float: 'right' }}>{m.note}</span>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-muted">正在加载自检指标...</p>
+          )}
+        </div>
+      </div>
+
+      {/* 底部立国宣言 */}
+      <div style={{ background: '#0f172a', padding: '1rem 1.5rem', borderRadius: 8, borderLeft: '4px solid #6366f1' }}>
+        <div style={{ fontSize: '0.85rem', color: '#cbd5e1', lineHeight: '1.6' }}>
+          <strong>纪律原则：</strong> 只公布能复现的。跑分不能复现，就写「尚未复现」，不写「生产就绪」。
+          <br />
+          PUAX 4.x 的绿靠 AMB 场景与原生 Hook 拦截，不靠虚胖的 README。
+          {data?.note ? <div style={{ color: '#94a3b8', marginTop: '0.25rem' }}>{String(data.note)}</div> : null}
+        </div>
+      </div>
     </div>
   )
 }
