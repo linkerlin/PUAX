@@ -7,6 +7,9 @@
 import { z } from 'zod';
 import { pressureSystem } from '../hooks/pressure-system.js';
 import { evolutionEngine } from '../core/evolution-engine.js';
+import { stateManager } from '../hooks/state-manager.js';
+import { outcomeStore } from '../core/outcome-store.js';
+import { namedAgentStore } from '../core/named-agent.js';
 
 const HandleBreakthroughInputSchema = z.object({
   session_id: z.string(),
@@ -33,10 +36,21 @@ export const handleBreakthroughTool = {
       };
     }
 
+    const state = stateManager.getSessionState(args.session_id);
+    const activeRole = state.activeRole || 'military-warrior';
+    outcomeStore.record(activeRole, true);
+    namedAgentStore.recordCycle(activeRole, true, args.record_lesson?.effective_method);
+
     if (args.record_lesson) {
       evolutionEngine.appendBreakthroughLesson(args.record_lesson);
     }
 
-    return { ...result };
+    return {
+      ...result,
+      outcome_recorded: {
+        role: activeRole,
+        success: true,
+      },
+    };
   },
 };

@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 import { verifyCompletion, type TaskContract } from '../core/governance.js';
+import { stateManager } from '../hooks/state-manager.js';
+import { outcomeStore } from '../core/outcome-store.js';
 
 const TaskContractSchema = z.object({
   feature_id: z.string(),
@@ -44,8 +46,20 @@ export const verifyCompletionTool = {
       files_changed: args.files_changed,
     });
 
+    const isPass = result.verifier_status === 'pass';
+    const isFail = result.verifier_status === 'fail';
+    let outcomeRecorded: { role: string; success: boolean } | undefined;
+
+    if (isPass || isFail) {
+      const state = stateManager.getSessionState(args.contract.feature_id);
+      const role = state.activeRole || 'military-warrior';
+      outcomeStore.record(role, isPass);
+      outcomeRecorded = { role, success: isPass };
+    }
+
     return {
       ...result,
+      outcome_recorded: outcomeRecorded,
       updated_contract: {
         ...args.contract,
         agent_proposed_status: result.agent_proposed_status,

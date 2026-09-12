@@ -45,4 +45,44 @@ describe('v3.3 behavior tools', () => {
       expect(result.switch_banner).toContain('PUAX');
     });
   });
+
+  describe('puax_verify_completion 结局回写', () => {
+    it('应在独立验证判定 pass 时回写结局记录', async () => {
+      const { verifyCompletionTool } = await import('../../src/tools/verify-completion.js');
+      const res = verifyCompletionTool.handler({
+        contract: {
+          feature_id: 'test-feat-' + Date.now(),
+          intent: '修复空指针异常',
+          acceptance: ['测试通过'],
+          forbidden: ['绕过测试'],
+          verify_commands: ['npm test'],
+          agent_proposed_status: 'candidate_pass',
+          verifier_status: 'pending',
+          created_at: new Date().toISOString(),
+        },
+        evidence: [{
+          command: 'npm test',
+          exit_code: 0,
+          output_summary: 'PASS all tests - 测试通过',
+          passed: true,
+        }],
+        agent_claims_complete: true,
+        files_changed: ['src/index.ts'],
+      });
+
+      expect(res.verifier_status).toBe('pass');
+      expect(res.outcome_recorded).toBeDefined();
+      expect(res.outcome_recorded?.success).toBe(true);
+    });
+  });
+
+  describe('puax_handle_breakthrough 结局回写', () => {
+    it('应在突破未达条件时优雅返回', async () => {
+      const { handleBreakthroughTool } = await import('../../src/tools/handle-breakthrough.js');
+      const res = handleBreakthroughTool.handler({
+        session_id: 'non-breakthrough-session-' + Date.now(),
+      });
+      expect(res.triggered).toBe(false);
+    });
+  });
 });
