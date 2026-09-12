@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.1.0] - 2026-09-13
+
+### Added
+- **Landing「三件事架构」全面实装**：重构 `landing/src/pages/Home.tsx`，首页聚焦「Cranmer 式交互动力学推演（卡顿 $\to$ 处境 $\to$ 闸门/梦境 $\to$ 突破翻盘）」、「一键核心安装命令（`npx puax doctor --fix`）」与「真实 AMB 评测基准增益图表」。
+- **结局驱动自适应路由闭环**：
+  - `verifyCompletionTool`：依据独立验证结果（`pass` / `fail`）实时回写 `outcomeStore`。
+  - `handleBreakthroughTool`：达成突破后向 `outcomeStore` 与 `namedAgentStore` 注入成败与有效方案，实现基于实绩的动态自适应路由。
+- **碳基防御盾（Carbon Shield）端点与控制台直连**：
+  - 核心服务支持 HTTP 请求体异步解析，暴露 `POST /v4/shield/audit` 独立审计路由。
+  - `web-admin/src/components/ShieldView.tsx` 优先调用远程审计引擎，并支持离线平滑降级，全面贯彻「硅基可 PUA，碳基只防御（只识别，不施放）」红线铁律。
+- **版本号统一部署至 v4.1.0**：`puax-mcp-server`、`web-admin` 与 `landing` 协同演进。
+
 ## [4.0.0] - 2026-09-12
 
 ### Added (v4.x 终章演进：v5.0 三大前置条件攻坚)

@@ -1,10 +1,10 @@
 # PUAX — Motivationssystem für KI-Agenten
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP-Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP-Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Unternehmensstile">
 </p>
 
@@ -20,11 +20,11 @@
 
 ## Was ist PUAX?
 
-PUAX 4.0 ist eine **kognitive Laufzeitumgebung (Cognitive Runtime)**, die speziell für KI-Agenten entwickelt wurde. Rollen sind lediglich stilistische Akzente; das eigentliche Produkt besteht aus drei Kern-Primitiven:
+PUAX 4.1 ist eine **kognitive Laufzeitumgebung (Cognitive Runtime)**, die speziell für KI-Agenten entwickelt wurde. Rollen sind lediglich stilistische Akzente; das eigentliche Produkt besteht aus drei Kern-Primitiven:
 
 | Primitive | Beschreibung |
 |-----------|--------------|
-| **Situation (Arena)** | `puax_set_arena`: Rivale + Publikum + Seltenes Abzeichen (nach Cranmers Experiment) |
+| **Situation (Arena)** | `puax_set_arena`: Rivale + Publikum + Seltenes Abzeichen (nach Cranmers Experiment) zur Überwindung von Mittelmaß |
 | **Schleusen (Gates)** | Diagnose zuerst, Vertrauensschleuse, Aufgabenvertrag, Unabhängige Überprüfung, PreToolUse-Abfangung |
 | **Geführte Träume** | GHM-Methode: Informierter Einstieg, Tag-Isolation, sofortiges Erwachen, strikte Prüfung nach dem Erwachen |
 
@@ -33,10 +33,12 @@ Der standardmäßige Hauptpfad ist der Herzschlag `puax_tick` (vom Host-Hook nat
 Kernfähigkeiten:
 - **Hybride Trigger-Erkennung**: YAML-Regex + semantischer TF-IDF-Fallback.
 - **59 Rollen + benutzerdefinierte Rollen**: Intelligente Empfehlungen mit Begründung.
-- **Verbindliche Aktionsschleife**: Verpflichtender Diagnoseblock vor jeder Codeänderung.
+- **Ergebnisgesteuerte adaptive Weiterleitung**: `verify_completion` und Durchbrüche aktualisieren Rollengewichte in Echtzeit.
+- **Carbon Shield (Menschlicher Schutz)**: `puax_audit_manipulation` & `POST /v4/shield/audit` – nur Erkennung, niemals Ausführung. Schutz vor kognitiver Manipulation.
+- **AMB Multi-Modell-Benchmark**: 12 Szenarien × 5 Modellprofile (+39.2% Reparatur, +60.0% versteckte Fehler).
+- **Host Doctor 1-Klick-Reparatur**: `npx puax doctor --fix` installiert Hooks direkt für Cursor, Claude Code, VSCode, Windsurf.
 - **Gestuftes Drucksystem**: L0 bis L4 mit automatischer Deeskalation nach überprüften Durchbrüchen.
-- **Selbstevolution**: Sitzungsübergreifende Gewichte und Ränge in `~/.puax/evolution.json`.
-- **Carbon Shield (Menschlicher Schutz)**: `puax_audit_manipulation` nur Erkennung, niemals Ausführung. Schutz vor kognitiver Manipulation.
+- **Selbstevolution**: Sitzungsübergreifende Gewichte, Narben und Ränge in `~/.puax/evolution.json`.
 
 ---
 

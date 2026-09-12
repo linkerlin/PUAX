@@ -1,10 +1,10 @@
 # PUAX — Sistema de Motivación para Agentes de IA
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Versión">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Versión">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Estado">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Habilidades">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="Herramientas MCP">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="Herramientas MCP">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Estilos">
 </p>
 
@@ -20,24 +20,25 @@
 
 ## ¿Qué es PUAX?
 
-PUAX 4.0 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
+PUAX 4.1 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
 
 | Primitiva | Descripción |
 |-----------|-------------|
-| **Situación (Arena)** | `puax_set_arena`: Rival + Audiencia + Insignia Escasa (inspirado en el experimento de Cranmer) |
+| **Situación (Arena)** | `puax_set_arena`: Rival + Audiencia + Insignia Escasa (inspirado en el experimento de Cranmer) para erradicar la mediocridad de baja presión |
 | **Puertas (Gates)** | Diagnóstico primero, Puerta de Confianza, Contrato de Tarea, Verificador Independiente, Intercepción PreToolUse |
-| **Sueños Guiados** | Método GHM: Entrada informada, aislamiento por etiquetas, despertar instantáneo y verificación post-sueño |
+| **Sueños Guiados** | Método GHM: Entrada informada, aislamiento por etiquetas, despertar instantáneo y verificación post-sueño (control de alucinaciones para descubrimientos) |
 
-El camino principal predeterminado es el pulso de latido `puax_tick` (manejado de forma nativa por los hooks del host). Los agentes no necesitan memorizar un menú de 48 herramientas.
+El camino principal predeterminado es el pulso de latido `puax_tick` (manejado de forma nativa por los hooks del host). Los agentes no necesitan memorizar un menú de 49 herramientas.
 
 Capacidades clave:
 - **Detección híbrida de activadores**: Expresiones regulares YAML + TF-IDF semántico.
 - **59 roles motivacionales + roles personalizados**: Recomendación con explicación detallada.
-- **Bucle de efectividad de acción**: Diagnóstico obligatorio antes de tocar código.
+- **Enrutamiento adaptativo basado en resultados**: `verify_completion` y eventos de avance actualizan los pesos en tiempo real.
+- **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` & `POST /v4/shield/audit`: PUA para silicio, defensa para humanos (solo identificación, nunca aplicada).
+- **Matriz de referencia multimodelos AMB**: 12 escenarios × 5 perfiles de modelos reproducibles (+39.2% en reparación, +60.0% en detección de defectos ocultos).
+- **Reparación en un clic con Host Doctor**: `npx puax doctor --fix` monta hooks nativos en Cursor, Claude Code, VSCode y Windsurf.
 - **Sistema de Hooks y gestión de presión**: Niveles L0–L4 con desescalada tras verificación.
-- **11 sabores de gigantes tecnológicos**: Restricciones de comportamiento estrictas (Alibaba, Musk, Jobs, etc.).
-- **Autoevolución**: Persistencia de métricas y rango en `~/.puax/evolution.json`.
-- **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` solo detecta, nunca aplica. Identificación inversa de manipulación cognitiva y sesgos forzados.
+- **Autoevolución**: Persistencia de cicatrices, rangos y pesos en `~/.puax/evolution.json`.
 
 ---
 

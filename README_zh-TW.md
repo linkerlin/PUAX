@@ -1,10 +1,10 @@
 # PUAX — AI Agent 激勵系統
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="版本">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="版本">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="狀態">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="企業風味">
 </p>
 
@@ -20,15 +20,15 @@
 
 ## 什麼是 PUAX？
 
-PUAX 4.0 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
+PUAX 4.1 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
 
 | 原語 | 說明 |
 |------|------|
-| **處境（Arena）** | `puax_set_arena`：對手 + 觀眾 + 稀缺徽章（Cranmer 原題） |
-| **閘門（Gates）** | 診斷先行、信心門控、Task Contract、獨立 verifier、PreToolUse 攔截 |
-| **夢（Guided Dreams）** | GHM 導引幻夢法：知情入夢、標記隔離、隨時可醒、醒後必驗 |
+| **處境（Arena）** | `puax_set_arena`：對手 + 觀眾 + 稀缺徽章（Cranmer 原題），擊碎低壓平庸 |
+| **閘門（Gates）** | 診斷先行、信心門控、Task Contract、獨立 verifier、PreToolUse 強制攔截 |
+| **夢（Guided Dreams）** | GHM 導引幻夢法：知情入夢、標記隔離、隨時可醒、醒後必驗（馭幻覺破局） |
 
-預設路徑為心跳 `puax_tick`（由宿主 Hook 代跳）。Agent 不必先死背 48 個工具清單。
+預設路徑為心跳 `puax_tick`（由宿主 Hook 代跳）。Agent 不必先死背 49 個工具清單。
 
 核心能力還包括：
 
@@ -36,10 +36,13 @@ PUAX 4.0 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角�
 |------|------|
 | **混合觸發檢測** | YAML 正則 + TF-IDF/子串語義兜底（換句話說亦能精準命中） |
 | **智慧角色推薦** | 59 內建角色 + 自訂角色，多維度評分 + `score_explanation` |
-| **行為有效性閉環** | 診斷先行、信心門控、失敗後切換、Task Contract、獨立驗證 |
+| **結局驅動路由閉環** | 獨立驗證 `verify_completion` 與突破實績回寫，廢除靜態終身制 |
+| **碳基防禦盾 (Shield)** | 獨立 HTTP `POST /v4/shield/audit` + CLI：矽基可 PUA，碳基只防禦（只識別，不施放） |
+| **AMB 多模型基準** | 12 場景 × 5 主流模型 Profile 可復現矩陣（修復率 +39.2% / 隱蔽問題 +60.0%） |
+| **宿主醫生一鍵掛載** | `npx puax doctor --fix` 同步為 Cursor、Claude Code、VSCode、Windsurf 注入原生鉤子 |
 | **GHM 導引幻夢法** | 馭幻覺發散引擎：莊周八夢角色 + 入夢/醒夢/收斂審計三工具 |
 | **Hook System** | 會話狀態、L0–L4 階梯壓力、突破降壓、Compaction 推理保護 |
-| **自進化** | `~/.puax/evolution.json` 跨會話基線與段位體系 |
+| **自進化管線** | `~/.puax/evolution.json` 跨會話基線、傷痕、段位與命名 Agent 檔案 |
 | **11 種大廠風味** | 語氣 + 行為約束（非僅修辭，阿里、華為、馬斯克、賈伯斯等） |
 | **可觀測性** | 匿名本地使用統計 + OpenTelemetry 相容 span |
 

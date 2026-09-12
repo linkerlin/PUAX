@@ -1,10 +1,10 @@
 # PUAX — AIエージェント動機づけシステム
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="バージョン">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="バージョン">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="ステータス">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="スキル数">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCPツール数">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCPツール数">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="企業スタイル">
 </p>
 
@@ -20,15 +20,15 @@
 
 ## PUAX とは？
 
-PUAX 4.0 は、AIエージェント向けに設計された**心智ランタイム（Cognitive Runtime）**です。役割（ロール）は単なるトーンに過ぎず、本質は次の3つの基本原語（Primitives）にあります：
+PUAX 4.1 は、AIエージェント向けに設計された**心智ランタイム（Cognitive Runtime）**です。役割（ロール）は単なるトーンに過ぎず、本質は次の3つの基本原語（Primitives）にあります：
 
 | 原語 | 説明 |
 |------|------|
-| **状況（Arena）** | `puax_set_arena`：ライバル ＋ 観客 ＋ 希少バッジ（Cranmer教授の実験より） |
-| **ゲート（Gates）** | 診断先行、確信度ゲート、タスク契約（Task Contract）、独立検証、PreToolUse遮断 |
-| **誘導幻夢（GHM）** | GHM導引幻夢法：合意された入夢、タグによる隔離、即時覚醒、覚醒後の厳格検証 |
+| **状況（Arena）** | `puax_set_arena`：ライバル ＋ 観客 ＋ 希少バッジ（Cranmer教授の実験より）で低圧の妥協を打破 |
+| **ゲート（Gates）** | 診断先行、確信度ゲート、タスク契約（Task Contract）、独立検証、PreToolUse強制遮断 |
+| **誘導幻夢（GHM）** | GHM導引幻夢法：合意された入夢、タグによる隔離、即時覚醒、覚醒後の厳格検証（幻覚を操り突破） |
 
-推奨される標準パスは心拍 `puax_tick`（ホスト側Hookが代理実行）です。エージェントは48個のツールメニューを暗記する必要はありません。
+推奨される標準パスは心拍 `puax_tick`（ホスト側Hookが代理実行）です。エージェントは49個のツールメニューを暗記する必要はありません。
 
 主な機能：
 
@@ -36,10 +36,13 @@ PUAX 4.0 は、AIエージェント向けに設計された**心智ランタイ�
 |------|------|
 | **ハイブリッドトリガー検出** | YAML正規表現 ＋ TF-IDF/意味的フォールバック（言い換えも的確に検知） |
 | **高精度ロール推薦** | 59の内蔵ロール ＋ カスタムロール、多次元評価 ＋ `score_explanation` |
-| **行動有効性の閉ループ** | 診断先行、確信度ゲート、失敗時スイッチ、タスク契約、独立検証 |
+| **成果主導ルーティング閉ループ** | 独立検証 `verify_completion` と突破実績をリアルタイム反映、静的終身制を撤廃 |
+| **炭素防護盾 (Carbon Shield)** | 独立HTTP `POST /v4/shield/audit` ＋ CLI：シリコンにはPUA、炭素人間は防護のみ（検知のみ、発動なし） |
+| **AMB マルチモデルベンチマーク** | 12シナリオ × 主要5モデルの再現可能評価（修復成功率 +39.2% / 潜在欠陥検知 +60.0%） |
+| **ホストドクター一括設定** | `npx puax doctor --fix` でCursor、Claude Code、VSCode、WindsurfにネイティブHookを即時配備 |
 | **GHM導引幻夢法** | 幻覚制御エンジン：荘周八夢ロール ＋ 入夢/覚醒/収束監査ツール |
 | **Hookシステム** | セッション状態永続化、L0〜L4の段階的圧力、突破時の減圧、Compaction保護 |
-| **自己進化** | `~/.puax/evolution.json` によるセッション横断ベースライン、結果重みづけと段位制 |
+| **自己進化パイプライン** | `~/.puax/evolution.json` によるセッション横断ベースライン、傷痕、結果重みづけと段位制 |
 | **11種類のメガベンダースタイル** | 単なる口調だけでなく厳格な行動制約を注入（アリババ、ファーウェイ、マスク、ジョブズ等） |
 | **オブザーバビリティ** | 匿名ローカル利用統計 ＋ OpenTelemetry互換スパン |
 

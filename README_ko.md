@@ -1,10 +1,10 @@
 # PUAX — AI 에이전트 동기부여 시스템
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="버전">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="버전">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="상태">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="스킬">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP 도구">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP 도구">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="스타일">
 </p>
 
@@ -20,15 +20,15 @@
 
 ## PUAX란 무엇인가?
 
-PUAX 4.0은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cognitive Runtime)**입니다. 역할(Role)은 단지 스타일에 불과하며, 진정한 핵심은 세 가지 원시 요소(Primitives)에 있습니다:
+PUAX 4.1은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cognitive Runtime)**입니다. 역할(Role)은 단지 스타일에 불과하며, 진정한 핵심은 세 가지 원시 요소(Primitives)에 있습니다:
 
 | 원시 요소 | 설명 |
 |-----------|------|
-| **처지 (Arena)** | `puax_set_arena`: 라이벌 + 관객 + 희소 배지 (Cranmer 교수의 실험 모티브) |
-| **게이트 (Gates)** | 진단 선행, 신뢰도 게이트, 태스크 계약(Task Contract), 독립 검증, PreToolUse 차단 |
-| **유도된 꿈 (GHM)** | GHM 도인환몽법: 고지된 입몽, 태그 격리, 즉시 각성, 각성 후 필수 검증 |
+| **처지 (Arena)** | `puax_set_arena`: 라이벌 + 관객 + 희소 배지 (Cranmer 교수의 실험 모티브)로 저압의 평범함을 타파 |
+| **게이트 (Gates)** | 진단 선행, 신뢰도 게이트, 태스크 계약(Task Contract), 독립 검증, PreToolUse 강제 차단 |
+| **유도된 꿈 (GHM)** | GHM 도인환몽법: 고지된 입몽, 태그 격리, 즉시 각성, 각성 후 필수 검증 (환각을 다스려 돌파) |
 
-기본 실행 경로는 하트비트 틱 `puax_tick`(호스트 Hook에 의한 대리 실행)입니다. 에이전트가 48개 도구 메뉴를 외울 필요가 없습니다.
+기본 실행 경로는 하트비트 틱 `puax_tick`(호스트 Hook에 의한 대리 실행)입니다. 에이전트가 49개 도구 메뉴를 외울 필요가 없습니다.
 
 주요 핵심 역량:
 
@@ -36,10 +36,13 @@ PUAX 4.0은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cog
 |------|------|
 | **하이브리드 트리거 감지** | YAML 정규식 + TF-IDF/의미론적 폴백 (유사 표현 정확 매칭) |
 | **지능형 역할 추천** | 59개 내장 역할 + 커스텀 역할, 다차원 평가 점수 + `score_explanation` |
-| **행동 유효성 폐루프** | 진단 선행, 신뢰도 게이트, 실패 시 역할 전환, 작업 계약, 독립 검증 |
+| **성과 기반 라우팅 루프** | 독립 검증 `verify_completion`과 돌파 결과를 실시간 반영, 정적 종신제 폐지 |
+| **탄소 방어 쉴드 (Carbon Shield)** | 독립 HTTP `POST /v4/shield/audit` + CLI: 실리콘은 PUA, 탄소 인간은 방어만 (감지만 수행, 발동 없음) |
+| **AMB 멀티 모델 벤치마크** | 12개 시나리오 × 주요 5개 모델 재현 가능 벤치마크 (+39.2% 수복률 / +60.0% 잠재 결함 포착) |
+| **호스트 닥터 원클릭 설정** | `npx puax doctor --fix`로 Cursor, Claude Code, VSCode, Windsurf에 네이티브 훅 즉시 배포 |
 | **GHM 도인환몽법** | 제어된 환각 발산 엔진: 장자 8몽 역할 + 입몽/각성/수렴 감사 도구 |
 | **Hook 시스템** | 세션 상태 유지, L0–L4 단계별 압박, 돌파 시 감압, Compaction 보호 |
-| **자기 진화** | `~/.puax/evolution.json` 세션 간 베이스라인, 결과 가중치 및 단수(Rank) 체계 |
+| **자기 진화 파이프라인** | `~/.puax/evolution.json` 세션 간 베이스라인, 흉터, 단수(Rank) 체계 및 네임드 에이전트 |
 | **11가지 빅테크 스타일** | 어투뿐만 아니라 엄격한 행동 제약 조건 부여 (알리바바, 화웨이, 머스크, 잡스 등) |
 | **가시성 (Observability)** | 익명 로컬 사용 통계 + OpenTelemetry 호환 스팬 |
 

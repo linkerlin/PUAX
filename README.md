@@ -1,10 +1,10 @@
 # PUAX — AI Agent 激励系统
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
@@ -20,13 +20,13 @@
 
 ## 什么是 PUAX？
 
-PUAX 4.0 是面向 AI Agent 的**心智运行时**。角色只是口音；真正的产品是三件原语：
+PUAX 4.1 是面向 AI Agent 的**心智运行时**。角色只是口音；真正的产品是三件原语：
 
 | 原语 | 说明 |
 |------|------|
-| **处境** | `puax_set_arena`：对手 + 观众 + 稀缺徽章（Cranmer 原题） |
-| **闸门** | 诊断先行、信心门控、Task Contract、独立 verifier、PreToolUse 拦截 |
-| **梦** | GHM 导引幻梦法：知情入梦、标记隔离、随时可醒、醒后必验 |
+| **处境** | `puax_set_arena`：对手 + 观众 + 稀缺徽章（Cranmer 原题），破除低压平庸 |
+| **闸门** | 诊断先行、信心门控、Task Contract、独立 verifier、PreToolUse 强拦截 |
+| **梦** | GHM 导引幻梦法：知情入梦、标记隔离、随时可醒、醒后必验（驭幻觉破框） |
 
 默认路径是心跳 `puax_tick`（宿主 Hook 代跳）。Agent 不必先学会工具菜单。
 
@@ -36,10 +36,13 @@ PUAX 4.0 是面向 AI Agent 的**心智运行时**。角色只是口音；真正
 |------|------|
 | **混合触发检测** | YAML 正则 + TF-IDF/子串语义（paraphrase 可命中） |
 | **智能角色推荐** | 59 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
-| **行为有效性闭环** | 诊断先行、信心门控、失败后切换、Task Contract、独立验证 |
-| **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具（v3.12） |
-| **Hook System** | 会话状态、L0–L4 压力、突破降压、Compaction 推理保护 |
-| **自进化** | `~/.puax/evolution.json` 跨会话基线与段位 |
+| **结局驱动路由闭环** | 独立验证 `verify_completion` 与突破回写实绩，废除静态先验终身制 |
+| **碳基防御盾 (Shield)** | 独立 HTTP `POST /v4/shield/audit` + CLI：硅基可 PUA，碳基只防御（只识别，不施放） |
+| **AMB 多模型基准** | 12 场景 × 5 主流模型 Profile 可复现评测矩阵（修复率 +39.2% / 隐蔽缺陷 +60.0%） |
+| **宿主医生一键挂载** | `npx puax doctor --fix` 同步为 Cursor、Claude Code、VSCode、Windsurf 注入原生钩子 |
+| **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具 |
+| **Hook System** | 会话状态、L0–L4 阶梯升压、突破降压、Compaction 推理保护 |
+| **自进化流水线** | `~/.puax/evolution.json` 跨会话基线、伤疤、段位与命名 Agent 档案 |
 | **11 种大厂风味** | 语气 + 行为约束（非仅修辞） |
 | **可观测性** | 匿名本地使用统计 + OpenTelemetry 兼容 span |
 

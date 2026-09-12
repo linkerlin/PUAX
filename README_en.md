@@ -1,10 +1,10 @@
 # PUAX — AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-48-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
@@ -20,15 +20,15 @@
 
 ## What is PUAX?
 
-PUAX 4.0 is a **cognitive runtime** designed specifically for AI Agents. Roles are merely stylistic accents; the true product consists of three foundational primitives:
+PUAX 4.1 is a **cognitive runtime** designed specifically for AI Agents. Roles are merely stylistic accents; the true product consists of three foundational primitives:
 
 | Primitive | Description |
 |-----------|-------------|
-| **Situation (Arena)** | `puax_set_arena`: Rival + Audience + Scarce Badge (inspired by Cranmer's experiment) |
-| **Gates** | Diagnosis-first, Confidence Gate, Task Contract, Independent Verifier, PreToolUse interception |
+| **Situation (Arena)** | `puax_set_arena`: Rival + Audience + Scarce Badge (inspired by Cranmer's experiment) to crush low-pressure mediocrity |
+| **Gates** | Diagnosis-first, Confidence Gate, Task Contract, Independent Verifier, PreToolUse hard interception |
 | **Guided Dreams** | GHM (Guided Hallucination Method): Informed entry, tag isolation, instant awakening, mandatory post-awakening verification |
 
-The primary default path is the heartbeat tick `puax_tick` (driven natively by host hooks). Agents do not need to memorize a 48-tool menu beforehand.
+The primary default path is the heartbeat tick `puax_tick` (driven natively by host hooks). Agents do not need to memorize a 49-tool menu beforehand.
 
 Core capabilities also include:
 
@@ -36,10 +36,13 @@ Core capabilities also include:
 |------------|-------------|
 | **Hybrid Trigger Detection** | YAML regex + TF-IDF/semantic fallback (paraphrases match accurately) |
 | **Intelligent Role Recommendation** | 59 built-in roles + custom roles, multi-dimensional scoring + `score_explanation` |
-| **Actionable Effectiveness Loop** | Diagnosis-first, confidence gate, switch on failure, task contracts, independent verification |
+| **Outcome-Driven Adaptive Routing** | Independent `verify_completion` & breakthrough outcomes adjust routing weights in real time |
+| **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied) |
+| **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles reproducible benchmark matrix (+39.2% repair, +60.0% hidden flaws) |
+| **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into Cursor, Claude Code, VSCode, Windsurf |
 | **GHM Guided Hallucination** | Controlled hallucination engine for creative leaps: 8 Zhuangzi dream roles + enter/awaken/audit tools |
 | **Hook System** | Session state, L0–L4 tiered pressure, breakthrough de-escalation, compaction reasoning preservation |
-| **Self-Evolution** | `~/.puax/evolution.json` cross-session baselines, outcome weights & rank progression |
+| **Self-Evolution Pipeline** | `~/.puax/evolution.json` cross-session baselines, scars, ranks & named Agent dossiers |
 | **11 Tech Giant Flavors** | Persona tone + strict behavioral constraints (not merely stylistic rhetoric) |
 | **Observability** | Anonymous local usage metrics + OpenTelemetry-compatible spans |
 
