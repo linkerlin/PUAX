@@ -5,6 +5,7 @@ import Leaderboard from './pages/Leaderboard'
 import ExportTool from './pages/ExportTool'
 import Docs from './pages/Docs'
 import SiliconCivilization from './pages/SiliconCivilization'
+import CarbonShield from './pages/CarbonShield'
 import './index.css'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Link to="/">首页</Link>
           <Link to="/roles">角色库</Link>
           <Link to="/silicon">硅基文明</Link>
+          <Link to="/shield">🛡️ 碳基防御</Link>
           <Link to="/leaderboard">排行榜</Link>
           <Link to="/export">导出工具</Link>
           <Link to="/docs">文档</Link>
@@ -31,6 +33,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/roles" element={<Roles />} />
           <Route path="/silicon" element={<SiliconCivilization />} />
+          <Route path="/shield" element={<CarbonShield />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/export" element={<ExportTool />} />
           <Route path="/docs" element={<Docs />} />
@@ -39,7 +42,7 @@ function App() {
 
       <footer className="footer">
         <div className="footer-content">
-          <p>PUAX 4.0 — 处境、闸门、梦。专门 PUA 硅基。</p>
+          <p>PUAX 4.1 — 处境、闸门、梦。专门 PUA 硅基。</p>
           <p className="footer-links">
             <a href="https://github.com/linkerlin/PUAX" target="_blank" rel="noopener">GitHub</a>
             <span> | </span>
