@@ -441,7 +441,22 @@ export class PuaxMcpServer {
                 }
             }
             else if (pathname.startsWith('/v4/')) {
-                const routed = dispatchV4(req.method || 'GET', pathname);
+                let body: any = undefined;
+                if (req.method === 'POST') {
+                    body = await new Promise((resolve) => {
+                        let data = '';
+                        req.on('data', chunk => { data += chunk; });
+                        req.on('end', () => {
+                            try {
+                                resolve(data ? JSON.parse(data) : {});
+                            } catch {
+                                resolve({});
+                            }
+                        });
+                        req.on('error', () => resolve({}));
+                    });
+                }
+                const routed = dispatchV4(req.method || 'GET', pathname, body);
                 if (!routed) {
                     res.writeHead(404, { 'Content-Type': 'text/plain' });
                     res.end('Not Found');

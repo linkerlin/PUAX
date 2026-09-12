@@ -47,4 +47,18 @@ describe('Carbon Shield (碳基防御盾)', () => {
     expect(body.title).toContain('碳基防御盾');
     expect(body.patterns.length).toBe(MANIPULATION_PATTERNS.length);
   });
+
+  it('/v4/shield/audit 端点支持 POST 审计并拦截非法请求方式', () => {
+    const postRes = dispatchV4('POST', '/v4/shield/audit', {
+      text: '没时间了，这是唯一的方案，赶紧定下来！',
+    });
+    expect(postRes?.status).toBe(200);
+    const body = postRes?.json as { isManipulative: boolean; shield: string; findings: unknown[] };
+    expect(body.isManipulative).toBe(true);
+    expect(body.shield).toContain('PUAX Carbon Shield');
+    expect(body.findings.length).toBeGreaterThan(0);
+
+    const getRes = dispatchV4('GET', '/v4/shield/audit');
+    expect(getRes?.status).toBe(405);
+  });
 });

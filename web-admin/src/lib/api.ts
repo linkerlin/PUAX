@@ -32,6 +32,16 @@ export async function fetchShield(): Promise<Record<string, unknown>> {
   return res.json()
 }
 
+export async function auditShieldRemote(text: string): Promise<Record<string, unknown>> {
+  const res = await fetch(`${BASE}/v4/shield/audit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+  })
+  if (!res.ok) throw new Error(`shield audit ${res.status}`)
+  return res.json()
+}
+
 export async function fetchDoctor(): Promise<Record<string, unknown>> {
   const res = await fetch(`${BASE}/v4/doctor`)
   if (!res.ok) throw new Error(`doctor ${res.status}`)

@@ -9,7 +9,7 @@ import { buildV4Dashboard, buildV4RoleCatalog } from "../core/v4-dashboard.js";
 import { ampSpecDoc } from "../core/amp.js";
 import { planSiliconTheater, runSiliconTheater } from "../core/silicon-theater.js";
 import { getTtfSummary } from "../core/ttf.js";
-import { MANIPULATION_PATTERNS } from "../core/carbon-shield.js";
+import { MANIPULATION_PATTERNS, auditManipulation } from "../core/carbon-shield.js";
 import { runHostDoctor, fixHostDoctor } from "../core/host-doctor.js";
 
 export interface V4Response {
@@ -40,7 +40,7 @@ function getAmbMatrixData(): unknown {
   };
 }
 
-export function dispatchV4(method: string, pathname: string): V4Response | null {
+export function dispatchV4(method: string, pathname: string, body?: any): V4Response | null {
   if (method === "OPTIONS" && pathname.startsWith("/v4/")) {
     return { status: 204, json: null };
   }
@@ -82,6 +82,20 @@ export function dispatchV4(method: string, pathname: string): V4Response | null 
           })),
         },
       };
+    case "/v4/shield/audit":
+      if (method === "POST") {
+        const text = typeof body?.text === "string" ? body.text : "";
+        const result = auditManipulation(text);
+        return {
+          status: 200,
+          json: {
+            shield: "PUAX Carbon Shield v1.0",
+            principle: "硅基可 PUA，碳基只防御（只识别，不施放）",
+            ...result,
+          },
+        };
+      }
+      return { status: 405, json: { error: "Method Not Allowed, use POST with { text: string }" } };
     case "/v4/doctor":
       return {
         status: 200,
@@ -90,7 +104,7 @@ export function dispatchV4(method: string, pathname: string): V4Response | null 
     case "/v4/doctor/fix":
       return {
         status: 200,
-        json: fixHostDoctor(),
+        json: fixHostDoctor(body?.host),
       };
     default:
       return null;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchShield } from '../lib/api'
+import { fetchShield, auditShieldRemote } from '../lib/api'
 
 interface Finding {
   tacticName: string
@@ -25,8 +25,24 @@ export default function ShieldView() {
       .catch(() => {})
   }, [])
 
-  const handleAudit = () => {
+  const handleAudit = async () => {
     if (!inputText.trim()) return
+
+    try {
+      const remote = await auditShieldRemote(inputText) as {
+        score: number
+        riskLevel: string
+        summary: string
+        findings: Finding[]
+        fourIronRules: { informed: string; tagged: string; awakenable: string; verifiable: string }
+      }
+      if (remote && remote.findings) {
+        setResult(remote)
+        return
+      }
+    } catch {
+      // 平滑降级至本地简易规则
+    }
 
     // 前端本地简易规则审计（与核心 carbon-shield 逻辑对齐）
     const findings: Finding[] = []
