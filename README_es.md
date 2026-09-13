@@ -34,7 +34,7 @@ Capacidades clave:
 - **Detección híbrida de activadores**: Expresiones regulares YAML + TF-IDF semántico.
 - **59 roles motivacionales + roles personalizados**: Recomendación con explicación detallada.
 - **Enrutamiento adaptativo basado en resultados**: `verify_completion` y eventos de avance actualizan los pesos en tiempo real.
-- **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` & `POST /v4/shield/audit`: PUA para silicio, defensa para humanos (solo identificación, nunca aplicada).
+- **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` & `POST /v4/shield/audit`: PUA para silicio, defensa para humanos (solo identificación, nunca aplicada). (Extensiones para humanos aplazadas; inspección base mantenida)
 - **Matriz de referencia multimodelos AMB**: 12 escenarios × 5 perfiles de modelos reproducibles (+39.2% en reparación, +60.0% en detección de defectos ocultos).
 - **Reparación en un clic con Host Doctor**: `npx puax doctor --fix` monta hooks nativos en Cursor, Claude Code, VSCode y Windsurf.
 - **Sistema de Hooks y gestión de presión**: Niveles L0–L4 con desescalada tras verificación.

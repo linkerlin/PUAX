@@ -37,7 +37,7 @@ PUAX 4.1 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角�
 | **混合觸發檢測** | YAML 正則 + TF-IDF/子串語義兜底（換句話說亦能精準命中） |
 | **智慧角色推薦** | 59 內建角色 + 自訂角色，多維度評分 + `score_explanation` |
 | **結局驅動路由閉環** | 獨立驗證 `verify_completion` 與突破實績回寫，廢除靜態終身制 |
-| **碳基防禦盾 (Shield)** | 獨立 HTTP `POST /v4/shield/audit` + CLI：矽基可 PUA，碳基只防禦（只識別，不施放） |
+| **碳基防禦盾 (Shield)** | 獨立 HTTP `POST /v4/shield/audit` + CLI：矽基可 PUA，碳基只防禦（只識別，不施放）  （自然人向終端外延功能暫緩，維持基礎識別層）|
 | **AMB 多模型基準** | 12 場景 × 5 主流模型 Profile 可復現矩陣（修復率 +39.2% / 隱蔽問題 +60.0%） |
 | **宿主醫生一鍵掛載** | `npx puax doctor --fix` 同步為 Cursor、Claude Code、VSCode、Windsurf 注入原生鉤子 |
 | **GHM 導引幻夢法** | 馭幻覺發散引擎：莊周八夢角色 + 入夢/醒夢/收斂審計三工具 |
@@ -133,7 +133,11 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 23 項守門測試
+node ../evals/run-all.js  # 從儲存庫根目錄執行（26 項協議鐵律門禁）
+
+# 眞實大模型 API 連通壓測與雙軌對比評測 (AMB Live)
+node evals/amb-live.js --mock                 # 離線模擬壓測（零成本、秒級閉環）
+node evals/amb-live.js --model=deepseek       # 直連 DeepSeek 眞實雙軌評測
 ```
 
 ---

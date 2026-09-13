@@ -37,7 +37,7 @@ Core capabilities also include:
 | **Hybrid Trigger Detection** | YAML regex + TF-IDF/semantic fallback (paraphrases match accurately) |
 | **Intelligent Role Recommendation** | 59 built-in roles + custom roles, multi-dimensional scoring + `score_explanation` |
 | **Outcome-Driven Adaptive Routing** | Independent `verify_completion` & breakthrough outcomes adjust routing weights in real time |
-| **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied) |
+| **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied)  (Human-facing extensions deferred; baseline inspection preserved)|
 | **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles reproducible benchmark matrix (+39.2% repair, +60.0% hidden flaws) |
 | **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into Cursor, Claude Code, VSCode, Windsurf |
 | **GHM Guided Hallucination** | Controlled hallucination engine for creative leaps: 8 Zhuangzi dream roles + enter/awaken/audit tools |
@@ -249,6 +249,8 @@ PUAX/
 | [Role Kernel](docs/ROLE-KERNEL.md) | Kernel / Persona / Experimental classification; shaman preserved |
 | [AMB v0](docs/AMB.md) | Agent Mind Benchmark: 12-scenario protocol coverage scorecard |
 | [AMP 0.1](docs/AMP.md) | Agent Mind Protocol: events, blocks, gates, and state machine |
+| [AMP Integration](docs/AMP-INTEGRATION.md) | LangChain, Vercel AI SDK & LlamaIndex middleware integration |
+| [Web Admin Spec](docs/WEB-ADMIN-SPEC.md) | Mission control & sandbox detailed RFC specification |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | Full version release history |
 | [evals/README.md](evals/README.md) | Multi-tier evaluation and L4 benchmarks |
 | [TODO.md](TODO.md) | Active milestone tracker |
@@ -263,7 +265,11 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # From repository root
+node ../evals/run-all.js  # From repository root (26 Protocol Invariant Gates)
+
+# AMB Live Benchmark (Real LLM API Dual-Track Testing)
+node evals/amb-live.js --mock                 # Zero-cost offline simulation
+node evals/amb-live.js --model=deepseek       # Direct live model benchmark
 ```
 
 ---

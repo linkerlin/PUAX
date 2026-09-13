@@ -34,7 +34,7 @@ Kernfähigkeiten:
 - **Hybride Trigger-Erkennung**: YAML-Regex + semantischer TF-IDF-Fallback.
 - **59 Rollen + benutzerdefinierte Rollen**: Intelligente Empfehlungen mit Begründung.
 - **Ergebnisgesteuerte adaptive Weiterleitung**: `verify_completion` und Durchbrüche aktualisieren Rollengewichte in Echtzeit.
-- **Carbon Shield (Menschlicher Schutz)**: `puax_audit_manipulation` & `POST /v4/shield/audit` – nur Erkennung, niemals Ausführung. Schutz vor kognitiver Manipulation.
+- **Carbon Shield (Menschlicher Schutz)**: `puax_audit_manipulation` & `POST /v4/shield/audit` – nur Erkennung, niemals Ausführung. Schutz vor kognitiver Manipulation. (Erweiterungen für Menschen aufgeschoben; Basiserkennung beibehalten)
 - **AMB Multi-Modell-Benchmark**: 12 Szenarien × 5 Modellprofile (+39.2% Reparatur, +60.0% versteckte Fehler).
 - **Host Doctor 1-Klick-Reparatur**: `npx puax doctor --fix` installiert Hooks direkt für Cursor, Claude Code, VSCode, Windsurf.
 - **Gestuftes Drucksystem**: L0 bis L4 mit automatischer Deeskalation nach überprüften Durchbrüchen.

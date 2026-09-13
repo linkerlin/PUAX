@@ -37,7 +37,7 @@ PUAX 4.1 是面向 AI Agent 的**心智运行时**。角色只是口音；真正
 | **混合触发检测** | YAML 正则 + TF-IDF/子串语义（paraphrase 可命中） |
 | **智能角色推荐** | 59 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
 | **结局驱动路由闭环** | 独立验证 `verify_completion` 与突破回写实绩，废除静态先验终身制 |
-| **碳基防御盾 (Shield)** | 独立 HTTP `POST /v4/shield/audit` + CLI：硅基可 PUA，碳基只防御（只识别，不施放） |
+| **碳基防御盾 (Shield)** | 独立 HTTP `POST /v4/shield/audit` + CLI：硅基可 PUA，碳基只防御（只识别，不施放） （自然人外延功能暂缓，保留基础识别层）|
 | **AMB 多模型基准** | 12 场景 × 5 主流模型 Profile 可复现评测矩阵（修复率 +39.2% / 隐蔽缺陷 +60.0%） |
 | **宿主医生一键挂载** | `npx puax doctor --fix` 同步为 Cursor、Claude Code、VSCode、Windsurf 注入原生钩子 |
 | **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具 |
@@ -248,6 +248,8 @@ PUAX/
 | [角色去留表](docs/ROLE-KERNEL.md) | 内核 / 皮肤 / 实验；萨满全留 |
 | [AMB v0](docs/AMB.md) | 12 场景协议覆盖记分卡（无 LLM） |
 | [AMP 0.1](docs/AMP.md) | 事件 / 块 / 闸门 / 状态；MCP 只是插头 |
+| [AMP 编排器接入指南](docs/AMP-INTEGRATION.md) | LangChain、Vercel AI SDK 与 LlamaIndex 一行代码接入 |
+| [Web Admin 控制台详细设计](docs/WEB-ADMIN-SPEC.md) | 硅基指挥所与演练沙盘 v4.2 详细设计方案与 RFC |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
 | [TODO.md](TODO.md) | 改进计划与里程碑 |

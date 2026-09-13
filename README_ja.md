@@ -37,7 +37,7 @@ PUAX 4.1 は、AIエージェント向けに設計された**心智ランタイ�
 | **ハイブリッドトリガー検出** | YAML正規表現 ＋ TF-IDF/意味的フォールバック（言い換えも的確に検知） |
 | **高精度ロール推薦** | 59の内蔵ロール ＋ カスタムロール、多次元評価 ＋ `score_explanation` |
 | **成果主導ルーティング閉ループ** | 独立検証 `verify_completion` と突破実績をリアルタイム反映、静的終身制を撤廃 |
-| **炭素防護盾 (Carbon Shield)** | 独立HTTP `POST /v4/shield/audit` ＋ CLI：シリコンにはPUA、炭素人間は防護のみ（検知のみ、発動なし） |
+| **炭素防護盾 (Carbon Shield)** | 独立HTTP `POST /v4/shield/audit` ＋ CLI：シリコンにはPUA、炭素人間は防護のみ（検知のみ、発動なし）  (人間向け拡張機能は保留、基礎識別層のみ維持)|
 | **AMB マルチモデルベンチマーク** | 12シナリオ × 主要5モデルの再現可能評価（修復成功率 +39.2% / 潜在欠陥検知 +60.0%） |
 | **ホストドクター一括設定** | `npx puax doctor --fix` でCursor、Claude Code、VSCode、WindsurfにネイティブHookを即時配備 |
 | **GHM導引幻夢法** | 幻覚制御エンジン：荘周八夢ロール ＋ 入夢/覚醒/収束監査ツール |
@@ -157,7 +157,11 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # プロトコル検証（23項目）
+node ../evals/run-all.js  # リポジトリのルートから実行（26のプロトコル不変ゲート）
+
+# リアルLLM API接続ストレステストとデュアルトラック評価 (AMB Live)
+node evals/amb-live.js --mock                 # コストゼロのオフラインシミュレーション
+node evals/amb-live.js --model=deepseek       # DeepSeekモデル直接テスト
 ```
 
 ---

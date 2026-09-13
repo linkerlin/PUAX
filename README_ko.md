@@ -37,7 +37,7 @@ PUAX 4.1은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cog
 | **하이브리드 트리거 감지** | YAML 정규식 + TF-IDF/의미론적 폴백 (유사 표현 정확 매칭) |
 | **지능형 역할 추천** | 59개 내장 역할 + 커스텀 역할, 다차원 평가 점수 + `score_explanation` |
 | **성과 기반 라우팅 루프** | 독립 검증 `verify_completion`과 돌파 결과를 실시간 반영, 정적 종신제 폐지 |
-| **탄소 방어 쉴드 (Carbon Shield)** | 독립 HTTP `POST /v4/shield/audit` + CLI: 실리콘은 PUA, 탄소 인간은 방어만 (감지만 수행, 발동 없음) |
+| **탄소 방어 쉴드 (Carbon Shield)** | 독립 HTTP `POST /v4/shield/audit` + CLI: 실리콘은 PUA, 탄소 인간은 방어만 (감지만 수행, 발동 없음)  (인간 대상 확장 기능은 보류, 기초 식별 계층만 유지)|
 | **AMB 멀티 모델 벤치마크** | 12개 시나리오 × 주요 5개 모델 재현 가능 벤치마크 (+39.2% 수복률 / +60.0% 잠재 결함 포착) |
 | **호스트 닥터 원클릭 설정** | `npx puax doctor --fix`로 Cursor, Claude Code, VSCode, Windsurf에 네이티브 훅 즉시 배포 |
 | **GHM 도인환몽법** | 제어된 환각 발산 엔진: 장자 8몽 역할 + 입몽/각성/수렴 감사 도구 |
@@ -134,7 +134,11 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 프로토콜 게이트 23항목 검증
+node ../evals/run-all.js  # 저장소 루트에서 실행 (26개 프로토콜 불변 게이트)
+
+# 실제 LLM API 연결 스트레스 테스트 및 듀얼 트랙 평가 (AMB Live)
+node evals/amb-live.js --mock                 # 비용 제로 오프라인 시뮬레이션
+node evals/amb-live.js --model=deepseek       # DeepSeek 실제 이중 트랙 벤치마크
 ```
 
 ---

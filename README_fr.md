@@ -34,7 +34,7 @@ Capacités fondamentales :
 - **Détection hybride d'événements** : Regex YAML + repli sémantique TF-IDF.
 - **59 rôles + personnalisés** : Moteur de recommandation multicritère.
 - **Routage adaptatif piloté par les résultats** : `verify_completion` et percées réajustent les pondérations en temps réel.
-- **Carbon Shield (Défense Humaine)** : `puax_audit_manipulation` & `POST /v4/shield/audit` – détection uniquement, jamais appliquée.
+- **Carbon Shield (Défense Humaine)** : `puax_audit_manipulation` & `POST /v4/shield/audit` – détection uniquement, jamais appliquée. (Extensions destinées aux humains différées; inspection de base maintenue)
 - **Benchmark multi-modèles AMB** : 12 scénarios × 5 profils de modèles (+39.2% en réparation, +60.0% en détection de bugs cachés).
 - **Réparation en un clic Host Doctor** : `npx puax doctor --fix` configure nativement Cursor, Claude Code, VSCode, Windsurf.
 - **Gestion de pression hiérarchisée** : Niveaux L0 à L4 avec désescalade après succès vérifié.
