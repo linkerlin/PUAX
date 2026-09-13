@@ -1,8 +1,8 @@
-# PUAX Web Admin 控制台升级详细设计方案 (v4.2 规划蓝图)
+# PUAX Web Admin 控制台升级设计方案 (【已废止/封存】)
 
-> **设计状态**：方案研拟中 / 待与主公讨论确认后推进实施  
-> **版本标定**：PUAX Web Admin 4.2.0  
-> **核心定位**：硅基心智任务态全景指挥台与演练沙盘（Silicon Mind Mission Control & Sandbox）
+> **设计状态**：**【已废止 / 归档封存】**  
+> **裁定缘由**：主公明敕，PUAX 核心在于硅基心智运行时，Web Admin 作为面向人类之图形界面并无必要，应坚守“以 Agent 接入 MCP 为主”之核心主干，严禁在此虚掷工本。现存简易监控维持现状，不再进行任何重构或衍生演进。  
+> **战略归一**：战力 100% 凝聚于 Agent MCP 接入协议、零延迟 Time-to-First-Pressure 原生 Hook、AMP 编排器生态与 Thin Prompt 极速心跳。
 
 ---
 

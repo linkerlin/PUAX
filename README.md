@@ -249,7 +249,7 @@ PUAX/
 | [AMB v0](docs/AMB.md) | 12 场景协议覆盖记分卡（无 LLM） |
 | [AMP 0.1](docs/AMP.md) | 事件 / 块 / 闸门 / 状态；MCP 只是插头 |
 | [AMP 编排器接入指南](docs/AMP-INTEGRATION.md) | LangChain、Vercel AI SDK 与 LlamaIndex 一行代码接入 |
-| [Web Admin 控制台详细设计](docs/WEB-ADMIN-SPEC.md) | 硅基指挥所与演练沙盘 v4.2 详细设计方案与 RFC |
+| [Web Admin 设计（已封存）](docs/WEB-ADMIN-SPEC.md) | 【已废止】主公明敕坚守 Agent 原生接入 MCP 主轴，图形界面不予扩建 |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
 | [TODO.md](TODO.md) | 改进计划与里程碑 |

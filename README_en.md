@@ -250,7 +250,8 @@ PUAX/
 | [AMB v0](docs/AMB.md) | Agent Mind Benchmark: 12-scenario protocol coverage scorecard |
 | [AMP 0.1](docs/AMP.md) | Agent Mind Protocol: events, blocks, gates, and state machine |
 | [AMP Integration](docs/AMP-INTEGRATION.md) | LangChain, Vercel AI SDK & LlamaIndex middleware integration |
-| [Web Admin Spec](docs/WEB-ADMIN-SPEC.md) | Mission control & sandbox detailed RFC specification |
+| [Web Admin Spec (Archived)](docs/WEB-ADMIN-SPEC.md) | [Archived] Web Admin deferred; focus solely on Agent MCP integration |
+| 
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | Full version release history |
 | [evals/README.md](evals/README.md) | Multi-tier evaluation and L4 benchmarks |
 | [TODO.md](TODO.md) | Active milestone tracker |
