@@ -505,7 +505,7 @@ ${tick.injection || "[PUAX-RUNTIME] 当前场景已进入深度排障周期。"}
 
   const summaryPayload = {
     benchmark: "PUAX AMB Live Benchmark",
-    version: "4.1.0",
+    version: "4.2.0",
     date: new Date().toISOString(),
     model: config.name,
     model_id: config.model,

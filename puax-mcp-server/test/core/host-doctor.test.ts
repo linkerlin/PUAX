@@ -4,7 +4,7 @@ import { dispatchV4 } from "../../src/server/v4-http.js";
 describe("PUAX Host Doctor & TTF Engine", () => {
   test("runHostDoctor 返回完整诊断报告", () => {
     const report = runHostDoctor();
-    expect(report.version).toBe("4.1.0");
+    expect(report.version).toBe("4.2.0");
     expect(typeof report.overallTtfReady).toBe("boolean");
     expect(typeof report.topHostsCovered).toBe("number");
     expect(report.topHostsTotal).toBeGreaterThanOrEqual(10);

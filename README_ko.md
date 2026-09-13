@@ -1,10 +1,10 @@
 # PUAX — AI 에이전트 동기부여 시스템
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="버전">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="버전">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="상태">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="스킬">
-  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP 도구">
+  <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCP 도구">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="스타일">
 </p>
 
@@ -20,7 +20,7 @@
 
 ## PUAX란 무엇인가?
 
-PUAX 4.1은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cognitive Runtime)**입니다. 역할(Role)은 단지 스타일에 불과하며, 진정한 핵심은 세 가지 원시 요소(Primitives)에 있습니다:
+PUAX 4.2는 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cognitive Runtime)**입니다. 역할(Role)은 단지 스타일에 불과하며, 진정한 핵심은 세 가지 원시 요소(Primitives)에 있습니다:
 
 | 원시 요소 | 설명 |
 |-----------|------|
@@ -28,18 +28,20 @@ PUAX 4.1은 AI 에이전트를 위해 특별히 구축된 **인지 런타임(Cog
 | **게이트 (Gates)** | 진단 선행, 신뢰도 게이트, 태스크 계약(Task Contract), 독립 검증, PreToolUse 강제 차단 |
 | **유도된 꿈 (GHM)** | GHM 도인환몽법: 고지된 입몽, 태그 격리, 즉시 각성, 각성 후 필수 검증 (환각을 다스려 돌파) |
 
-기본 실행 경로는 하트비트 틱 `puax_tick`(호스트 Hook에 의한 대리 실행)입니다. 에이전트가 49개 도구 메뉴를 외울 필요가 없습니다.
+기본 실행 경로는 하트비트 틱 `puax_tick`(호스트 Hook에 의한 대리 실행)입니다. 에이전트가 50개 도구 메뉴를 외울 필요가 없습니다.
 
 주요 핵심 역량:
 
 | 역량 | 설명 |
 |------|------|
+| **극소 압축 프롬프트 (Thin Prompt)** | `puax_thin_prompt`: minimal/compact/full 3단계 압축, 토큰 소모 90% 이상 절감(~150 Tokens), 실시간 토큰 추정기 내장 |
+| **파이썬 무의존 AMP SDK** | 공식 단일 파일 미들웨어, LangGraph 노드 인터셉터, AutoGen 툴 가드 및 오프라인 프롬프트 생성 지원 |
 | **하이브리드 트리거 감지** | YAML 정규식 + TF-IDF/의미론적 폴백 (유사 표현 정확 매칭) |
 | **지능형 역할 추천** | 59개 내장 역할 + 커스텀 역할, 다차원 평가 점수 + `score_explanation` |
 | **성과 기반 라우팅 루프** | 독립 검증 `verify_completion`과 돌파 결과를 실시간 반영, 정적 종신제 폐지 |
 | **탄소 방어 쉴드 (Carbon Shield)** | 독립 HTTP `POST /v4/shield/audit` + CLI: 실리콘은 PUA, 탄소 인간은 방어만 (감지만 수행, 발동 없음)  (인간 대상 확장 기능은 보류, 기초 식별 계층만 유지)|
 | **AMB 멀티 모델 벤치마크** | 12개 시나리오 × 주요 5개 모델 재현 가능 벤치마크 (+39.2% 수복률 / +60.0% 잠재 결함 포착) |
-| **호스트 닥터 원클릭 설정** | `npx puax doctor --fix`로 Cursor, Claude Code, VSCode, Windsurf에 네이티브 훅 즉시 배포 |
+| **호스트 닥터 원클릭 설정** | `npx puax doctor --fix`로 10대 주요 호스트(Cursor, Claude Code, Windsurf, Trae 등)에 네이티브 훅 즉시 배포 |
 | **GHM 도인환몽법** | 제어된 환각 발산 엔진: 장자 8몽 역할 + 입몽/각성/수렴 감사 도구 |
 | **Hook 시스템** | 세션 상태 유지, L0–L4 단계별 압박, 돌파 시 감압, Compaction 보호 |
 | **자기 진화 파이프라인** | `~/.puax/evolution.json` 세션 간 베이스라인, 흉터, 단수(Rank) 체계 및 네임드 에이전트 |
@@ -119,7 +121,7 @@ npx puax-mcp-server --list-platforms
 | 감지 및 추천 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
 | 행동 프로토콜 | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
 | 세션 및 압박 | `puax_start_session`, `puax_get_pressure_level`, `puax_handle_breakthrough` |
-| 하트비트 / 처지 / 진화 (v4) | `puax_tick`, `puax_set_arena`, `puax_evolve` |
+| 하트비트 / 처지 / 박형 프롬프트 / 진화 (v4) | `puax_tick`, `puax_set_arena`, `puax_thin_prompt`, `puax_evolve` |
 | GHM 도인환몽법 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 자기 진화 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | 탄소 기반 방어 (Carbon Shield) | `puax_audit_manipulation` (식별만 수행, 시전 엄금) |
@@ -134,7 +136,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 저장소 루트에서 실행 (26개 프로토콜 불변 게이트)
+node ../evals/run-all.js  # 저장소 루트에서 실행 (28개 프로토콜 불변 게이트)
 
 # 실제 LLM API 연결 스트레스 테스트 및 듀얼 트랙 평가 (AMB Live)
 node evals/amb-live.js --mock                 # 비용 제로 오프라인 시뮬레이션

@@ -1,10 +1,10 @@
 # PUAX — AI Agent 激勵系統
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="版本">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="版本">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="狀態">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="企業風味">
 </p>
 
@@ -20,26 +20,28 @@
 
 ## 什麼是 PUAX？
 
-PUAX 4.1 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
+PUAX 4.2 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
 
-| 原語 | 說明 |
+| 原语 | 說明 |
 |------|------|
 | **處境（Arena）** | `puax_set_arena`：對手 + 觀眾 + 稀缺徽章（Cranmer 原題），擊碎低壓平庸 |
 | **閘門（Gates）** | 診斷先行、信心門控、Task Contract、獨立 verifier、PreToolUse 強制攔截 |
 | **夢（Guided Dreams）** | GHM 導引幻夢法：知情入夢、標記隔離、隨時可醒、醒後必驗（馭幻覺破局） |
 
-預設路徑為心跳 `puax_tick`（由宿主 Hook 代跳）。Agent 不必先死背 49 個工具清單。
+預設路徑為心跳 `puax_tick`（由宿主 Hook 代跳）。Agent 不必先死背 50 個工具清單。
 
 核心能力還包括：
 
 | 能力 | 說明 |
 |------|------|
+| **極簡薄注入 (Thin Prompt)** | `puax_thin_prompt`：支援 minimal/compact/full 三檔壓縮，Token 消耗壓降 90% 以上（~150 Tokens），附帶毫秒級 Token 估算器 |
+| **Python 零依賴 AMP SDK** | 官方單檔案中介軟體，支援 LangGraph 節點攔截裝飾器、AutoGen 看門狗與離線薄注入編譯 |
 | **混合觸發檢測** | YAML 正則 + TF-IDF/子串語義兜底（換句話說亦能精準命中） |
 | **智慧角色推薦** | 59 內建角色 + 自訂角色，多維度評分 + `score_explanation` |
 | **結局驅動路由閉環** | 獨立驗證 `verify_completion` 與突破實績回寫，廢除靜態終身制 |
 | **碳基防禦盾 (Shield)** | 獨立 HTTP `POST /v4/shield/audit` + CLI：矽基可 PUA，碳基只防禦（只識別，不施放）  （自然人向終端外延功能暫緩，維持基礎識別層）|
-| **AMB 多模型基準** | 12 場景 × 5 主流模型 Profile 可復現矩陣（修復率 +39.2% / 隱蔽問題 +60.0%） |
-| **宿主醫生一鍵掛載** | `npx puax doctor --fix` 同步為 Cursor、Claude Code、VSCode、Windsurf 注入原生鉤子 |
+| **AMB 多模型基準** | 12 場景 × 5 主流模型 Profile 可復現矩陣（修復率 +39.2% / 隐蔽問題 +60.0%） |
+| **宿主醫生一鍵掛載** | `npx puax doctor --fix` 同步覆蓋 10 大主流宿主（Cursor, Claude Code, Windsurf, Trae 等）注入原生鉤子 |
 | **GHM 導引幻夢法** | 馭幻覺發散引擎：莊周八夢角色 + 入夢/醒夢/收斂審計三工具 |
 | **Hook System** | 會話狀態、L0–L4 階梯壓力、突破降壓、Compaction 推理保護 |
 | **自進化管線** | `~/.puax/evolution.json` 跨會話基線、傷痕、段位與命名 Agent 檔案 |
@@ -118,7 +120,7 @@ npx puax-mcp-server --list-platforms
 | 角色/SKILL | `list_skills`, `get_skill`, `activate_skill`, `get_role_with_methodology` |
 | 檢測與推薦 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
 | 行為協議 | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
-| 心跳 / 處境 / 進化 (v4) | `puax_tick`, `puax_set_arena`, `puax_evolve` |
+| 心跳 / 處境 / 薄注入 / 進化 (v4) | `puax_tick`, `puax_set_arena`, `puax_thin_prompt`, `puax_evolve` |
 | GHM 導引幻夢法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 自進化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | 碳基防禦面（Carbon Shield） | `puax_audit_manipulation`（只識別，不施放） |
@@ -133,7 +135,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 從儲存庫根目錄執行（26 項協議鐵律門禁）
+node ../evals/run-all.js  # 從儲存庫根目錄執行（28 項協議鐵律門禁）
 
 # 眞實大模型 API 連通壓測與雙軌對比評測 (AMB Live)
 node evals/amb-live.js --mock                 # 離線模擬壓測（零成本、秒級閉環）

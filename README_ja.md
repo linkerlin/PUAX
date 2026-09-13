@@ -1,10 +1,10 @@
 # PUAX — AIエージェント動機づけシステム
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="バージョン">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="バージョン">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="ステータス">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="スキル数">
-  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCPツール数">
+  <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCPツール数">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="企業スタイル">
 </p>
 
@@ -20,7 +20,7 @@
 
 ## PUAX とは？
 
-PUAX 4.1 は、AIエージェント向けに設計された**心智ランタイム（Cognitive Runtime）**です。役割（ロール）は単なるトーンに過ぎず、本質は次の3つの基本原語（Primitives）にあります：
+PUAX 4.2 は、AIエージェント向けに設計された**心智ランタイム（Cognitive Runtime）**です。役割（ロール）は単なるトーンに過ぎず、本質は次の3つの基本原語（Primitives）にあります：
 
 | 原語 | 説明 |
 |------|------|
@@ -28,18 +28,20 @@ PUAX 4.1 は、AIエージェント向けに設計された**心智ランタイ�
 | **ゲート（Gates）** | 診断先行、確信度ゲート、タスク契約（Task Contract）、独立検証、PreToolUse強制遮断 |
 | **誘導幻夢（GHM）** | GHM導引幻夢法：合意された入夢、タグによる隔離、即時覚醒、覚醒後の厳格検証（幻覚を操り突破） |
 
-推奨される標準パスは心拍 `puax_tick`（ホスト側Hookが代理実行）です。エージェントは49個のツールメニューを暗記する必要はありません。
+推奨される標準パスは心拍 `puax_tick`（ホスト側Hookが代理実行）です。エージェントは50個のツールメニューを暗記する必要はありません。
 
 主な機能：
 
 | 機能 | 説明 |
 |------|------|
+| **極薄プロンプト (Thin Prompt)** | `puax_thin_prompt`：minimal/compact/full の3段階圧縮、Token消費を90%以上削減（約150 Tokens）、リアルタイムToken見積もり器を内蔵 |
+| **Python 依存ゼロ AMP SDK** | 公式単一ファイルSDK。LangGraphノードインターセプター、AutoGenガード、オフライン薄型プロンプト生成を標準サポート |
 | **ハイブリッドトリガー検出** | YAML正規表現 ＋ TF-IDF/意味的フォールバック（言い換えも的確に検知） |
 | **高精度ロール推薦** | 59の内蔵ロール ＋ カスタムロール、多次元評価 ＋ `score_explanation` |
 | **成果主導ルーティング閉ループ** | 独立検証 `verify_completion` と突破実績をリアルタイム反映、静的終身制を撤廃 |
 | **炭素防護盾 (Carbon Shield)** | 独立HTTP `POST /v4/shield/audit` ＋ CLI：シリコンにはPUA、炭素人間は防護のみ（検知のみ、発動なし）  (人間向け拡張機能は保留、基礎識別層のみ維持)|
 | **AMB マルチモデルベンチマーク** | 12シナリオ × 主要5モデルの再現可能評価（修復成功率 +39.2% / 潜在欠陥検知 +60.0%） |
-| **ホストドクター一括設定** | `npx puax doctor --fix` でCursor、Claude Code、VSCode、WindsurfにネイティブHookを即時配備 |
+| **ホストドクター一括設定** | `npx puax doctor --fix` で10大主要ホスト（Cursor、Claude Code、Windsurf、Trae等）にネイティブHookを即時配備 |
 | **GHM導引幻夢法** | 幻覚制御エンジン：荘周八夢ロール ＋ 入夢/覚醒/収束監査ツール |
 | **Hookシステム** | セッション状態永続化、L0〜L4の段階的圧力、突破時の減圧、Compaction保護 |
 | **自己進化パイプライン** | `~/.puax/evolution.json` によるセッション横断ベースライン、傷痕、結果重みづけと段位制 |
@@ -138,7 +140,7 @@ MCPランタイムのほか、以下の配信チャンネルも用意されて�
 | 検出と推薦 | `puax_detect_trigger`, `puax_quick_detect`, `recommend_role`, `activate_with_context` |
 | 行動プロトコル | `puax_switch_on_failure`, `puax_check_diagnosis`, `puax_confidence_check`, `puax_verify_completion`, `puax_define_contract` |
 | セッション / 圧力 | `puax_start_session`, `puax_get_pressure_level`, `puax_handle_breakthrough` |
-| 心拍 / 状況 / 進化 (v4) | `puax_tick`, `puax_set_arena`, `puax_evolve` |
+| 心拍 / 状況 / 薄型プロンプト / 進化 (v4) | `puax_tick`, `puax_set_arena`, `puax_thin_prompt`, `puax_evolve` |
 | GHM 導引幻夢法 | `puax_enter_dreamscape`, `puax_awaken`, `puax_convergence_audit` |
 | 自己進化 | `puax_get_evolution_baseline`, `puax_record_evolution`, `puax_evolve` |
 | カスタムロール | `puax_register_custom_role`, `puax_list_custom_roles`, `puax_remove_custom_role` |
@@ -157,7 +159,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # リポジトリのルートから実行（26のプロトコル不変ゲート）
+node ../evals/run-all.js  # リポジトリのルートから実行（28のプロトコル不変ゲート）
 
 # リアルLLM API接続ストレステストとデュアルトラック評価 (AMB Live)
 node evals/amb-live.js --mock                 # コストゼロのオフラインシミュレーション

@@ -1,10 +1,10 @@
 # PUAX — AI Agent Motivation System
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Status">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Skills">
-  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="MCP Tools">
+  <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCP Tools">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Flavors">
 </p>
 
@@ -20,7 +20,7 @@
 
 ## What is PUAX?
 
-PUAX 4.1 is a **cognitive runtime** designed specifically for AI Agents. Roles are merely stylistic accents; the true product consists of three foundational primitives:
+PUAX 4.2 is a **cognitive runtime** designed specifically for AI Agents. Roles are merely stylistic accents; the true product consists of three foundational primitives:
 
 | Primitive | Description |
 |-----------|-------------|
@@ -28,18 +28,20 @@ PUAX 4.1 is a **cognitive runtime** designed specifically for AI Agents. Roles a
 | **Gates** | Diagnosis-first, Confidence Gate, Task Contract, Independent Verifier, PreToolUse hard interception |
 | **Guided Dreams** | GHM (Guided Hallucination Method): Informed entry, tag isolation, instant awakening, mandatory post-awakening verification |
 
-The primary default path is the heartbeat tick `puax_tick` (driven natively by host hooks). Agents do not need to memorize a 49-tool menu beforehand.
+The primary default path is the heartbeat tick `puax_tick` (driven natively by host hooks). Agents do not need to memorize a 50-tool menu beforehand.
 
 Core capabilities also include:
 
 | Capability | Description |
 |------------|-------------|
+| **Thin Prompt Compression** | `puax_thin_prompt`: 3 compression levels (minimal/compact/full), >90% token reduction (~150 tokens) with real-time token estimator |
+| **Zero-Dep Python AMP SDK** | Official single-file standard-library middleware with LangGraph node interceptor, AutoGen guard, and offline Thin Prompt compiler |
 | **Hybrid Trigger Detection** | YAML regex + TF-IDF/semantic fallback (paraphrases match accurately) |
 | **Intelligent Role Recommendation** | 59 built-in roles + custom roles, multi-dimensional scoring + `score_explanation` |
 | **Outcome-Driven Adaptive Routing** | Independent `verify_completion` & breakthrough outcomes adjust routing weights in real time |
 | **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied)  (Human-facing extensions deferred; baseline inspection preserved)|
 | **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles reproducible benchmark matrix (+39.2% repair, +60.0% hidden flaws) |
-| **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into Cursor, Claude Code, VSCode, Windsurf |
+| **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into 10 major hosts (Cursor, Claude Code, Windsurf, Trae, etc.) |
 | **GHM Guided Hallucination** | Controlled hallucination engine for creative leaps: 8 Zhuangzi dream roles + enter/awaken/audit tools |
 | **Hook System** | Session state, L0–L4 tiered pressure, breakthrough de-escalation, compaction reasoning preservation |
 | **Self-Evolution Pipeline** | `~/.puax/evolution.json` cross-session baselines, scars, ranks & named Agent dossiers |
@@ -243,30 +245,30 @@ PUAX/
 |----------|-------------|
 | [GHM Guided Dreams](docs/GHM.md) | Controlled hallucination engine: pathologies, 8 tactics mapping, Zhuangzi dreams |
 | [GHM Academic Paper & Whitepaper](docs/GHM-PAPER.md) | **Formal Technical Paper**: Pathogenesis, 8 operators reversing, council pipeline, non-LLM evals |
-| [MCP Server README](puax-mcp-server/README.md) | Configuration, tool list, architecture, environment variables |
-| [API Reference](docs/API.md) | **48 MCP tools** reference (12 primary verbs) |
-| [User Guide](docs/USER-GUIDE.md) | Heartbeat-first workflow & scenario guides |
-| [Role Kernel](docs/ROLE-KERNEL.md) | Kernel / Persona / Experimental classification; shaman preserved |
-| [AMB v0](docs/AMB.md) | Agent Mind Benchmark: 12-scenario protocol coverage scorecard |
-| [AMP 0.1](docs/AMP.md) | Agent Mind Protocol: events, blocks, gates, and state machine |
-| [AMP Integration](docs/AMP-INTEGRATION.md) | LangChain, Vercel AI SDK & LlamaIndex middleware integration |
-| [Web Admin Spec (Archived)](docs/WEB-ADMIN-SPEC.md) | [Archived] Web Admin deferred; focus solely on Agent MCP integration |
-| 
-| [CHANGELOG](puax-mcp-server/CHANGELOG.md) | Full version release history |
-| [evals/README.md](evals/README.md) | Multi-tier evaluation and L4 benchmarks |
-| [TODO.md](TODO.md) | Active milestone tracker |
-| [演进方案.md](演进方案.md) | Retrospective analysis against pua upstream (frozen) |
+| [MCP Server README](puax-mcp-server/README.md) | Configuration, tool catalog, architecture, env vars |
+| [API Reference](docs/API.md) | **49 MCP tools** (13 core public verbs) |
+| [User Guide](docs/USER-GUIDE.md) | Heartbeat-first workflow |
+| [Role Kernel Disposition](docs/ROLE-KERNEL.md) | Kernel / Skin / Experimental; All shamans kept |
+| [AMB v0](docs/AMB.md) | 12-scenario protocol coverage scorecard (No LLM) |
+| [AMP 0.1](docs/AMP.md) | Events / Blocks / Gates / State; MCP is merely a plug |
+| [AMP Orchestrator Guide](docs/AMP-INTEGRATION.md) | One-line integration for LangChain, LangGraph, CrewAI, AutoGen & Python SDK |
+| [Zero-Dep Python SDK Guide](distributions/python/README.md) | Official Python standard-library middleware |
+| [Web Admin Design (Archived)](docs/WEB-ADMIN-SPEC.md) | [Deprecated] Command strictly focuses on Agent native MCP pipeline |
+| [CHANGELOG](puax-mcp-server/CHANGELOG.md) | Version changelog |
+| [evals/README.md](evals/README.md) | Evaluation tiers & L4 benchmarks |
+| [TODO.md](TODO.md) | Roadmap & milestones |
+| [Evolution Plan](演进方案.md) | 3.x baseline comparison (Frozen) |
 
 ---
 
-## Development & Verification
+## Development & Testing
 
 ```bash
 cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # From repository root (26 Protocol Invariant Gates)
+node ../evals/run-all.js  # Run 28 protocol invariant gates from repo root
 
 # AMB Live Benchmark (Real LLM API Dual-Track Testing)
 node evals/amb-live.js --mock                 # Zero-cost offline simulation

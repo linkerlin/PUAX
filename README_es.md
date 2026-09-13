@@ -1,10 +1,10 @@
 # PUAX — Sistema de Motivación para Agentes de IA
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Versión">
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="Versión">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Estado">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Habilidades">
-  <img src="https://img.shields.io/badge/MCP%20tools-49-purple.svg" alt="Herramientas MCP">
+  <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="Herramientas MCP">
   <img src="https://img.shields.io/badge/flavors-11-yellow.svg" alt="Estilos">
 </p>
 
@@ -20,7 +20,7 @@
 
 ## ¿Qué es PUAX?
 
-PUAX 4.1 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
+PUAX 4.2 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
 
 | Primitiva | Descripción |
 |-----------|-------------|
@@ -28,15 +28,17 @@ PUAX 4.1 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicame
 | **Puertas (Gates)** | Diagnóstico primero, Puerta de Confianza, Contrato de Tarea, Verificador Independiente, Intercepción PreToolUse |
 | **Sueños Guiados** | Método GHM: Entrada informada, aislamiento por etiquetas, despertar instantáneo y verificación post-sueño (control de alucinaciones para descubrimientos) |
 
-El camino principal predeterminado es el pulso de latido `puax_tick` (manejado de forma nativa por los hooks del host). Los agentes no necesitan memorizar un menú de 49 herramientas.
+El camino principal predeterminado es el pulso de latido `puax_tick` (manejado de forma nativa por los hooks del host). Los agentes no necesitan memorizar un menú de 50 herramientas.
 
 Capacidades clave:
+- **Compresión Thin Prompt**: `puax_thin_prompt` (minimal/compact/full) reduce tokens en más del 90% (~150 Tokens) con estimador en tiempo real.
+- **SDK Python AMP sin dependencias**: Middleware de biblioteca estándar con interceptores LangGraph y guardias AutoGen.
 - **Detección híbrida de activadores**: Expresiones regulares YAML + TF-IDF semántico.
 - **59 roles motivacionales + roles personalizados**: Recomendación con explicación detallada.
 - **Enrutamiento adaptativo basado en resultados**: `verify_completion` y eventos de avance actualizan los pesos en tiempo real.
 - **Carbon Shield (Defensa Humana)**: `puax_audit_manipulation` & `POST /v4/shield/audit`: PUA para silicio, defensa para humanos (solo identificación, nunca aplicada). (Extensiones para humanos aplazadas; inspección base mantenida)
 - **Matriz de referencia multimodelos AMB**: 12 escenarios × 5 perfiles de modelos reproducibles (+39.2% en reparación, +60.0% en detección de defectos ocultos).
-- **Reparación en un clic con Host Doctor**: `npx puax doctor --fix` monta hooks nativos en Cursor, Claude Code, VSCode y Windsurf.
+- **Reparación en un clic con Host Doctor**: `npx puax doctor --fix` monta hooks nativos en 10 hosts principales (Cursor, Claude Code, Windsurf, Trae, etc.).
 - **Sistema de Hooks y gestión de presión**: Niveles L0–L4 con desescalada tras verificación.
 - **Autoevolución**: Persistencia de cicatrices, rangos y pesos en `~/.puax/evolution.json`.
 

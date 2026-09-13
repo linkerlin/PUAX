@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.2.0] - 2026-09-14
+
+### Added
+- **纯粹硅基 MCP 主航道与 Token 经济性极客优化**：
+  - 新增核心首选 MCP 工具 `puax_thin_prompt` 并列入 `V4_PUBLIC_VERBS`（对外公开黄金动词扩充至 13 门）。
+  - Thin Prompt 编译引擎增强 `full` / `compact` / `minimal` 三档压缩模式并集成精准 Token 估算器，`minimal` 极简模式下提示词压降逾 90%（整段仅约 150 Tokens），极大节约长对话与多 Agent 编排上下文。
+  - `activate_with_context` 与 `get_role_with_methodology` 全面支持 `thin_mode` 参数透传。
+  - Python 官方零依赖 SDK (`puax_amp.py`) 新增 LangGraph StateGraph 节点拦截装饰器（`create_langgraph_node_interceptor`）、AutoGen 工具看门狗（`create_autogen_tool_guard`）与本地离线 Thin Prompt 编译器。
+  - 静态协议硬门禁拓展至 28 门，Jest 单测套件提升至 76 套件（967 项全绿通过）。
+- **版本号统一升级至 v4.2.0**：`puax-mcp-server`、`web-admin` 与 `landing` 全组件协同演进。
+
 ## [4.1.0] - 2026-09-13
 
 ### Added
@@ -16,12 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 核心服务支持 HTTP 请求体异步解析，暴露 `POST /v4/shield/audit` 独立审计路由。
   - `web-admin/src/components/ShieldView.tsx` 优先调用远程审计引擎，并支持离线平滑降级，全面贯彻「硅基可 PUA，碳基只防御（只识别，不施放）」红线铁律。
 - **版本号统一部署至 v4.1.0**：`puax-mcp-server`、`web-admin` 与 `landing` 协同演进。
-- **纯粹硅基 MCP 主航道与 Token 经济性极客优化**：
-  - 新增首选 MCP 工具 `puax_thin_prompt` 并列入 `V4_PUBLIC_VERBS`（对外核心动词扩充至 13 门）。
-  - Thin Prompt 编译器增强 `full` / `compact` / `minimal` 三档压缩模式并集成精准 Token 估算，`minimal` 模式下提示词压降逾 90%（~150 Tokens），极大减轻长对话上下文压力。
-  - `activate_with_context` 与 `get_role_with_methodology` 全面支持 `thin_mode` 参数。
-  - Python 零依赖 SDK (`puax_amp.py`) 新增 LangGraph StateGraph 节点拦截装饰器、AutoGen 看门狗与离线 Thin Prompt 编译器。
-  - 静态协议硬门禁拓展至 28 门，Jest 单测套件提升至 76 套件（967 项全绿通过）。
 
 ## [4.0.0] - 2026-09-12
 
