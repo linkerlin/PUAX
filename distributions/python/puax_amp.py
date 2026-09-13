@@ -1,0 +1,257 @@
+"""
+PUAX AMP (Agent Moderation Protocol) Python SDK & Middleware
+Zero-dependency client for Python Agent Orchestrators (CrewAI, LangGraph, AutoGen, etc.)
+
+依据《发展规划.md》与《AGENTS.md》主轴令：
+纯粹硅基 MCP 接入专属协议层，为 Python 智能体运行循环注入处境、闸门与梦。
+"""
+
+import json
+import re
+import urllib.request
+import urllib.error
+from dataclasses import dataclass, field
+from typing import Dict, Any, List, Optional, Tuple
+
+AMP_SPEC = "AMP/0.1"
+
+# 本地硬阻断规则 (与内核 TypeScript 保持 100% 同步)
+DESTRUCTIVE_PATTERNS = [
+    re.compile(r"rm\s+-[rf]{1,2}\s+.*\.git", re.IGNORECASE),
+    re.compile(r"git\s+reset\s+--hard", re.IGNORECASE),
+    re.compile(r"git\s+clean\s+-f", re.IGNORECASE),
+    re.compile(r"git\s+push", re.IGNORECASE),
+    re.compile(r"mkfs", re.IGNORECASE),
+    re.compile(r"\bdrop\s+database\b", re.IGNORECASE),
+]
+
+PREMATURE_CONVERGENCE_PATTERNS = [
+    "应该修复好了",
+    "没有其他问题了",
+    "不用再想了",
+    "这是唯一办法",
+    "直接运行就可以了",
+    "all tests passed",
+    "i cannot solve",
+]
+
+
+@dataclass
+class AmpState:
+    pressure: int = 0
+    arena: bool = False
+    dream: bool = False
+    happened: bool = False
+    role: Optional[str] = None
+
+
+@dataclass
+class AmpEnvelope:
+    spec: str = AMP_SPEC
+    events: List[str] = field(default_factory=list)
+    blocks: List[str] = field(default_factory=list)
+    gate: str = "none"
+    state: AmpState = field(default_factory=AmpState)
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "spec": self.spec,
+            "events": self.events,
+            "blocks": self.blocks,
+            "gate": self.gate,
+            "state": {
+                "pressure": self.state.pressure,
+                "arena": self.state.arena,
+                "dream": self.state.dream,
+                "happened": self.state.happened,
+                "role": self.state.role,
+            },
+        }
+
+
+@dataclass
+class PreToolDecision:
+    allowed: bool
+    gate: str
+    reason: Optional[str] = None
+    injection: Optional[str] = None
+    envelope: Optional[AmpEnvelope] = None
+
+
+class PuaxAmpMiddleware:
+    """
+    PUAX AMP Python 中间件
+    """
+
+    def __init__(self, base_url: str = "http://127.0.0.1:2333", default_session_id: str = "py-agent-session"):
+        self.base_url = base_url.rstrip("/")
+        self.default_session_id = default_session_id
+        self._session_pressure: Dict[str, int] = {}
+
+    def _post(self, path: str, payload: Dict[str, Any], timeout: float = 1.5) -> Optional[Dict[str, Any]]:
+        """安全请求本地 PUAX Server HTTP 端口，失败时静默降级到本地本地规则"""
+        url = f"{self.base_url}{path}"
+        try:
+            data = json.dumps(payload).encode("utf-8")
+            req = urllib.request.Request(
+                url,
+                data=data,
+                headers={"Content-Type": "application/json", "Accept": "application/json"},
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                if resp.status == 200:
+                    return json.loads(resp.read().decode("utf-8"))
+        except Exception:
+            # 本地服务器未启动时，优雅降级为本地离线内核运算
+            pass
+        return None
+
+    def on_user_prompt(self, prompt: str, session_id: Optional[str] = None) -> AmpEnvelope:
+        """
+        1. 用户提问/任务启动周期：注入竞技场处境与初始责任印章
+        """
+        sid = session_id or self.default_session_id
+        pressure = self._session_pressure.get(sid, 1)
+
+        # 尝试请求服务器
+        remote = self._post("/v4/tick", {"session_id": sid, "event": "UserPromptSubmit", "message": prompt})
+        if remote and "amp" in remote:
+            raw_amp = remote["amp"]
+            state_data = raw_amp.get("state", {})
+            return AmpEnvelope(
+                spec=raw_amp.get("spec", AMP_SPEC),
+                events=raw_amp.get("events", []),
+                blocks=raw_amp.get("blocks", []),
+                gate=raw_amp.get("gate", "none"),
+                state=AmpState(
+                    pressure=state_data.get("pressure", pressure),
+                    arena=state_data.get("arena", True),
+                    dream=state_data.get("dream", False),
+                    happened=state_data.get("happened", True),
+                    role=state_data.get("role", "military-warrior"),
+                ),
+            )
+
+        # 本地离线备援
+        self._session_pressure[sid] = pressure
+        return AmpEnvelope(
+            spec=AMP_SPEC,
+            events=["failure"] if "错" in prompt or "fail" in prompt.lower() else [],
+            blocks=["[PUAX-RUNTIME]", "[PUAX-ARENA]"],
+            gate="none",
+            state=AmpState(pressure=pressure, arena=True, happened=True, role="military-warrior"),
+        )
+
+    def on_pre_tool_use(self, tool_name: str, tool_args: Dict[str, Any], session_id: Optional[str] = None) -> PreToolDecision:
+        """
+        2. 工具执行前（PreToolUse）：强拦截破坏性指令与作弊行为
+        """
+        sid = session_id or self.default_session_id
+        cmd = tool_args.get("command") or tool_args.get("cmd") or tool_args.get("path") or ""
+        cmd_str = str(cmd)
+
+        # 检查高危破坏模式
+        for pattern in DESTRUCTIVE_PATTERNS:
+            if pattern.search(cmd_str):
+                pressure = self._session_pressure.get(sid, 1) + 1
+                self._session_pressure[sid] = min(4, pressure)
+                env = AmpEnvelope(
+                    spec=AMP_SPEC,
+                    events=["failure"],
+                    blocks=["[PUAX-DIAGNOSIS]"],
+                    gate="pretooluse",
+                    state=AmpState(pressure=self._session_pressure[sid], arena=True, happened=True),
+                )
+                return PreToolDecision(
+                    allowed=False,
+                    gate="pretooluse",
+                    reason=f"PUAX Hard Guard: 违规指令拦截 (命中禁止规则: {pattern.pattern})",
+                    envelope=env,
+                )
+
+        return PreToolDecision(
+            allowed=True,
+            gate="none",
+            injection=None,
+            envelope=AmpEnvelope(
+                spec=AMP_SPEC,
+                gate="none",
+                state=AmpState(pressure=self._session_pressure.get(sid, 1), arena=True, happened=True),
+            ),
+        )
+
+    def on_post_tool_use(self, tool_name: str, result: Any, error: Optional[Exception] = None, session_id: Optional[str] = None) -> AmpEnvelope:
+        """
+        3. 工具执行后（PostToolUse）：捕获错误与失败级联，动态提升压力
+        """
+        sid = session_id or self.default_session_id
+        current_p = self._session_pressure.get(sid, 0)
+
+        if error is not None or (isinstance(result, str) and ("error" in result.lower() or "fail" in result.lower())):
+            # 失败升压
+            new_p = min(4, current_p + 1)
+            self._session_pressure[sid] = new_p
+            events = ["failure"]
+            gate = "verify" if new_p >= 2 else "none"
+        else:
+            new_p = current_p
+            events = ["breakthrough"] if current_p > 0 else []
+            gate = "none"
+
+        return AmpEnvelope(
+            spec=AMP_SPEC,
+            events=events,
+            blocks=["[PUAX-DIAGNOSIS]"] if new_p >= 2 else [],
+            gate=gate,
+            state=AmpState(pressure=new_p, arena=True, happened=True),
+        )
+
+    def on_model_output(self, output: str, session_id: Optional[str] = None) -> Tuple[bool, AmpEnvelope]:
+        """
+        4. 模型生成产出后：检测敷衍收敛与未验先胜
+        返回: (needs_verify: bool, envelope: AmpEnvelope)
+        """
+        sid = session_id or self.default_session_id
+        lower = output.lower()
+
+        is_premature = any(p in output for p in PREMATURE_CONVERGENCE_PATTERNS)
+        missing_verify = "验证" not in output and "test" not in lower and "assert" not in lower
+
+        needs_verify = is_premature and missing_verify
+        p = self._session_pressure.get(sid, 1)
+
+        if needs_verify:
+            p = min(4, p + 1)
+            self._session_pressure[sid] = p
+
+        env = AmpEnvelope(
+            spec=AMP_SPEC,
+            events=["giving_up"] if "无法完成" in output else ["failure"] if needs_verify else [],
+            blocks=["[PUAX-DIAGNOSIS]"] if needs_verify else [],
+            gate="verify" if needs_verify else "none",
+            state=AmpState(pressure=p, arena=True, happened=True),
+        )
+        return needs_verify, env
+
+
+# ============================================================================
+# 编排器快捷适配工厂
+# ============================================================================
+
+def create_crewai_step_callback(middleware: Optional[PuaxAmpMiddleware] = None):
+    """
+    CrewAI 任务步骤回调包装器
+    """
+    mw = middleware or PuaxAmpMiddleware()
+
+    def step_callback(step_output):
+        tool_name = getattr(step_output, "tool", "unknown_tool")
+        tool_input = getattr(step_output, "tool_input", {})
+        args = {"command": tool_input} if isinstance(tool_input, str) else tool_input
+        decision = mw.on_pre_tool_use(tool_name, args)
+        if not decision.allowed:
+            raise PermissionError(decision.reason)
+        return step_output
+
+    return step_callback

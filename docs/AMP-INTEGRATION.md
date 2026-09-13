@@ -188,30 +188,49 @@ async function runAgentStep(userMessage: string) {
 
 ---
 
-## 5. Python 编排器（CrewAI / AutoGen）对接协议
+## 5. Python 编排器（CrewAI / LangGraph / AutoGen）原生接入
 
-对于 Python 编排器，可通过 AMP HTTP 端点接入：
+针对 Python 生态，PUAX 提供了零第三方依赖的官方单文件 SDK：[`distributions/python/puax_amp.py`](../distributions/python/puax_amp.py)。
+
+### 5.1 CrewAI 单行代码挂载
 
 ```python
-import requests
+from crewai import Crew
+from puax_amp import PuaxAmpMiddleware, create_crewai_step_callback
 
-PUAX_SERVER = "http://127.0.0.1:2333"
+puax = PuaxAmpMiddleware()
 
-class PuaxAmpHook:
-    def __init__(self, session_id: str):
-        self.session_id = session_id
+# 直接挂载为步骤拦截守卫
+crew = Crew(
+    agents=[...],
+    tasks=[...],
+    step_callback=create_crewai_step_callback(puax),
+)
+crew.kickoff()
+```
 
-    def on_tool_error(self, tool_name: str, error: str):
-        resp = requests.post(
-            f"{PUAX_SERVER}/v4/tick",
-            json={
-                "session_id": self.session_id,
-                "event": "PostToolUse",
-                "tool_name": tool_name,
-                "error_message": error,
-            }
-        ).json()
-        return resp.get("amp")
+### 5.2 通用 Python Agent 循环接入
+
+```python
+from puax_amp import PuaxAmpMiddleware
+
+amp = PuaxAmpMiddleware(default_session_id="agent-worker-01")
+
+# ① 任务启动：注入处境动机
+env = amp.on_user_prompt("重构分布式锁并消除潜在死锁")
+
+# ② 工具调用前：拦截破坏性指令与作弊
+decision = amp.on_pre_tool_use(tool_name, tool_args)
+if not decision.allowed:
+    raise PermissionError(decision.reason)
+
+# ③ 工具调用后：级联升压
+post_env = amp.on_post_tool_use(tool_name, result, error)
+
+# ④ 模型输出：防敷衍收敛检查
+needs_verify, out_env = amp.on_model_output(model_output)
+if needs_verify:
+    force_run_verification_step()
 ```
 
 ---

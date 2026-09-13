@@ -10,6 +10,7 @@ import { existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 import { exportPlatform, type ExportPlatformId } from "../tools/export-platform.js";
+import { loadVersion } from "../utils/version.js";
 
 export interface HostDiagnostic {
   id: string;
@@ -112,6 +113,54 @@ const TOP_HOST_DEFINITIONS = [
     hookMarkers: ["puax", "hook", "SessionStart"],
   },
   {
+    id: "codebuddy",
+    name: "CodeBuddy",
+    category: "cli-agent" as const,
+    adapterId: "codebuddy" as ExportPlatformId,
+    defaultRelPath: ".codebuddy",
+    checkFiles: (targetDir: string, home: string) => [
+      join(targetDir, ".codebuddy", "rules"),
+      join(home, ".codebuddy", "config.json"),
+    ],
+    hookMarkers: ["PUAX", "puax_tick", "codebuddy"],
+  },
+  {
+    id: "kiro",
+    name: "Kiro Editor",
+    category: "editor" as const,
+    adapterId: "kiro" as ExportPlatformId,
+    defaultRelPath: ".kiro",
+    checkFiles: (targetDir: string, home: string) => [
+      join(targetDir, ".kiro", "settings.json"),
+      join(home, ".kiro", "config.json"),
+    ],
+    hookMarkers: ["PUAX", "puax_tick"],
+  },
+  {
+    id: "trae",
+    name: "ByteDance Trae",
+    category: "editor" as const,
+    adapterId: "trae" as ExportPlatformId,
+    defaultRelPath: ".trae",
+    checkFiles: (targetDir: string, home: string) => [
+      join(targetDir, ".trae", "rules"),
+      join(home, ".trae", "config.json"),
+    ],
+    hookMarkers: ["PUAX", "puax_tick"],
+  },
+  {
+    id: "codex",
+    name: "OpenAI Codex CLI",
+    category: "cli-agent" as const,
+    adapterId: "codex" as ExportPlatformId,
+    defaultRelPath: ".codex",
+    checkFiles: (targetDir: string, home: string) => [
+      join(targetDir, ".codex", "rules"),
+      join(home, ".codex", "config.json"),
+    ],
+    hookMarkers: ["PUAX", "puax_tick"],
+  },
+  {
     id: "amp-native",
     name: "AMP Native / Orchestrator",
     category: "cli-agent" as const,
@@ -181,7 +230,7 @@ export function runHostDoctor(targetDir: string = process.cwd()): DoctorReport {
 
   return {
     timestamp: new Date().toISOString(),
-    version: "4.0.0",
+    version: loadVersion(),
     overallTtfReady,
     topHostsCovered: coveredCount,
     topHostsTotal: hosts.length,
