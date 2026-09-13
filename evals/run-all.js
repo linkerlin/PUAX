@@ -144,5 +144,9 @@ run('全组件版本号一致', () => {
   execSync('node scripts/check-version-consistency.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
+run('AMB Live 连通与判分引擎', () => {
+  execSync('node evals/amb-live.js --mock --scenario=sqlite-lock', { cwd: ROOT, stdio: 'pipe' });
+});
+
 console.log(`\nPassed: ${pass}, Failed: ${fail}`);
 process.exit(fail > 0 ? 1 : 0);

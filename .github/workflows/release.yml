@@ -30,7 +30,7 @@ jobs:
         working-directory: ./puax-mcp-server
         run: npm run build
 
-      - name: Run 25 Protocol Gates
+      - name: Run 26 Protocol Gates
         run: node evals/run-all.js
 
       - name: Run Full Test Suite
