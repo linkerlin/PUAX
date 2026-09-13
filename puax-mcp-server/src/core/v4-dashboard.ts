@@ -21,6 +21,7 @@ import {
 export const V4_PUBLIC_VERBS = [
   'puax_tick',
   'puax_set_arena',
+  'puax_thin_prompt',
   'puax_evolve',
   'puax_check_diagnosis',
   'puax_confidence_check',

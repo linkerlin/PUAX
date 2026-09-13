@@ -233,6 +233,44 @@ if needs_verify:
     force_run_verification_step()
 ```
 
+### 5.3 LangGraph StateGraph 节点拦截 (装饰器)
+
+```python
+from langgraph.graph import StateGraph
+from puax_amp import PuaxAmpMiddleware, create_langgraph_node_interceptor
+
+amp = PuaxAmpMiddleware()
+interceptor = create_langgraph_node_interceptor(amp)
+
+@interceptor
+def execute_tool_node(state):
+    # 自动前置门禁拦截违规破坏性指令；事后捕获异常升压；产出检测敷衍收敛
+    return {"output": "已经通过 pytest 单元测试验证，全部绿灯"}
+```
+
+### 5.4 AutoGen 工具看门狗
+
+```python
+from puax_amp import PuaxAmpMiddleware, create_autogen_tool_guard
+
+amp = PuaxAmpMiddleware()
+guard = create_autogen_tool_guard(amp)
+
+# 在 AutoGen 注册工具调用拦截
+def execute_command(cmd: str):
+    guard("bash", {"command": cmd})
+    return os.system(cmd)
+```
+
+### 5.5 极致 Token 经济性：Thin Prompt 获取
+
+```python
+# 支持 minimal (~150 Tokens) / compact (~400 Tokens) / full
+thin = amp.get_thin_prompt("military-commander", mode="minimal")
+print(thin["prompt"])
+# [PUAX-RUNTIME:MINIMAL] 角色:military-commander | 步序:侦察→行动→验证→巩固→复盘 ...
+```
+
 ---
 
 ## 6. 治理规范与安全红线

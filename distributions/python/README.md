@@ -62,6 +62,34 @@ def run_step(prompt: str):
             continue
 ```
 
+### 3. LangGraph 节点拦截器 (装饰器模式)
+
+```python
+from langgraph.graph import StateGraph
+from puax_amp import PuaxAmpMiddleware, create_langgraph_node_interceptor
+
+amp = PuaxAmpMiddleware()
+interceptor = create_langgraph_node_interceptor(amp)
+
+@interceptor
+def execute_tool_node(state):
+    # 节点执行前自动检查违规动作，执行后捕获异常升压，产出时检测过早收敛
+    return {"output": "工具执行产物，已通过 pytest 验证"}
+```
+
+### 4. 极致压降 Token：获取 Thin Prompt
+
+```python
+from puax_amp import PuaxAmpMiddleware
+
+amp = PuaxAmpMiddleware()
+
+# 支持 minimal (极简单行协议, ~150 Tokens) / compact (紧凑, ~400 Tokens) / full
+thin = amp.get_thin_prompt("military-commander", mode="minimal")
+print(thin["prompt"])
+# [PUAX-RUNTIME:MINIMAL] 角色:military-commander | 步序:侦察→行动→验证→巩固→复盘 ...
+```
+
 ## 运行测试
 ```bash
 python -m unittest distributions/python/test_puax_amp.py

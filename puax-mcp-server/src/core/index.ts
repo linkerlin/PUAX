@@ -28,6 +28,7 @@ export { MethodologyEngine, methodologyEngine } from './methodology-engine.js';
 export { runEvolveCycle, normalizeTriggerId } from './evolve-cycle.js';
 export { arenaStore } from './arena.js';
 export { compileThinPrompt } from './thin-prompt.js';
+export type { ThinPromptMode, ThinPromptInput, ThinPromptResult } from './thin-prompt.js';
 export { SHAMAN_ROLE_IDS, KERNEL_ROLE_IDS, isShamanRole } from './role-kernel.js';
 export { compileCouncilItinerary, DREAM_COUNCIL_LEGS } from './dream-council.js';
 export { distinctN, semanticRadius } from './ghm-metrics.js';

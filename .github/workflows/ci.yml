@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1. 协议层硬铁律门禁（27 项静态评测与行为契约）
+  # 1. 协议层硬铁律门禁（28 项静态评测与行为契约）
   protocol-gate:
-    name: Protocol Evals Gate (27 Invariants)
+    name: Protocol Evals Gate (28 Invariants)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Run 27 Protocol Evals Gates
+      - name: Run 28 Protocol Evals Gates
         run: node evals/run-all.js
 
   # 2. MCP Server 跨平台与跨 Node 版本测试矩阵

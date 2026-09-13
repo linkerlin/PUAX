@@ -90,9 +90,10 @@ describe('Time-to-First-Pressure', () => {
 });
 
 describe('v4 public verbs', () => {
-  it('恰好 12 个对外动词', () => {
-    expect(V4_PUBLIC_VERBS).toHaveLength(12);
+  it('恰好 13 个对外动词（含 puax_thin_prompt 薄注入）', () => {
+    expect(V4_PUBLIC_VERBS).toHaveLength(13);
     expect(V4_PUBLIC_VERBS).toContain('puax_tick');
+    expect(V4_PUBLIC_VERBS).toContain('puax_thin_prompt');
     expect(V4_PUBLIC_VERBS).toContain('puax_enter_dreamscape');
   });
 });

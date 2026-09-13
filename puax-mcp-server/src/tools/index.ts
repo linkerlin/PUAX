@@ -274,6 +274,7 @@ export { orchestrateTeamTool } from './orchestrate-team.js';
 export { listPlatformsTool } from './list-platforms.js';
 export { exportPlatform, exportAllPlatforms, handleExportCommand } from './export-platform.js';
 export { enterDreamscapeTool, awakenTool, convergenceAuditTool, dreamscapeTools } from './dreamscape.js';
+export { puaxThinPromptTool } from './thin-prompt.js';
 
 // ============================================================================
 // 统一工具列表
@@ -302,6 +303,7 @@ import { observabilityTools } from './usage-stats.js';
 import { dreamscapeTools } from './dreamscape.js';
 import { puaxTickTool } from './tick.js';
 import { puaxSetArenaTool } from './arena.js';
+import { puaxThinPromptTool } from './thin-prompt.js';
 import { puaxEvolveTool } from './evolve-cycle.js';
 import { puaxAuditManipulationTool } from './carbon-shield.js';
 import { buildHookToolHandlers, type ToolHandler } from './registry.js';
@@ -351,9 +353,10 @@ export const allTools = [
   // v3.12 GHM 导引幻梦法（庄周八梦）
   ...dreamscapeTools,
 
-  // v4.0 真正的产品：心跳、处境、进化
+  // v4.0 真正的产品：心跳、处境、进化、极简薄注入
   puaxTickTool,
   puaxSetArenaTool,
+  puaxThinPromptTool,
   puaxEvolveTool,
 
   // v4.x 碳基防御：只识别，不施放（面向人类抗话术收敛）

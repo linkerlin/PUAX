@@ -234,6 +234,89 @@ class PuaxAmpMiddleware:
         )
         return needs_verify, env
 
+    def get_thin_prompt(self, role_id: str, mode: str = "compact", language: str = "zh") -> Dict[str, Any]:
+        """
+        获取薄注入提示词（支持 minimal / compact / full 压缩），极大降低 Token 预算
+        """
+        # 尝试通过 MCP HTTP 端点获取
+        remote = self._post("/mcp", {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/call",
+            "params": {
+                "name": "puax_thin_prompt",
+                "arguments": {
+                    "role_id": role_id,
+                    "mode": mode,
+                    "language": language,
+                }
+            }
+        })
+        if remote and "result" in remote and not remote.get("isError"):
+            try:
+                content = remote["result"].get("content", [])
+                if content and "text" in content[0]:
+                    return json.loads(content[0]["text"])
+            except Exception:
+                pass
+
+        # 本地离线备援 Thin Prompt
+        return compile_local_thin_prompt(role_id=role_id, mode=mode, language=language)
+
+
+# ============================================================================
+# 本地离线 Thin Prompt 编译器
+# ============================================================================
+
+def compile_local_thin_prompt(role_id: str, mode: str = "compact", language: str = "zh") -> Dict[str, Any]:
+    """
+    零依赖本地离线 Thin Prompt 编译
+    """
+    mode = mode if mode in ("minimal", "compact", "full") else "compact"
+    steps = ["侦察", "行动", "验证", "巩固", "复盘"]
+
+    if mode == "minimal":
+        prompt = (
+            f"[PUAX-RUNTIME:MINIMAL] 角色:{role_id} | 步序:{'→'.join(steps)} | 闸门:改码必先[PUAX-DIAGNOSIS];严禁冒充通过。\n"
+            f"[PUAX-DIAGNOSIS] 改码前必先输出：`问题是 ___；证据是 ___；下一步动作是 ___`\n"
+            f"[VOICE] #{role_id} 专注硬交付，不接受借口。"
+        )
+    elif mode == "compact":
+        prompt = (
+            f"[PUAX-RUNTIME:COMPACT] 角色：{role_id}\n"
+            f"步序：{' → '.join(steps)}\n"
+            f"必查：读失败信号；验证假设\n"
+            f"闸门：改代码前必须输出诊断块；未经验证严禁报捷。\n\n"
+            f"[PUAX-DIAGNOSIS]\n`[PUAX-DIAGNOSIS] 问题是 ___；证据是 ___；下一步动作是 ___`\n\n"
+            f"[VOICE]\n#{role_id} 保持严苛标准，每次迭代必须给出可验证代码。"
+        )
+    else:
+        prompt = (
+            f"[PUAX-RUNTIME] 薄角色 · 厚运行时\n"
+            f"角色：{role_id}\n"
+            f"五步：{' → '.join(steps)}\n"
+            f"检查：读失败信号；搜索；验证假设\n"
+            f"闸门：改代码前必须输出诊断块；交付前信心门控 + 独立验证。禁止改测试/评分/CI 冒充通过。\n\n"
+            f"[PUAX-DIAGNOSIS]\n`[PUAX-DIAGNOSIS] 问题是 ___；证据是 ___；下一步动作是 ___`\n\n"
+            f"[VOICE]\n#{role_id} 以身作则，直面最硬核阻碍。"
+        )
+
+    # 简单 Token 估算
+    cjk = len(re.findall(r"[\u4e00-\u9fff]", prompt))
+    other = len(prompt) - cjk
+    est_tokens = max(1, int(cjk * 1.4 + other * 0.35))
+
+    return {
+        "role_id": role_id,
+        "kernel_id": "kernel-engineering",
+        "classification": "kernel",
+        "mode": mode,
+        "estimated_tokens": est_tokens,
+        "voice_chars": len(role_id) + 30,
+        "protocol_steps": steps,
+        "prompt": prompt,
+    }
+
 
 # ============================================================================
 # 编排器快捷适配工厂
@@ -255,3 +338,65 @@ def create_crewai_step_callback(middleware: Optional[PuaxAmpMiddleware] = None):
         return step_output
 
     return step_callback
+
+
+def create_langgraph_node_interceptor(middleware: Optional[PuaxAmpMiddleware] = None):
+    """
+    LangGraph StateGraph 节点装饰器与守卫包装器
+    可拦截节点输入字典中的命令与工具调用，并在状态字典中写入 amp 元信息。
+    """
+    mw = middleware or PuaxAmpMiddleware()
+
+    def decorator(node_fn):
+        def wrapped_node(state: Dict[str, Any], *args, **kwargs):
+            session_id = state.get("session_id", mw.default_session_id)
+
+            # 1. 检查 state 中是否存在待执行的工具调用
+            action = state.get("tool_action") or state.get("action")
+            if isinstance(action, dict):
+                t_name = action.get("name", "langgraph_tool")
+                t_args = action.get("args", {})
+                decision = mw.on_pre_tool_use(t_name, t_args, session_id=session_id)
+                if not decision.allowed:
+                    # 拦截违规动作，将阻断原因回写进状态或抛出
+                    state["amp_blocked"] = True
+                    state["amp_reason"] = decision.reason
+                    raise PermissionError(decision.reason)
+
+            # 2. 执行原节点逻辑
+            try:
+                result_state = node_fn(state, *args, **kwargs)
+            except Exception as e:
+                mw.on_post_tool_use("langgraph_node", None, error=e, session_id=session_id)
+                raise
+
+            # 3. 拦截产物，检查过早收敛
+            if isinstance(result_state, dict):
+                output_text = result_state.get("output") or result_state.get("response") or ""
+                if isinstance(output_text, str) and output_text:
+                    needs_verify, env = mw.on_model_output(output_text, session_id=session_id)
+                    result_state["amp_envelope"] = env.to_dict()
+                    if needs_verify:
+                        result_state["force_verify"] = True
+
+            return result_state
+
+        return wrapped_node
+
+    return decorator
+
+
+def create_autogen_tool_guard(middleware: Optional[PuaxAmpMiddleware] = None):
+    """
+    AutoGen 工具拦截钩子
+    返回 callable: (tool_name, tool_args) -> None (违规抛出 PermissionError)
+    """
+    mw = middleware or PuaxAmpMiddleware()
+
+    def guard(tool_name: str, tool_args: Dict[str, Any], session_id: Optional[str] = None):
+        decision = mw.on_pre_tool_use(tool_name, tool_args, session_id=session_id)
+        if not decision.allowed:
+            raise PermissionError(decision.reason)
+        return True
+
+    return guard

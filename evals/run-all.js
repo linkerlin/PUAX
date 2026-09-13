@@ -157,5 +157,12 @@ run('Python AMP 协议中间件自检', () => {
   }
 });
 
+run('Thin Prompt 多级压缩与 Token 经济性', () => {
+  execSync('npm test -- test/core/thin-prompt-modes.test.ts --silent', {
+    cwd: MCP,
+    stdio: 'pipe',
+  });
+});
+
 console.log(`\nPassed: ${pass}, Failed: ${fail}`);
 process.exit(fail > 0 ? 1 : 0);

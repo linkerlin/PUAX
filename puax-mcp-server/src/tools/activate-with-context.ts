@@ -52,7 +52,9 @@ const ActivateWithContextInputSchema = z.object({
     language: z.enum(['zh', 'en']).default('zh')
       .describe('语言：zh 中文 / en PIP Edition'),
     thin: z.boolean().optional()
-      .describe('v4 薄注入：协议由 runtime 拼，口音截断')
+      .describe('v4 薄注入：协议由 runtime 拼，口音截断'),
+    thin_mode: z.enum(['full', 'compact', 'minimal']).optional()
+      .describe('薄注入压缩模式：full / compact / minimal')
   }).optional().describe('激活选项')
 });
 
@@ -147,6 +149,7 @@ export const activateWithContextTool = {
           tone_variant?: ToneVariant;
           language?: SupportedLanguage;
           thin?: boolean;
+          thin_mode?: 'full' | 'compact' | 'minimal';
         }
       };
       
@@ -213,7 +216,7 @@ export const activateWithContextTool = {
         ? options.tone_variant!
         : 'strict';
       let basePrompt = options.thin
-        ? compileThinPrompt({ role_id: roleId, language: lang }).prompt
+        ? compileThinPrompt({ role_id: roleId, language: lang, mode: options.thin_mode }).prompt
         : loadRoleSystemPrompt(roleId);
       if (!options.thin) {
         basePrompt = applyToneVariant(basePrompt, toneVariant);

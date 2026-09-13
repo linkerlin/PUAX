@@ -40,6 +40,8 @@ const GetRoleWithMethodologyInputSchema = z.object({
       .describe('PIP Edition 英文'),
     thin: z.boolean().optional()
       .describe('v4 薄注入：协议由 runtime 拼，口音截断'),
+    thin_mode: z.enum(['full', 'compact', 'minimal']).optional()
+      .describe('薄注入压缩模式：full / compact / minimal')
   }).optional().describe('选项')
 });
 
@@ -132,6 +134,7 @@ export const getRoleWithMethodologyTool = {
           language?: 'zh' | 'en';
           format?: 'full' | 'compact' | 'prompt_only' | 'thin';
           thin?: boolean;
+          thin_mode?: 'full' | 'compact' | 'minimal';
         }
       };
       
@@ -142,7 +145,7 @@ export const getRoleWithMethodologyTool = {
 
       // 加载System Prompt
       let systemPrompt = useThin
-        ? compileThinPrompt({ role_id, language: options.language }).prompt
+        ? compileThinPrompt({ role_id, language: options.language, mode: options.thin_mode }).prompt
         : loadRoleSystemPrompt(role_id);
       const displayName = getRoleDisplayName(role_id);
 
