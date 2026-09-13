@@ -18,6 +18,11 @@ profile.cov
 **/node_modules/
 **/vendor/
 
+# Python artifacts
+**/__pycache__/
+*.py[cod]
+*$py.class
+
 # Build output
 dist/
 build/
