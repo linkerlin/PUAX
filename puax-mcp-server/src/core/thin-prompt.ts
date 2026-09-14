@@ -122,7 +122,7 @@ export function compileThinPrompt(input: ThinPromptInput): ThinPromptResult {
     }
 
     if (input.include_arena !== false) {
-      const arena = arenaStore.compileInjection();
+      const arena = arenaStore.compileInjection(undefined, input.role_id);
       if (arena) lines.push('', arena);
     }
 
@@ -142,7 +142,7 @@ export function compileThinPrompt(input: ThinPromptInput): ThinPromptResult {
     }
 
     if (input.include_arena !== false) {
-      const arena = arenaStore.compileInjection();
+      const arena = arenaStore.compileInjection(undefined, input.role_id);
       if (arena) lines.push('', arena);
     }
 

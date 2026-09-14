@@ -9,7 +9,9 @@ jobs:
   release:
     name: Release & Publish PUAX
     runs-on: ubuntu-latest
-    
+    permissions:
+      id-token: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,7 +37,7 @@ jobs:
         working-directory: ./puax-mcp-server
         run: npm run build
 
-      - name: Run 27 Protocol Gates
+      - name: Run 30 Protocol Gates
         run: node evals/run-all.js
 
       - name: Run Full Test Suite
@@ -52,6 +54,15 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Build Python SDK (puax-amp)
+        run: |
+          pip install build
+          python -m build distributions/python
+
+      - name: Publish puax-amp to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1

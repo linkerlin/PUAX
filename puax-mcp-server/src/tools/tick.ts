@@ -7,6 +7,7 @@ import { runEvolveCycle, type TickEvent } from '../core/evolve-cycle.js';
 import { usageStatsCollector } from '../core/usage-stats.js';
 import { getTtfSummary } from '../core/ttf.js';
 import { toAmpEnvelope } from '../core/amp.js';
+import { requestIntervention, type InterventionResult } from '../core/intervention.js';
 
 const TickEvents = [
   'SessionStart',
@@ -37,7 +38,7 @@ export const puaxTickTool = {
   description:
     'PUAX v4 心跳。检测→升压→选角→薄注入→进化一拍。默认路径：宿主 Hook 代跳。返回 AMP/0.1 信封。',
   inputSchema: TickInputSchema,
-  handler: (args: z.infer<typeof TickInputSchema>) => {
+  handler: async (args: z.infer<typeof TickInputSchema>) => {
     usageStatsCollector.recordToolCall('puax_tick');
     const result = runEvolveCycle({
       session_id: args.session_id,
@@ -59,8 +60,13 @@ export const puaxTickTool = {
         usageStatsCollector.recordRoleActivated(result.selected_role);
       }
     }
+    let commissar: InterventionResult | undefined;
+    if (result.needs_intervention) {
+      commissar = await requestIntervention(result.needs_intervention);
+    }
     return {
       ...result,
+      commissar,
       product: '处境、闸门、梦',
       ttf: getTtfSummary(),
       amp: toAmpEnvelope(result, args.session_id, args.event as TickEvent),

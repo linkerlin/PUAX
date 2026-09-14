@@ -30,6 +30,7 @@ import { KERNEL_ROLE_IDS, EXPERIMENTAL_ROLE_IDS, SHAMAN_ROLE_IDS } from '../core
 import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater } from '../core/silicon-theater.js';
 import { dispatchV4 } from './v4-http.js';
+import { setSamplingRequester } from '../core/intervention.js';
 
 const toolHandlerMap = buildToolHandlerMap(
   allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
@@ -85,6 +86,7 @@ export class PuaxMcpServer {
         this.setupPromptHandlers();
         this.setupResourceHandlers();
         this.setupErrorHandling();
+        this.setupCommissarChannel();
     }
 
     private setupToolHandlers(): void {
@@ -279,6 +281,26 @@ export class PuaxMcpServer {
     private setupErrorHandling(): void {
         this.server.onerror = (error) => {
             this.logger.error('[MCP Error]', error);
+        };
+    }
+
+    private setupCommissarChannel(): void {
+        this.server.oninitialized = () => {
+            const caps = this.server.getClientCapabilities();
+            if (caps?.sampling) {
+                setSamplingRequester(async ({ systemPrompt, userPrompt, maxTokens }) => {
+                    const result = await this.server.createMessage({
+                        maxTokens,
+                        systemPrompt,
+                        messages: [{ role: 'user', content: { type: 'text', text: userPrompt } }],
+                    });
+                    return result.content.type === 'text' ? result.content.text : null;
+                });
+                this.logger.success('监军通道开启：Host 已授 sampling 能力（反向采样干预就绪）');
+            } else {
+                setSamplingRequester(null);
+                this.logger.info('Host 未授 sampling 能力：监军走本地棒喝降级通道');
+            }
         };
     }
 

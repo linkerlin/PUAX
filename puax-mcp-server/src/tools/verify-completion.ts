@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { verifyCompletion, type TaskContract } from '../core/governance.js';
 import { stateManager } from '../hooks/state-manager.js';
 import { outcomeStore } from '../core/outcome-store.js';
+import { proofStore } from '../core/proof-store.js';
 
 const TaskContractSchema = z.object({
   feature_id: z.string(),
@@ -55,6 +56,16 @@ export const verifyCompletionTool = {
       const role = state.activeRole || 'military-warrior';
       outcomeStore.record(role, isPass);
       outcomeRecorded = { role, success: isPass };
+      if (isPass) {
+        proofStore.append({
+          role,
+          task_digest: args.contract.intent.slice(0, 60),
+          passed: args.evidence.filter(e => e.passed).length,
+          total: args.evidence.length,
+          rounds: state.failureCount + 1,
+          key_command: args.evidence.find(e => e.passed)?.command.slice(0, 80),
+        });
+      }
     }
 
     return {

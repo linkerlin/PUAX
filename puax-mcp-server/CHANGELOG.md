@@ -13,7 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Thin Prompt 编译引擎增强 `full` / `compact` / `minimal` 三档压缩模式并集成精准 Token 估算器，`minimal` 极简模式下提示词压降逾 90%（整段仅约 150 Tokens），极大节约长对话与多 Agent 编排上下文。
   - `activate_with_context` 与 `get_role_with_methodology` 全面支持 `thin_mode` 参数透传。
   - Python 官方零依赖 SDK (`puax_amp.py`) 新增 LangGraph StateGraph 节点拦截装饰器（`create_langgraph_node_interceptor`）、AutoGen 工具看门狗（`create_autogen_tool_guard`）与本地离线 Thin Prompt 编译器。
-  - 静态协议硬门禁拓展至 28 门，Jest 单测套件提升至 76 套件（967 项全绿通过）。
+  - 静态协议硬门禁拓展至 30 门，Jest 单测套件 77 套件（965 项全绿通过）。
+- **监军通道（MCP 反向 Sampling 干预）**：
+  - 焚毁假尸 `src/mcp/sampling-client.ts`（251 行死代码，谎报 `modelUsed: 'sampling'` 且从未真正发起采样）。
+  - 新增 `core/intervention.ts` 双通道监军：Host 于 `initialize` 授 `sampling` 能力时，`server.oninitialized` 注册反向采样 requester；连败 ≥3 或敷衍收敛且 L3+ 时，`puax_tick` 经 `sampling/createMessage` 向 Host 独立模型发出监军棒喝令（maxTokens 120、15s 超时、60s 会话冷却）。
+  - 未授 sampling 之 Host 自动降级本地文言棒喝（`[PUAX-COMMISSAR]`），零逃逸、零依赖。
+  - 新增第 30 门「监军反向干预」守门评测（`test/core/intervention.test.ts`）。
+- **真实战绩注入（Live Rival Proof）**：
+  - 新增 `core/proof-store.ts` 战功券库：`puax_verify_completion` 过闸即留据（任务摘要 / 通过数 / 轮次 / 关键命令，<100 tokens，`~/.puax/proofs.jsonl`，2MB 自动轮转）。
+  - 处境原语 `compileInjection` 按角色取真实战功：同袍有过闸实录时，对手行由假想虚言换为本机可查战绩；compact/full 薄注入与心跳 arena 注入同步接通，minimal 档保持极简不动。
+  - 新增第 29 门「真实战绩注入」守门评测（`test/core/proof-rival.test.ts`）。- **Python SDK 官方 PyPI 打包**：新增 `distributions/python/pyproject.toml`（`pip install puax-amp`），Release 流水线挂接 PyPI trusted publishing，版本一致性门禁纳入 pyproject。
 - **版本号统一升级至 v4.2.0**：`puax-mcp-server`、`web-admin` 与 `landing` 全组件协同演进。
 
 ## [4.1.0] - 2026-09-13

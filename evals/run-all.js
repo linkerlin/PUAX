@@ -164,5 +164,19 @@ run('Thin Prompt 多级压缩与 Token 经济性', () => {
   });
 });
 
+run('真实战绩注入（Live Rival Proof）', () => {
+  execSync('npm test -- test/core/proof-rival.test.ts --silent', {
+    cwd: MCP,
+    stdio: 'pipe',
+  });
+});
+
+run('监军反向干预（MCP Sampling 双通道）', () => {
+  execSync('npm test -- test/core/intervention.test.ts --silent', {
+    cwd: MCP,
+    stdio: 'pipe',
+  });
+});
+
 console.log(`\nPassed: ${pass}, Failed: ${fail}`);
 process.exit(fail > 0 ? 1 : 0);

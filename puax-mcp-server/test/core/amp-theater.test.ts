@@ -25,15 +25,15 @@ describe('AMP 0.1', () => {
     expect(Array.isArray(amp.blocks)).toBe(true);
   });
 
-  it('puax_tick 返回 amp 信封', () => {
-    const out = puaxTickTool.handler({
+  it('puax_tick 返回 amp 信封', async () => {
+    const out = (await puaxTickTool.handler({
       session_id: `amp-tool-${Date.now()}`,
       event: 'UserPromptSubmit',
       message: '唯一方案不用再想',
       skip_detect: true,
       detected_triggers: ['premature_convergence'],
       force: true,
-    } as never) as { amp: { spec: string; state: { dream: boolean } } };
+    } as never)) as { amp: { spec: string; state: { dream: boolean } } };
     expect(out.amp.spec).toBe('AMP/0.1');
   });
 

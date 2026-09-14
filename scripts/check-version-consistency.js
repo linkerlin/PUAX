@@ -15,6 +15,7 @@ const FILES = {
   landing: path.join(ROOT, 'landing/package.json'),
   webAdmin: path.join(ROOT, 'web-admin/package.json'),
   serverTs: path.join(ROOT, 'puax-mcp-server/src/server.ts'),
+  pyproject: path.join(ROOT, 'distributions/python/pyproject.toml'),
 };
 
 console.log('🔍 Checking PUAX Monorepo Version Consistency...\n');
@@ -35,6 +36,13 @@ for (const [key, filePath] of Object.entries(FILES)) {
     const match = content.match(/@version\s+([0-9]+\.[0-9]+\.[0-9]+[a-zA-Z0-9.-]*)/);
     if (!match) {
       console.error(`❌ Could not parse @version from ${filePath}`);
+      process.exit(1);
+    }
+    versions[key] = match[1];
+  } else if (filePath.endsWith('.toml')) {
+    const match = content.match(/^version\s*=\s*"([0-9]+\.[0-9]+\.[0-9]+[a-zA-Z0-9.-]*)"/m);
+    if (!match) {
+      console.error(`❌ Could not parse version from ${filePath}`);
       process.exit(1);
     }
     versions[key] = match[1];

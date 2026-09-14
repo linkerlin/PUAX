@@ -16,6 +16,7 @@ import { memoryGraph } from './memory-graph.js';
 import { namedAgentStore } from './named-agent.js';
 import { arenaStore } from './arena.js';
 import { outcomeStore } from './outcome-store.js';
+import type { InterventionContext } from './intervention.js';
 import { compileThinPrompt } from './thin-prompt.js';
 import { compileCouncilItinerary } from './dream-council.js';
 import { recordFirstPressure } from './ttf.js';
@@ -60,6 +61,7 @@ export interface EvolveResult {
   selected_reason?: string;
   action: TickAction;
   injection?: string;
+  needs_intervention?: InterventionContext;
   happened: boolean;
   autopoiesis: {
     viability: 'ok' | 'repair' | 'plateau';
@@ -290,7 +292,7 @@ function compileInjection(action: TickAction, role: string, reason: string): str
     inject: `[PUAX-TICK] 注入角色 ${role}（${reason}）`,
     switch: `[PUAX-TICK] 失败切换 → ${role}（${reason}）`,
     dream_suggest: compileCouncilItinerary(`过早收敛/卡壳。建议入梦：${role}`),
-    arena: arenaStore.compileInjection() || `[PUAX-TICK] 处境待命。调用 puax_set_arena 立对手。`,
+    arena: arenaStore.compileInjection(undefined, role) || `[PUAX-TICK] 处境待命。调用 puax_set_arena 立对手。`,
     gate: `[PUAX-TICK] 闸门。交付前 puax_confidence_check + puax_verify_completion。角色 ${role}。`,
     silent: '',
   }[action];
@@ -347,6 +349,23 @@ export function runEvolveCycle(input: EvolveInput): EvolveResult {
 
   const strategy = pickStrategy(signals, auto.repair_bias);
   const { role, reason } = selectRole(input, signals, strategy);
+  const liveState = stateManager.getSessionState(input.session_id);
+  let needs_intervention: InterventionContext | undefined;
+  if (signals.includes('consecutive_failures') && liveState.failureCount >= 3) {
+    needs_intervention = {
+      reason: 'consecutive_failures',
+      role,
+      failure_count: liveState.failureCount,
+      session_id: input.session_id,
+    };
+  } else if (signals.includes('premature_convergence') && liveState.pressureLevel >= 3) {
+    needs_intervention = {
+      reason: 'premature_convergence',
+      role,
+      failure_count: liveState.failureCount,
+      session_id: input.session_id,
+    };
+  }
   const arena_active = !!arenaStore.get();
   const action = decideAction(input, signals, strategy, arena_active);
   const injection = action === 'silent' ? undefined : compileInjection(action, role, reason);
@@ -420,6 +439,7 @@ export function runEvolveCycle(input: EvolveInput): EvolveResult {
     selected_reason: reason,
     action,
     injection,
+    needs_intervention,
     happened,
     autopoiesis: auto,
     arena_active,

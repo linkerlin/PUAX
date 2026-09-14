@@ -1,3 +1,18 @@
+Metadata-Version: 2.4
+Name: puax-amp
+Version: 4.2.0
+Summary: PUAX AMP (Agent Moderation Protocol) SDK — zero-dependency middleware for Python agent orchestrators (CrewAI, LangGraph, AutoGen)
+Author: Halo Master
+License: MIT
+Keywords: agent,mcp,middleware,crewai,langgraph,autogen,puax
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
 # PUAX AMP Python SDK & Middleware (零依赖)
 
 专为 Python 智能体编排器（CrewAI, LangGraph, AutoGen, LlamaIndex 等）设计的原生 AMP 0.1 协议中间件。

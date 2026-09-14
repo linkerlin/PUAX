@@ -6,6 +6,7 @@
 import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { proofStore, type ProofStore, type SolutionProof } from './proof-store.js';
 
 export interface ArenaConfig {
   rival: string;
@@ -59,18 +60,30 @@ export class ArenaStore {
     if (existsSync(file)) unlinkSync(file);
   }
 
-  compileInjection(config?: ArenaConfig | null): string {
+  compileInjection(config?: ArenaConfig | null, role?: string, proofs: ProofStore = proofStore): string {
     const arena = config === undefined ? this.get() : config;
     if (!arena) return '';
+    const proof = role ? proofs.latestForRole(role) : null;
+    const rival = proof ? formatRivalProof(proof) : arena.rival;
     return [
       '[PUAX-ARENA] 处境已立，非戏服。',
-      `对手：${arena.rival}`,
+      `对手：${rival}`,
       `观众：${arena.audience}`,
       `稀缺徽章：${arena.scarce_badge}`,
       arena.public_scoreboard ? '排行榜：开启（本机可见）。' : '排行榜：本机会话内。',
       '禁止用流畅叙事冒充完成。证据过闸，才算赢。',
     ].join('\n');
   }
+}
+
+function formatRivalProof(proof: SolutionProof): string {
+  const parts = [
+    `真实战绩在案——${proof.role} 一路已于 ${proof.ts.slice(0, 10)}`,
+    proof.key_command ? `凭 \`${proof.key_command}\`` : undefined,
+    `通过 ${proof.passed}/${proof.total} 项独立验证`,
+    proof.rounds ? `（第 ${proof.rounds} 轮）` : undefined,
+  ].filter(Boolean);
+  return parts.join(' ');
 }
 
 export const arenaStore = new ArenaStore();

@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "puax-amp"
+version = "4.2.0"
+description = "PUAX AMP (Agent Moderation Protocol) SDK — zero-dependency middleware for Python agent orchestrators (CrewAI, LangGraph, AutoGen)"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Halo Master" }]
+requires-python = ">=3.8"
+keywords = ["agent", "mcp", "middleware", "crewai", "langgraph", "autogen", "puax"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[tool.setuptools]
+py-modules = ["puax_amp"]

@@ -47,7 +47,7 @@ AMB v0 遵循确定性守门原则：
 # 运行 AMB 记分卡
 node evals/amb-scorecard.js
 
-# 运行全量 23 项守门评测
+# 运行全量 28 项守门评测
 node evals/run-all.js
 ```
 

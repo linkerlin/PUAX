@@ -267,7 +267,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # 从仓库根目录执行 28 项协议铁律门禁
+node ../evals/run-all.js  # 从仓库根目录执行 30 项协议铁律门禁
 
 # 真实大模型 API 连通压测与双轨对比评测 (AMB Live)
 node evals/amb-live.js --mock                 # 离线模拟压测（零成本、秒级闭环）
