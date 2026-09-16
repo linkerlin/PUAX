@@ -13,11 +13,12 @@ const TEMPLATES_DIR = path.join(REPO_ROOT, 'templates');
 const BUILD_MODULE = path.join(ROOT, 'build', 'core', 'methodology-guide-generator.js');
 
 function loadGenerator() {
+  // 字面量 require（相对本文件解析），不做运行时路径拼接
   if (fs.existsSync(BUILD_MODULE)) {
-    return require(BUILD_MODULE);
+    return require('../build/core/methodology-guide-generator.js');
   }
   require('ts-node/register/transpile-only');
-  return require(path.join(ROOT, 'src', 'core', 'methodology-guide-generator.ts'));
+  return require('../src/core/methodology-guide-generator.ts');
 }
 
 function main() {

@@ -96,7 +96,8 @@ describe('CursorAdapter', () => {
         compatibleFlavors: []
       };
       const content = adapter.exportRole(roleWithoutFlavors, { outputPath: './test' });
-      expect(content).toContain('兼容风味叠加');
+      // 现行为：无风味时整个节省略（而非输出空节）
+      expect(content).not.toContain('兼容风味叠加');
     });
   });
 

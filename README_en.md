@@ -40,7 +40,7 @@ Core capabilities also include:
 | **Intelligent Role Recommendation** | 59 built-in roles + custom roles, multi-dimensional scoring + `score_explanation` |
 | **Outcome-Driven Adaptive Routing** | Independent `verify_completion` & breakthrough outcomes adjust routing weights in real time |
 | **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied)  (Human-facing extensions deferred; baseline inspection preserved)|
-| **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles reproducible benchmark matrix (+39.2% repair, +60.0% hidden flaws) |
+| **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles offline simulated matrix (hard-coded drill values, not measured; real verdicts come from `amb-live`) |
 | **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into 10 major hosts (Cursor, Claude Code, Windsurf, Trae, etc.) |
 | **GHM Guided Hallucination** | Controlled hallucination engine for creative leaps: 8 Zhuangzi dream roles + enter/awaken/audit tools |
 | **Hook System** | Session state, L0–L4 tiered pressure, breakthrough de-escalation, compaction reasoning preservation |
@@ -180,16 +180,15 @@ Pure in-memory, serverless middleware (`AmpMiddleware`) for LangChain, LangGraph
 - **One-line Integration**: Easily mount via `createLangChainAmpCallback` into standard model callbacks;
 - See [docs/AMP-INTEGRATION.md](docs/AMP-INTEGRATION.md) for architecture & guides.
 
-### AMB Multi-Model Benchmark Matrix (v4.x+)
+### AMB Multi-Model Matrix (Offline Simulation Scaffold)
 
-Reproducible baseline across three task archetypes (Repair, Review, Create) and 5 major foundation models (DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B):
-- **Repair Tasks**: Fix rate boosted by **+39.2%**, full verification rate boosted by **+56.0%**;
-- **Review Tasks**: Hidden issue catch boosted by **+60.0%**, premature convergence dropped by **-56.0%**;
+Benchmark matrix scaffold across three task archetypes (Repair, Review, Create) and 5 model profiles (DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B).
+**Honesty note**: `evals/multi-model-amb.js` is currently a hard-coded simulation drill — it makes no real model calls and its numbers are not capability claims. For real evaluation run `evals/amb-live.js --model=<id>` (live API A/B with significance and sample-size caveats).
 - See [docs/AMB.md](docs/AMB.md) and `evals/multi-model-amb.js`.
 
 ---
 
-## MCP Tools Overview (48 tools, 12 outward primary verbs)
+## MCP Tools Overview (50 tools, 13 outward primary verbs)
 
 | Category | Representative Tools |
 |----------|----------------------|
@@ -215,7 +214,7 @@ For the complete list, refer to [puax-mcp-server/README.md#mcp-tools-list](puax-
 |----------|-------------|---------|
 | `PUAX_USAGE_STATS` | Set `0` to disable anonymous local usage tracking | Enabled (`~/.puax/usage-stats.json`) |
 | `PUAX_OTEL_ENABLED` | Set `1` to record trace spans to `telemetry.jsonl` | Disabled |
-| `PUAX_OTEL_ENDPOINT` | OTLP/JSON export endpoint | — |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON export endpoint (loopback hosts only, SSRF-hardened; remote via local agent) | — |
 | `PUAX_TELEMETRY_DIR` | Directory for telemetry files | `~/.puax` |
 | `DEEPSEEK_API_KEY` | For L4 real-world LLM evaluation (evals only) | — |
 
@@ -268,7 +267,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # Run 28 protocol invariant gates from repo root
+node ../evals/run-all.js  # Run 31 protocol invariant gates from repo root
 
 # AMB Live Benchmark (Real LLM API Dual-Track Testing)
 node evals/amb-live.js --mock                 # Zero-cost offline simulation

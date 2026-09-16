@@ -63,7 +63,15 @@ const LANG_CONFIGS = [
 ];
 
 for (const cfg of LANG_CONFIGS) {
-  const filePath = path.join(ROOT, cfg.file);
+  // 白名单校验：配置文件名只允许 README_<lang>.md 形态，防相对路径逃逸
+  if (!/^README_[a-z]{2}(-[A-Za-z]{2})?\.md$/.test(cfg.file)) {
+    throw new Error(`非法语言文件名: ${cfg.file}`);
+  }
+  const root = path.resolve(ROOT);
+  const filePath = path.resolve(root, cfg.file);
+  if (filePath !== root && !filePath.startsWith(root + path.sep)) {
+    throw new Error(`路径越界: ${cfg.file}`);
+  }
   if (!fs.existsSync(filePath)) continue;
 
   let content = fs.readFileSync(filePath, "utf-8");

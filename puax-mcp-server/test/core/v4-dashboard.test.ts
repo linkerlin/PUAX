@@ -25,7 +25,8 @@ describe('v4 dashboard', () => {
     expect(warrior?.amb_benchmark).toEqual(expect.objectContaining({
       scenario: 'cascade-bugs',
       delta: '+35%',
-      status: 'verified',
+      // 演练值降标：verified 保留给 amb-live 实测过闸后的真实战绩
+      status: 'simulated',
     }));
   });
 });

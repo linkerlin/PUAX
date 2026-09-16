@@ -2,9 +2,10 @@
  * 命名 Agent：伤疤、段位、journal。仿 evolver personality + 跨周期身份。
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import type { EvolutionRank } from './evolution-engine.js';
 
 export interface NamedAgentIdentity {
@@ -61,7 +62,7 @@ export class NamedAgentStore {
   save(identity: NamedAgentIdentity): void {
     identity.updated_at = new Date().toISOString();
     const file = join(agentDir(identity.name, this.baseDir), 'identity.json');
-    writeFileSync(file, JSON.stringify(identity, null, 2));
+    atomicWriteFileSync(file, JSON.stringify(identity, null, 2));
   }
 
   journal(name: string, entry: Record<string, unknown>): void {

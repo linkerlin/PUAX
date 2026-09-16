@@ -2,9 +2,10 @@
  * 结局权重：verify/breakthrough 回写推荐。仿 evolver 表观遗传偏置。
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 
 export interface RoleOutcome {
   wins: number;
@@ -43,7 +44,7 @@ export class OutcomeStore {
 
   save(data: OutcomeWeights): void {
     data.updated_at = new Date().toISOString();
-    writeFileSync(weightsFile(this.baseDir), JSON.stringify(data, null, 2));
+    atomicWriteFileSync(weightsFile(this.baseDir), JSON.stringify(data, null, 2));
   }
 
   record(roleId: string, success: boolean): RoleOutcome {

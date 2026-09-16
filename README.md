@@ -40,7 +40,7 @@ PUAX 4.2 是面向 AI Agent 的**心智运行时**。角色只是口音；真正
 | **智能角色推荐** | 59 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
 | **结局驱动路由闭环** | 独立验证 `verify_completion` 与突破回写实绩，废除静态先验终身制 |
 | **碳基防御盾 (Shield)** | 独立 HTTP `POST /v4/shield/audit` + CLI：硅基可 PUA，碳基只防御（只识别，不施放） （自然人外延功能暂缓，保留基础识别层）|
-| **AMB 多模型基准** | 12 场景 × 5 主流模型 Profile 可复现评测矩阵（修复率 +39.2% / 隐蔽缺陷 +60.0%） |
+| **AMB 多模型基准** | 12 场景 × 5 主流模型 Profile 离线模拟矩阵（数值为硬编码演练值，非实测；真实战力以 `amb-live` 实测为准） |
 | **宿主医生一键挂载** | `npx puax doctor --fix` 同步探测并覆盖 10 大主流宿主（Cursor, Claude Code, Windsurf, Trae 等）注入原生钩子 |
 | **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具 |
 | **Hook System** | 会话状态、L0–L4 阶梯升压、突破降压、Compaction 推理保护 |
@@ -179,16 +179,15 @@ node evals/benchmark.js        # 性能基准
 - **一行代码接入**：通过 `createLangChainAmpCallback` 直接作为模型回调注入；
 - 详见 [docs/AMP-INTEGRATION.md](docs/AMP-INTEGRATION.md)。
 
-### AMB 多模型可复现基准矩阵（v4.x+）
+### AMB 多模型矩阵（离线模拟脚手架）
 
-跨三大任务类型（修复 Repair、审查 Review、创造 Create）与 5 大主流模型（DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B）的可复现无偏基准：
-- Repair 任务修复率提升 **+39.2%**，全量验证率提升 **+56.0%**；
-- Review 任务隐蔽问题捕获提升 **+60.0%**，敷衍收敛降幅 **-56.0%**；
+跨三大任务类型（修复 Repair、审查 Review、创造 Create）与 5 大主流模型 Profile（DeepSeek V3, Claude 3.7 Sonnet, GPT-4o, Qwen 2.5 Coder, Llama 3.3 70B）的评测矩阵脚手架。
+**诚实声明**：`evals/multi-model-amb.js` 当前为硬编码模拟演练，不发起真实模型调用，其数值不构成战力结论；真实评测请运行 `evals/amb-live.js --model=<id>`（真实 API 对照，含显著性判定与样本量警示）。
 - 详见 [docs/AMB.md](docs/AMB.md) 与 `evals/multi-model-amb.js`。
 
 ---
 
-## MCP 工具概览（48 个，对外主路径 12 个动词）
+## MCP 工具概览（50 个，对外主路径 13 个动词）
 
 | 类别 | 代表工具 |
 |------|----------|
@@ -214,7 +213,7 @@ node evals/benchmark.js        # 性能基准
 |------|------|------|
 | `PUAX_USAGE_STATS` | `0` 关闭匿名使用统计 | 开启（本地 `~/.puax/usage-stats.json`） |
 | `PUAX_OTEL_ENABLED` | `1` 写入 span 到 `telemetry.jsonl` | 关闭 |
-| `PUAX_OTEL_ENDPOINT` | OTLP/JSON 导出地址 | — |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON 导出地址（仅环回主机，SSRF 收口；远程经本机 agent 转发） | — |
 | `PUAX_TELEMETRY_DIR` | 遥测文件目录 | `~/.puax` |
 | `DEEPSEEK_API_KEY` | L4 对照实测（仅 evals） | — |
 
@@ -245,7 +244,7 @@ PUAX/
 | [GHM 导引幻梦法](docs/GHM.md) | 驭幻觉发散引擎：病机、八术映射、庄周八梦、安全铁律 |
 | [GHM 学术论著与技术报告](docs/GHM-PAPER.md) | **论文级长文**：认知病机模型、八算子逆向工程、梦议会航线与无LLM量化评测 |
 | [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
-| [API 参考](docs/API.md) | **49 个 MCP 工具**（对外 13 黄金动词） |
+| [API 参考](docs/API.md) | **50 个 MCP 工具**（对外 13 黄金动词） |
 | [使用指南](docs/USER-GUIDE.md) | 心跳优先工作流 |
 | [角色去留表](docs/ROLE-KERNEL.md) | 内核 / 皮肤 / 实验；萨满全留 |
 | [AMB v0](docs/AMB.md) | 12 场景协议覆盖记分卡（无 LLM） |
@@ -267,7 +266,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # 从仓库根目录执行 30 项协议铁律门禁
+node ../evals/run-all.js  # 从仓库根目录执行 31 项协议铁律门禁
 
 # 真实大模型 API 连通压测与双轨对比评测 (AMB Live)
 node evals/amb-live.js --mock                 # 离线模拟压测（零成本、秒级闭环）

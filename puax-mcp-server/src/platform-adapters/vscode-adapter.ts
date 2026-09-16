@@ -166,6 +166,10 @@ ${roles.slice(0, 10).map(r => `| ${r.name} | ${r.taskTypes[0] || '通用'} | /pu
     };
 
     try {
+      // 基类流程会先建 outputPath；本类重写 export 时须自建，否则全新目录下首写即 ENOENT
+      if (!existsSync(config.outputPath)) {
+        mkdirSync(config.outputPath, { recursive: true });
+      }
       // 创建目录结构
       const instructionsDir = join(config.outputPath, 'instructions');
       const promptsDir = join(config.outputPath, 'prompts');

@@ -1,7 +1,7 @@
 /**
  * PUAX Slash Commands System（legacy）
  *
- * v4 对外 12 动词见 core/v4-dashboard.ts V4_PUBLIC_VERBS。
+ * v4 对外 13 动词见 core/v4-dashboard.ts V4_PUBLIC_VERBS。
  * 本注册表不是默认路径，仅兼容既有 slash 测试。
  */
 

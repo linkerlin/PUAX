@@ -78,3 +78,11 @@ puax-mcp-server/.codebuddy/
 puax-mcp-server/.codex/
 puax-mcp-server/.kiro/
 puax-mcp-server/.trae/
+
+# Local tool artifacts
+.mimosa/
+.video_agent/
+
+# Landing build artifacts (in-place tsc/vite outputs)
+landing/vite.config.js
+landing/vite.config.d.ts

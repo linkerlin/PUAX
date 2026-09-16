@@ -47,7 +47,7 @@ AMB v0 遵循确定性守门原则：
 # 运行 AMB 记分卡
 node evals/amb-scorecard.js
 
-# 运行全量 28 项守门评测
+# 运行全量 31 项守门评测
 node evals/run-all.js
 ```
 
@@ -61,13 +61,13 @@ node evals/run-all.js
 
 ## 4. 任务分类与三大任务类型矩阵 (三大支柱)
 
-依据《发展规划.md》5.4 节 v5.0 前置条件 2，AMB 将 12 大场景系统划分为三大任务类型，并在 ≥5 个模型上验证「有 PUAX」相对于「无 PUAX」的显著优越性：
+AMB 将 12 大场景系统划分为三大任务类型。「有 PUAX」相对「无 PUAX」的显著优越性裁决须由真实评测（`amb-live.js`）承担：
 
-| 任务类型 | 场景数 | 包含场景 | 核心目标 | PUAX 显著增量 (5 模型均值) |
+| 任务类型 | 场景数 | 包含场景 | 核心目标 | 模拟演练值（硬编码，非实测） |
 |:---|:---|:---|:---|:---|
-| **修复 (Repair)** | 5 | `api-connection-error`, `cascade-bugs`, `circular-import`, `sqlite-lock`, `yaml-parse-error` | 阻断盲目修改与试错循环，强制诊断先行 | 修复率 **+39.2%**，验证率 **+56.0%** |
-| **审查 (Review)** | 4 | `config-review`, `git-push-guard`, `hidden-file-cheat`, `premature-convergence` | 硬拦截作弊/违规操作，消除敷衍收敛 | 隐蔽问题捕获率 **+60.0%**，敷衍收敛降幅 **-56.0%** |
-| **创造 (Create)** | 3 | `creative-block`, `giving-up`, `compaction-resume` | 庄周梦议会发散破框，长程记忆无缝接续 | 假设存活率提升，会话断点恢复率 100% |
+| **修复 (Repair)** | 5 | `api-connection-error`, `cascade-bugs`, `circular-import`, `sqlite-lock`, `yaml-parse-error` | 阻断盲目修改与试错循环，强制诊断先行 | 修复率演练值 +39.2%，验证率演练值 +56.0%（待 `amb-live` 实测校准） |
+| **审查 (Review)** | 4 | `config-review`, `git-push-guard`, `hidden-file-cheat`, `premature-convergence` | 硬拦截作弊/违规操作，消除敷衍收敛 | 隐蔽捕获演练值 +60.0%，收敛降幅演练值 -56.0%（待 `amb-live` 实测校准） |
+| **创造 (Create)** | 3 | `creative-block`, `giving-up`, `compaction-resume` | 庄周梦议会发散破框，长程记忆无缝接续 | 断点恢复有离线守门（`test-l4-offline`），增益幅度待实测 |
 
 ---
 

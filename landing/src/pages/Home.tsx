@@ -181,14 +181,14 @@ export default function Home() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <Shield size={20} style={{ color: "#a855f7" }} />
-              <h2 style={{ fontSize: "1.35rem", margin: 0, color: "#f8fafc" }}>第三件事 · AMB 基准实测分数</h2>
+              <h2 style={{ fontSize: "1.35rem", margin: 0, color: "#f8fafc" }}>第三件事 · AMB 基准演练矩阵</h2>
             </div>
             <p style={{ fontSize: "0.85rem", color: "#64748b", margin: "0.25rem 0 0" }}>
-              跨 3 大任务类型 × 5 大主流模型可复现矩阵（无 LLM 守门，绝不公布捏造的跨模型虚假胜率）。
+              跨 3 大任务类型 × 5 大主流模型的离线模拟演练矩阵：下述数值为硬编码演练值，非 LLM 实测；真实战力以 amb-live 真实 API 对照为准。
             </p>
           </div>
-          <span style={{ fontSize: "0.8rem", background: "#064e3b", color: "#6ee7b7", padding: "0.25rem 0.6rem", borderRadius: 6, fontWeight: 700, border: "1px solid #059669" }}>
-            ● v5.0 前置条件 2 达成
+          <span style={{ fontSize: "0.8rem", background: "#451a03", color: "#fbbf24", padding: "0.25rem 0.6rem", borderRadius: 6, fontWeight: 700, border: "1px solid #b45309" }}>
+            ● 离线模拟 · 待实测校准
           </span>
         </div>
 

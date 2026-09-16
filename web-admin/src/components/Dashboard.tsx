@@ -137,7 +137,7 @@ export default function Dashboard() {
           <div>
             <h3 style={{ color: '#f1f5f9', margin: 0 }}>📊 反自欺自检矩阵（如何知道自己没在骗自己）</h3>
             <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-              依据《发展规划.md》第 8 节：星数、角色数、工具数三件不进主看板。只公布能复现的真实度量。
+              反自欺铁律：星数、角色数、工具数三件不进主看板。只公布能复现的真实度量。
             </p>
           </div>
           <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: '#064e3b', color: '#6ee7b7', borderRadius: 4 }}>
@@ -189,7 +189,7 @@ export default function Dashboard() {
           <div>
             <h3 style={{ color: '#f1f5f9', margin: 0 }}>🏥 主流宿主健康与 Time-to-First-Pressure 状态</h3>
             <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-              依据《发展规划.md》5.4 节 v5.0 前置条件 3：覆盖安装量 Top 宿主，实现第一轮对话零延迟原生介入（TTF ≤ 1 轮）。
+              v5.0 前置条件 3：覆盖安装量 Top 宿主，实现第一轮对话零延迟原生介入（TTF ≤ 1 轮）。
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
@@ -258,7 +258,7 @@ export default function Dashboard() {
           <div>
             <h3 style={{ color: '#f1f5f9', margin: 0 }}>📊 AMB 多模型基准对照矩阵（三大任务类型 × ≥5 模型）</h3>
             <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem' }}>
-              依据《发展规划.md》5.4 节 v5.0 前置条件 2：在 ≥5 个模型上可复现，且至少一类任务显著优于无 PUAX。
+              v5.0 前置条件 2：在 ≥5 个模型上可复现，且至少一类任务显著优于无 PUAX（真实裁决以 amb-live 实测为准）。
             </p>
           </div>
           <span style={{ fontSize: '0.8rem', padding: '0.2rem 0.5rem', background: '#064e3b', color: '#6ee7b7', borderRadius: 4 }}>

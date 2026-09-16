@@ -122,6 +122,66 @@ class TestPuaxAmpPython(unittest.TestCase):
         self.assertGreater(min_p["estimated_tokens"], 0)
 
 
+class TestRemoteTickChannel(unittest.TestCase):
+    """远程 /v4/tick 通道连通性守门。
+
+    背景：服务端曾缺失 /v4/tick 路由，SDK 的 404 被静默吞掉、永久降级本地内核。
+    此处以罐头 HTTP 服务模拟真实服务端响应形状，锁死 SDK 的远程解析契约。
+    """
+
+    def test_on_user_prompt_parses_remote_amp_envelope(self):
+        import threading
+        import json as _json
+        from http.server import BaseHTTPRequestHandler, HTTPServer
+
+        class _CannedTickHandler(BaseHTTPRequestHandler):
+            def do_POST(self):
+                if self.path == "/v4/tick":
+                    payload = {
+                        "amp": {
+                            "spec": "AMP/0.1",
+                            "events": ["failure"],
+                            "blocks": ["[PUAX-RUNTIME]", "[PUAX-ARENA]"],
+                            "gate": "none",
+                            "state": {
+                                "pressure": 2,
+                                "arena": True,
+                                "dream": False,
+                                "happened": True,
+                                "role": "military-warrior",
+                            },
+                        }
+                    }
+                    body = _json.dumps(payload).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                else:
+                    self.send_response(404)
+                    self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        server = HTTPServer(("127.0.0.1", 0), _CannedTickHandler)
+        port = server.server_address[1]
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        try:
+            mw = PuaxAmpMiddleware(base_url=f"http://127.0.0.1:{port}", default_session_id="remote-test")
+            env = mw.on_user_prompt("还是不行？")
+            # 远程信封字段须完整解析，而非落入本地备援分支
+            self.assertEqual(env.spec, "AMP/0.1")
+            self.assertIn("failure", env.events)
+            self.assertIn("[PUAX-ARENA]", env.blocks)
+            self.assertEqual(env.state.pressure, 2)
+            self.assertEqual(env.state.role, "military-warrior")
+            self.assertTrue(env.state.arena)
+        finally:
+            server.shutdown()
+            server.server_close()
+
+
 if __name__ == "__main__":
     unittest.main()
-

@@ -12,7 +12,6 @@ import {
   getSkillCategories,
   getManifestEntryById,
 } from '../../src/prompts/prompts-bundle.js';
-import { ROLE_IDENTITIES } from '../../src/classical/strategy-space.js';
 
 const DREAM_ROLE_IDS = [
   'dream-zuowang',
@@ -159,23 +158,8 @@ describe('v3.12 dream 注册链路', () => {
     });
   });
 
-  describe('策略空间：RoleIdentity 注册', () => {
-    it('ROLE_IDENTITIES 含八梦身份', () => {
-      const ids = ROLE_IDENTITIES.map(r => r.id);
-      for (const id of DREAM_ROLE_IDS) {
-        expect(ids).toContain(id);
-      }
-    });
-
-    it('八梦身份 domain 皆为 dream 且文言身份齐全', () => {
-      for (const id of DREAM_ROLE_IDS) {
-        const identity = ROLE_IDENTITIES.find(r => r.id === id);
-        expect(identity?.domain).toBe('dream');
-        expect(identity?.classicalName).toBeTruthy();
-        expect(identity?.introPhrase).toBeTruthy();
-      }
-    });
-  });
+  // 「策略空间 RoleIdentity」describe 随 src/classical/（生产不可达死代码）一并退役；
+  // 八梦注册/字段断言由上方 bundle 与清单一致性用例继续承担。
 
   describe('工具清单一致性', () => {
     it('category 枚举含 dream（list_skills 可按 dream 筛选）', async () => {

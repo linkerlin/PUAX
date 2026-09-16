@@ -1,7 +1,7 @@
 /**
  * AMP 0.1 Middleware & Orchestrator Integration
  *
- * 依据《发展规划.md》5.4 节 v5.0 前置条件 1：
+ * 依据 CHANGELOG 4.0.0「v5.0 三大前置条件」之一：
  * 使编排器（LangChain/LangGraph, AutoGen, CrewAI 及自定义 Agent Loop）
  * 能够将 AMP 0.1 事件、块、闸门与状态作为一等公民消费。
  */

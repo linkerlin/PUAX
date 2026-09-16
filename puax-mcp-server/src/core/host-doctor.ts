@@ -1,7 +1,7 @@
 /**
  * PUAX Host Doctor & TTF (Time-to-First-Pressure) Diagnostic Engine
  *
- * 依据《发展规划.md》5.4 节 v5.0 前置条件 3：
+ * 依据 CHANGELOG 4.0.0「v5.0 三大前置条件」之一：
  * 检测安装量 Top 宿主的挂载状态与 Time-to-First-Pressure（TTF <= 1）就绪情况，
  * 并支持一键自动修复/挂载 (fixHostDoctor)。
  */

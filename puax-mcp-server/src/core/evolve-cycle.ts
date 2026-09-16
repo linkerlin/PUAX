@@ -4,10 +4,11 @@
  * 不依赖 evolver 包；基因 = 角色+方法论，固化 = 结局权重 + 记忆图 + 命名 Agent。
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import { getGlobalLogger } from '../utils/logger.js';
 import { stateManager } from '../hooks/state-manager.js';
 import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
@@ -125,7 +126,7 @@ function loadProgress(sessionId: string): CycleProgress {
 function saveProgress(sessionId: string, p: CycleProgress): void {
   const all = loadProgressFile();
   all.sessions[sessionId] = p;
-  writeFileSync(progressPath(), JSON.stringify(all, null, 2));
+  atomicWriteFileSync(progressPath(), JSON.stringify(all, null, 2));
 }
 
 function uniqueSignals(list: string[]): string[] {

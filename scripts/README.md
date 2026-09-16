@@ -40,12 +40,15 @@ node scripts/promote-v2-to-main.js
 node scripts/promote-v2-to-main.js --confirm
 ```
 
-### generate-i18n-readmes.js
-主流语种多语言 README 自动生成与同步（支持 8 种语言：EN, JA, KO, ZH-TW, ES, FR, DE, RU）
+### sync-all-i18n.js
+多语言 README 文档表同步（执行 Web Admin 封存标注等冻结令相关的行级同步）。
 
 ```bash
-node scripts/generate-i18n-readmes.js
+node scripts/sync-all-i18n.js
 ```
+
+> generate-i18n-readmes.js 已删除：其内容停留在 4.0.0（badge、工具数）且硬编码旧
+> Windows 路径，运行会把九份 README 回滚。多语言维护以手工 + 数字一致性守门为准。
 
 ## 执行顺序
 

@@ -12,9 +12,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1. 协议层硬铁律门禁（28 项静态评测与行为契约）
+  # 1. 协议层硬铁律门禁（31 项静态评测与行为契约，含数字一致性守门）
   protocol-gate:
-    name: Protocol Evals Gate (30 Invariants)
+    name: Protocol Evals Gate
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -121,4 +121,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Confirm All Gates Passed
-        run: echo "🎉 All PUAX v4.1.0 CI/CD Quality Gates & Anti-Cheat Invariants Passed!"
+        run: echo "🎉 All PUAX CI/CD Quality Gates & Anti-Cheat Invariants Passed!"

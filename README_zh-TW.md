@@ -135,7 +135,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 從儲存庫根目錄執行（28 項協議鐵律門禁）
+node ../evals/run-all.js  # 從儲存庫根目錄執行（31 項協議鐵律門禁）
 
 # 眞實大模型 API 連通壓測與雙軌對比評測 (AMB Live)
 node evals/amb-live.js --mock                 # 離線模擬壓測（零成本、秒級閉環）

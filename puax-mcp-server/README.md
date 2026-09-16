@@ -4,13 +4,13 @@
 
 | 项 | 值 |
 |---|---|
-| **版本** | 4.0.0 |
+| **版本** | 4.2.0 |
 | **传输** | STDIO / HTTP (Streamable HTTP) |
 | **默认端口** | 2333 |
 | **内置角色** | 59 SKILL + 自定义角色（shaman- 八席全留） |
-| **MCP 工具** | 48（对外主路径 12 动词） |
+| **MCP 工具** | 50（对外主路径 13 动词，旗舰 `puax_thin_prompt` 三档 Token 压缩） |
 | **风味** | 11（`flavor-methodologies.yaml`） |
-| **测试** | 900+ Jest + `evals/run-all.js` 12 项守门 |
+| **测试** | 965+ Jest + `evals/run-all.js` 31 项守门 |
 
 完整变更见 [CHANGELOG.md](./CHANGELOG.md)。
 
@@ -135,7 +135,7 @@ v4 默认请走 `puax_tick`。下列为完整清单（含兼容别名）。
 |------|------|
 | `PUAX_USAGE_STATS=0` | 关闭匿名使用统计 |
 | `PUAX_OTEL_ENABLED=1` | 启用 span 写入 `~/.puax/telemetry.jsonl` |
-| `PUAX_OTEL_ENDPOINT` | OTLP/JSON HTTP 导出端点 |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON HTTP 导出端点（仅环回主机） |
 | `PUAX_TELEMETRY_DIR` | 遥测目录（默认 `~/.puax`） |
 
 本地数据文件：

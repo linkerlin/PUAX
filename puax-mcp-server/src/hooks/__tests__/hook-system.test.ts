@@ -72,11 +72,15 @@ describe('PUAX Hook System v3.1.0', () => {
       const toolSessionId = `${testSessionId}_tool`;
       stateManager.clearSessionState(toolSessionId);
       hookManager.startSession(toolSessionId);
+      // 现行契约：首败不跨阈值，连续第 2 次失败才触发（与 hook-artifact.test.ts 同款断言）
+      const first = await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
+      expect(first.triggered).toBe(false);
+
       const result = await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
-      
+
       expect(result.triggered).toBe(true);
       expect(result.triggerType).toBe('bashFailure');
-      
+
       await hookManager.endSession(toolSessionId);
     });
 

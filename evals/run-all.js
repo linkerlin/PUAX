@@ -53,11 +53,12 @@ run('协议合规 Jest', () => {
   });
 });
 
-run('CHANGELOG 含 v3.8 与 v4.0', () => {
+run('CHANGELOG 版本链完整（3.10 → 当前）', () => {
   const changelog = readFileSync(join(MCP, 'CHANGELOG.md'), 'utf-8');
-  if (!changelog.includes('3.10.0')) throw new Error('CHANGELOG 缺少 3.10.0');
-  if (!changelog.includes('3.10.1')) throw new Error('CHANGELOG 缺少 3.10.1');
-  if (!changelog.includes('4.0.0')) throw new Error('CHANGELOG 缺少 4.0.0');
+  const required = ['3.10.0', '3.10.1', '4.0.0', '4.1.0', '4.2.0'];
+  for (const v of required) {
+    if (!changelog.includes(`## [${v}]`)) throw new Error(`CHANGELOG 缺少 ${v}`);
+  }
 });
 
 run('GHM 离线铁律', () => {
@@ -176,6 +177,11 @@ run('监军反向干预（MCP Sampling 双通道）', () => {
     cwd: MCP,
     stdio: 'pipe',
   });
+});
+
+run('README/docs 数字一致性', () => {
+  execSync('node scripts/lib/count-metrics.js > puax-mcp-server/build/metrics.json', { cwd: ROOT, stdio: 'pipe' });
+  execSync('node scripts/check-metrics-consistency.js', { cwd: ROOT, stdio: 'pipe' });
 });
 
 console.log(`\nPassed: ${pass}, Failed: ${fail}`);

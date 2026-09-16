@@ -25,9 +25,14 @@ if (!adapter) {
 }
 
 const hooks = adapter.generateHooks({ outputPath: outDir });
+const root = path.resolve(outDir);
 let count = 0;
 for (const file of hooks) {
-  const filePath = path.join(outDir, file.path);
+  // root boundary validation: target must remain within the output directory (guarding against adapter-returned relative paths escaping boundaries)
+  const filePath = path.resolve(root, file.path);
+  if (filePath !== root && !filePath.startsWith(root + path.sep)) {
+    throw new Error(`hook path out of bounds: ${file.path}`);
+  }
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, file.content, 'utf-8');
   console.log(`  ✓ ${file.path}`);

@@ -159,7 +159,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # リポジトリのルートから実行（28のプロトコル不変ゲート）
+node ../evals/run-all.js  # リポジトリのルートから実行（31のプロトコル不変ゲート）
 
 # リアルLLM API接続ストレステストとデュアルトラック評価 (AMB Live)
 node evals/amb-live.js --mock                 # コストゼロのオフラインシミュレーション

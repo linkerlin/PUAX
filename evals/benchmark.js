@@ -42,10 +42,8 @@ function timed(label, fn) {
 console.log('=== PUAX Performance Benchmark (no LLM) ===\n');
 
 const { TriggerDetector } = loadCore('trigger-detector');
-const { getRoleRecommender } = require(path.join(
-  __dirname,
-  '../puax-mcp-server/build/core/service-registry.js'
-));
+// 字面量 require（相对本文件解析）
+const { getRoleRecommender } = require('../puax-mcp-server/build/core/service-registry.js');
 const { MethodologyEngine } = loadCore('methodology-engine');
 
 const recommender = getRoleRecommender();
@@ -74,10 +72,7 @@ run('触发检测 < 100ms', () => {
 });
 
 run('推荐冷启动 < 150ms', () => {
-  const fresh = new (require(path.join(
-    __dirname,
-    '../puax-mcp-server/build/core/role-recommender.js'
-  )).RoleRecommender)();
+  const fresh = new (require('../puax-mcp-server/build/core/role-recommender.js')).RoleRecommender();
   const { recommend_cold_ms, value } = timed('recommend_cold_ms', () =>
     fresh.recommend(recommendRequest)
   );

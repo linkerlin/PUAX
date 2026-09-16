@@ -169,5 +169,30 @@ export interface ActivationOptions {
 /** Pressure level type constraint */
 export type PressureLevel = 0 | 1 | 2 | 3 | 4;
 
-/** Re-export SkillInfo from tools.ts as single source of truth */
-export type { SkillInfo, RoleInfo } from './tools.js';
+/** SKILL 条目元数据（自 src/tools.ts 迁入；该文件余部为 v2 遗留死代码已删） */
+export interface SkillInfo {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  tags: string[];
+  author: string;
+  version: string;
+  filePath: string;
+  triggerConditions: string[];
+  taskTypes: string[];
+  compatibleFlavors: string[];
+  metadata: {
+    tone: string;
+    intensity: string;
+  };
+  capabilities: string[];
+  howToUse: string;
+  inputFormat: string;
+  outputFormat: string;
+  exampleUsage: string;
+  content: string;
+}
+
+// Backward compatibility alias
+export type RoleInfo = SkillInfo;

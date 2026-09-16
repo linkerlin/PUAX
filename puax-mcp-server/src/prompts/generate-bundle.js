@@ -2,9 +2,18 @@ const fs = require('fs');
 const path = require('path');
 const YAML = require('yaml');
 
-const SKILLS_DIR = path.join(__dirname, '..', '..', '..', 'skills');
+// 生成器根界：所有读写目录必须位于仓库内（构建脚本的路径穿越守卫）
+const REPO_ROOT = path.resolve(__dirname, '..', '..', '..');
+function withinRepo(dir) {
+  const resolved = path.resolve(dir);
+  return resolved === REPO_ROOT || resolved.startsWith(REPO_ROOT + path.sep);
+}
+const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 const PROMPTS_DIR = path.join(__dirname);
 const BUNDLES_DIR = path.join(PROMPTS_DIR, 'bundles');
+if (!withinRepo(SKILLS_DIR) || !withinRepo(BUNDLES_DIR)) {
+  throw new Error('generate-bundle: 目录越界');
+}
 
 const CATEGORIES = [
   'shaman',

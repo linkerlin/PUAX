@@ -389,11 +389,22 @@ export class RoleRecommender {
    * 生成缓存键
    */
   private generateCacheKey(request: RecommendationRequest): string {
-    // 基于触发条件+任务类型+失败模式生成缓存键
+    // 基于触发条件+任务类型+失败模式生成缓存键。
+    // session_history 必须入键：verify_completion 回写胜负后，下一次推荐不能
+    // 仍命中 5 分钟 TTL 内的旧缓存（否则「结局权重→推荐」闭环被截断）。
+    const h = request.session_history;
+    const historyDigest = h
+      ? JSON.stringify({
+          r: Object.entries(h.role_success_rates ?? {}).sort(),
+          u: Object.entries(h.role_usage_count ?? {}).sort(),
+          recent: [...(h.recently_used_roles ?? [])].sort(),
+        })
+      : null;
     const key = JSON.stringify({
       triggers: request.detected_triggers.sort(),
       task_type: request.task_context.task_type,
-      attempt_count: request.task_context.attempt_count
+      attempt_count: request.task_context.attempt_count,
+      history: historyDigest
     });
     return Buffer.from(key).toString('base64');
   }

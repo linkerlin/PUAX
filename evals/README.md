@@ -30,7 +30,7 @@ MCP Server 默认在本地收集匿名计数（工具调用、触发、角色）
 |------|------|
 | `PUAX_USAGE_STATS=0` | 关闭统计 |
 | `PUAX_OTEL_ENABLED=1` | 写入 `~/.puax/telemetry.jsonl` |
-| `PUAX_OTEL_ENDPOINT` | OTLP/JSON 导出 |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON 导出（仅环回主机） |
 
 查询：`puax_get_usage_stats` MCP 工具。
 

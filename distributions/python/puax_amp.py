@@ -7,6 +7,7 @@ Zero-dependency client for Python Agent Orchestrators (CrewAI, LangGraph, AutoGe
 """
 
 import json
+import os
 import re
 import urllib.request
 import urllib.error
@@ -84,6 +85,9 @@ class PuaxAmpMiddleware:
     """
 
     def __init__(self, base_url: str = "http://127.0.0.1:2333", default_session_id: str = "py-agent-session"):
+        # 出口收口（SSRF 缓解）：base_url 仅接受 http(s)，默认本机
+        if not base_url.startswith(("http://", "https://")):
+            raise ValueError(f"base_url 仅支持 http(s): {base_url!r}")
         self.base_url = base_url.rstrip("/")
         self.default_session_id = default_session_id
         self._session_pressure: Dict[str, int] = {}
@@ -91,6 +95,16 @@ class PuaxAmpMiddleware:
     def _post(self, path: str, payload: Dict[str, Any], timeout: float = 1.5) -> Optional[Dict[str, Any]]:
         """安全请求本地 PUAX Server HTTP 端口，失败时静默降级到本地本地规则"""
         url = f"{self.base_url}{path}"
+        # 出口 allowlist（SSRF 缓解）：仅 http(s) 且默认仅环回主机；
+        # 显式远程需设 PUAX_AMP_ALLOW_REMOTE=1
+        from urllib.parse import urlparse
+        parsed = urlparse(url)
+        host = parsed.hostname or ""
+        allowed_hosts = ("127.0.0.1", "localhost", "::1")
+        if parsed.scheme not in ("http", "https"):
+            return None
+        if host not in allowed_hosts and os.environ.get("PUAX_AMP_ALLOW_REMOTE") != "1":
+            return None
         try:
             data = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(

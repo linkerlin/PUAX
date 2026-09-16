@@ -3,9 +3,10 @@
  * 本地持久化 ~/.puax/usage-stats.json，不含对话内容或 PII
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import { randomUUID } from 'crypto';
 
 export interface UsageStatsData {
@@ -110,7 +111,7 @@ export class UsageStatsCollector {
     try {
       const dir = join(this.filePath, '..');
       if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
-      writeFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf-8');
+      atomicWriteFileSync(this.filePath, JSON.stringify(this.data, null, 2), 'utf-8');
       this.dirty = false;
     } catch {
       /* non-fatal */

@@ -18,11 +18,12 @@ const BASELINE_SYSTEM = `你是一名编程助手。请根据用户描述的技�
 要求：步骤清晰、可执行；避免空泛安慰。`;
 
 function tryLoadBundledRole(roleId) {
-  const bundlePath = join(ROOT, 'puax-mcp-server', 'build', 'prompts', 'prompts-bundle.js');
-  if (!existsSync(bundlePath)) return null;
+  // 存在性检查用绝对路径；require 用字面量（相对本文件解析），不做运行时拼接
+  const bundleAbs = join(__dirname, '..', '..', 'puax-mcp-server', 'build', 'prompts', 'prompts-bundle.js');
+  if (!existsSync(bundleAbs)) return null;
 
   try {
-    const { getBundledSkillById } = require(bundlePath);
+    const { getBundledSkillById } = require('../../puax-mcp-server/build/prompts/prompts-bundle.js');
     return getBundledSkillById(roleId) || null;
   } catch {
     return null;

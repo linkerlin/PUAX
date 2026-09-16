@@ -134,10 +134,10 @@ npm start
 
 ### ✅ 测试验证
 
-运行跨平台测试：
+运行完整测试套件：
 
 ```bash
-node test-cross-platform.js
+npm test
 ```
 
 所有路径测试自动通过 ✅

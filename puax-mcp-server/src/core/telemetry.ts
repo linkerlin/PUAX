@@ -1,11 +1,12 @@
 /**
  * 轻量 OpenTelemetry 兼容追踪
  * - 默认写入 ~/.puax/telemetry.jsonl
- * - 设置 PUAX_OTEL_ENDPOINT 时批量 POST OTLP/JSON
+ * - 设置 PUAX_OTEL_ENDPOINT 时批量 POST OTLP/JSON（仅环回主机，SSRF 收口）
  */
 
 import { appendFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
+import { request } from 'http';
 import { getPuaxHome } from '../utils/storage-paths.js';
 import { randomBytes } from 'crypto';
 
@@ -85,11 +86,20 @@ async function exportOtlp(spans: SpanRecord[]): Promise<void> {
   };
 
   try {
-    await fetch(endpoint, {
+    // 出口 allowlist（SSRF 收口，主公敕准方案一）：PUAX_OTEL_ENDPOINT 仅接受
+    // 环回主机；远程 collector 请经本机 agent（sidecar）转发。
+    // 走 node:http 直发：宿主与路径字面量化，仅端口取自端点配置。
+    const parsed = new URL(endpoint);
+    const host = parsed.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') return;
+    const port = parsed.port || '4318';
+    const req = request(`http://127.0.0.1:${port}/v1/traces`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    }, (res) => { res.resume(); });
+    req.on('error', () => { /* collector unavailable — file log remains */ });
+    req.write(JSON.stringify(body));
+    req.end();
   } catch {
     /* collector unavailable — file log remains */
   }

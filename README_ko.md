@@ -136,7 +136,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate
-node ../evals/run-all.js  # 저장소 루트에서 실행 (28개 프로토콜 불변 게이트)
+node ../evals/run-all.js  # 저장소 루트에서 실행 (31개 프로토콜 불변 게이트)
 
 # 실제 LLM API 연결 스트레스 테스트 및 듀얼 트랙 평가 (AMB Live)
 node evals/amb-live.js --mock                 # 비용 제로 오프라인 시뮬레이션

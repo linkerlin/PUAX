@@ -3,9 +3,10 @@
  * 戏服是调料，处境改先验。
  */
 
-import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import { proofStore, type ProofStore, type SolutionProof } from './proof-store.js';
 
 export interface ArenaConfig {
@@ -51,7 +52,7 @@ export class ArenaStore {
       public_scoreboard: partial.public_scoreboard ?? prev?.public_scoreboard ?? DEFAULT_ARENA.public_scoreboard,
       set_at: new Date().toISOString(),
     };
-    writeFileSync(arenaFile(this.baseDir), JSON.stringify(next, null, 2));
+    atomicWriteFileSync(arenaFile(this.baseDir), JSON.stringify(next, null, 2));
     return next;
   }
 

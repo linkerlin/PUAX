@@ -1,10 +1,14 @@
 #!/usr/bin/env node
 /**
- * AMB (Agent Motivation Benchmark) Multi-Model Reproducibility Runner
+ * AMB (Agent Motivation Benchmark) Multi-Model Matrix — SIMULATED SCHEMA DRILL
  *
- * 依据《发展规划.md》5.4 节：
+ * ⚠️ 反自欺声明：本脚本当前不发起任何真实模型调用。evaluateScenarioOnModel 的全部
+ * 指标为硬编码演练值（fix_rate 0.92 vs 0.65 等），仅用于验证矩阵 schema 与看板管道，
+ * 不构成战力结论。真实评测请用 evals/amb-live.js（--model=... 真跑）。
+ *
+ * 设计意图（源自 CHANGELOG 4.0.0「v5.0 前置条件 2」原始表述）：
  * 验证 AMB 在 ≥5 个主流模型上的可复现性，并量化三大任务类别（修复 Repair / 审查 Review / 创造 Create）
- * 在「有 PUAX」相较于「无 PUAX」下的显著优势。
+ * 在「有 PUAX」相较于「无 PUAX」下的显著优势——该裁决须由真实评测承担，本脚本只搭脚手架。
  *
  * 支持的模型 Profile (≥5 模型):
  * 1. deepseek-v3 (OpenAI 兼容)
@@ -143,7 +147,7 @@ async function main() {
     ? SUPPORTED_MODELS
     : SUPPORTED_MODELS.filter(m => opts.models.includes(m.id));
 
-  console.log("=== AMB Multi-Model Benchmark (>=5 Models Reproducibility) ===");
+  console.log("=== AMB Multi-Model Matrix [SIMULATED SCHEMA DRILL — 指标为硬编码演练值，非实测] ===");
   console.log("Scenarios: " + scenarios.length + " | Models: " + selectedModels.length + " | Dry-Run: " + opts.dryRun + "\n");
 
   const results = [];
@@ -194,7 +198,9 @@ async function main() {
 
   const outputPayload = {
     benchmark: "AMB (Agent Motivation Benchmark)",
-    version: "0.2-reproducible",
+    version: "0.2-simulated-drill",
+    mode: "simulated_schema_drill",
+    note: "全部指标为硬编码演练值（无真实模型调用），仅验证矩阵 schema 与看板管道；真实战力结论以 evals/amb-live.js 实测为准。",
     date: new Date().toISOString(),
     criteria_v5_satisfied: {
       model_count_gte_5: selectedModels.length >= 5,
@@ -219,7 +225,7 @@ async function main() {
 
   console.log("\nAMB matrix written to: " + outPath);
   const ok = outputPayload.criteria_v5_satisfied.model_count_gte_5 && outputPayload.criteria_v5_satisfied.at_least_one_category_significant;
-  console.log("v5.0 Condition 2 (>=5 models & significant in >=1 category): " + (ok ? "SATISFIED" : "PENDING"));
+  console.log("v5.0 Condition 2 schema check (>=5 models & significant in >=1 category): " + (ok ? "SCHEMA-OK (simulated — 真实裁决须由 amb-live 实测承担)" : "PENDING"));
 }
 
 main().catch(err => {

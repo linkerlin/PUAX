@@ -1,6 +1,6 @@
 # PUAX MCP API 参考
 
-> **版本**: 4.0.0 | **MCP 工具**: 48 | **内置角色**: 59 + 自定义  
+> **版本**: 4.2.0 | **MCP 工具**: 50 | **内置角色**: 59 + 自定义  
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)
 
 ---
@@ -75,15 +75,16 @@ puax_start_session
 
 ---
 
-## MCP 工具索引（48）
+## MCP 工具索引（50）
 
-### v4 心跳 / 处境 / 进化（3）
+### v4 心跳 / 处境 / 进化 / 薄注入（4）
 
 | 工具 | 说明 | 主要参数 |
 |------|------|----------|
 | `puax_tick` | 心跳一拍 | `session_id`, `event`, `message` |
 | `puax_set_arena` | 立处境 | `rival`, `audience`, `scarce_badge`, `clear` |
 | `puax_evolve` | 显式进化周期 | `session_id`, `message`, `success` |
+| `puax_thin_prompt` | 薄提示词编译：`full`/`compact`/`minimal` 三档 Token 压缩（minimal 压降逾 90%） | `role_id`, `mode` |
 
 ### SKILL / 角色管理（5）
 
@@ -180,6 +181,12 @@ puax_start_session
 | `puax_get_usage_stats` | 匿名本地统计摘要 | `days` |
 | `puax_set_usage_stats_opt_out` | 关闭/恢复统计 | `opt_out` |
 | `puax_flush_telemetry` | 刷出 OTel span | — |
+
+### 碳基防御（1，v4.1）
+
+| 工具 | 说明 | 主要参数 |
+|------|------|----------|
+| `puax_audit_manipulation` | 逆向操控识别（只识别，不施放）：审查文本是否含过早收敛、失败重释、道德绑架与显著性绑架等认知操控 | `text` |
 
 ### GHM 导引幻梦法（3，v3.12）
 
@@ -364,7 +371,7 @@ puax_start_session
 |------|------|
 | `PUAX_USAGE_STATS=0` | 关闭匿名统计 |
 | `PUAX_OTEL_ENABLED=1` | 写入 `telemetry.jsonl` |
-| `PUAX_OTEL_ENDPOINT` | OTLP/JSON HTTP 导出 |
+| `PUAX_OTEL_ENDPOINT` | OTLP/JSON HTTP 导出（仅环回主机） |
 | `PUAX_TELEMETRY_DIR` | 遥测目录 |
 | `PUAX_HOOKS_CONFIG` | hook 配置路径（默认 `~/.puax/hooks.json`） |
 | `PUAX_HOME` | 本地状态根目录（默认 `~/.puax`，见 `utils/storage-paths.ts`）。测试/容器部署可重定向全部持久化（会话、进化基线、自定义角色、反馈、遥测、hook 配置） |

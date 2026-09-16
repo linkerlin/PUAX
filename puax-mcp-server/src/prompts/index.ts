@@ -1,4 +1,4 @@
-import { SkillInfo } from '../tools.js';
+import { SkillInfo } from '../types.js';
 import {
   getSkillById,
   getCombinedManifest,

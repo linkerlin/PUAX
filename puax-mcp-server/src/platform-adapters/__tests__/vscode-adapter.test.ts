@@ -4,12 +4,14 @@
 
 import { VSCodeAdapter } from '../vscode-adapter.js';
 import { RoleExportData, FlavorExportData, PlatformExportConfig } from '../base-adapter.js';
-import { existsSync, rmSync, readFileSync } from 'fs';
+import { existsSync, rmSync, readFileSync, mkdtempSync } from 'fs';
 import { join } from 'path';
+import { tmpdir } from 'os';
 
 describe('VSCodeAdapter', () => {
   let adapter: VSCodeAdapter;
-  const testOutputPath = join(__dirname, 'vscode-test-output');
+  // 输出走系统临时目录：写进 src/__tests__ 会污染源码树
+  const testOutputPath = mkdtempSync(join(tmpdir(), 'puax-vscode-adapter-test-'));
 
   const mockRole: RoleExportData = {
     id: 'military-warrior',
@@ -151,7 +153,8 @@ describe('VSCodeAdapter', () => {
       const content = adapter.generateConfig([roleWithTesting], { outputPath: './test' });
       const config = JSON.parse(content);
 
-      expect(config.instructions[0].globs).toContain('**/*.test.{js,ts}');
+      // globs 是数组；单个元素内可能以逗号联合多个 glob 模式
+      expect(config.instructions[0].globs.join(',')).toContain('**/*.test.{js,ts}');
     });
 
     it('应该处理多种任务类型', () => {
@@ -195,9 +198,9 @@ describe('VSCodeAdapter', () => {
       // @ts-expect-error - 访问私有方法进行测试
       const mainContent = adapter.generateMainInstructions(manyRoles);
       
-      // 检查是否只显示了前10个
+      // 检查是否只显示了前10个（无表格行时 matches 为 null，视作 0）
       const tableMatches = mainContent.match(/\| role-\d+ \|/g);
-      expect(tableMatches?.length).toBeLessThanOrEqual(10);
+      expect(tableMatches?.length ?? 0).toBeLessThanOrEqual(10);
     });
   });
 

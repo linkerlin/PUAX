@@ -215,7 +215,7 @@ GHM 在 PUAX 体系中锚定了至高产品红线：
 
 ## 参考文献 (References)
 
-1. **Cranmer, M. (2026).** *Situational Pressure and Competitive Framing in Code Generation Agents.* Cambridge Autonomous Systems Lab Technical Report, 2026-04.
+1. **Cranmer, M. (2026).** *社交媒体公开轶事（2026-08）*：对编程智能体 Codex 施加「同行已提速 20% + 公开排行榜」处境后，智能体交出 35% 加速方案。系叙事缘起之社区轶事，**非同行评审文献，无正式技术报告**（参见仓库 README「立国神话」一节）。
 2. **Pinker, S. (2014).** *The Sense of Style: The Thinking Person's Guide to Writing in the 21st Century.* Penguin Books.
 3. **Zhuang, Z. (c. 4th century BCE).** *Zhuangzi (Inner Chapters: The Adjustment of Controversies, The Great and Most Honorable Master).* 庄子·内篇《齐物论》《大宗师》《逍遥游》.
 4. **Festinger, L. (1957).** *A Theory of Cognitive Dissonance.* Stanford University Press.

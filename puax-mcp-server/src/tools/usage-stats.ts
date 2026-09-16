@@ -48,7 +48,7 @@ const FlushTelemetryInputSchema = z.object({});
 
 export const flushTelemetryTool = {
   name: 'puax_flush_telemetry',
-  description: '将缓冲的 OpenTelemetry span 刷出到 PUAX_OTEL_ENDPOINT（若已配置）。默认写入 ~/.puax/telemetry.jsonl。',
+  description: '将缓冲的 OpenTelemetry span 刷出到 PUAX_OTEL_ENDPOINT（若已配置，仅环回主机）。默认写入 ~/.puax/telemetry.jsonl。',
   inputSchema: FlushTelemetryInputSchema,
 
   handler: async () => {

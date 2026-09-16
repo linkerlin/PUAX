@@ -44,11 +44,6 @@ jobs:
         working-directory: ./puax-mcp-server
         run: npm test
 
-      - name: Build Frontend Artifacts
-        run: |
-          cd landing && npm ci && npm run build && cd ..
-          cd web-admin && npm ci && npm run build && cd ..
-
       - name: Publish to NPM
         working-directory: ./puax-mcp-server
         run: npm publish --access public
@@ -62,6 +57,9 @@ jobs:
 
       - name: Publish puax-amp to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # python -m build 产物落在 distributions/python/dist/，不在此指明则 action 默认找仓库根 dist/（必空）
+          packages-dir: distributions/python/dist
 
 
       - name: Create GitHub Release

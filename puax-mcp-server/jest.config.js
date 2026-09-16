@@ -34,23 +34,26 @@ module.exports = {
         '^(\\.{1,2}/.*)\\.js$': '$1'
     },
     
-    // 测试文件匹配模式
+    // 测试文件匹配模式（含 src 内 co-located __tests__，防沉睡假覆盖）
     testMatch: [
         '**/test/**/*.test.js',
         '**/test/**/*.test.ts',
         '**/test/**/*.spec.js',
-        '**/test/**/*.spec.ts'
+        '**/test/**/*.spec.ts',
+        '**/__tests__/**/*.test.js',
+        '**/__tests__/**/*.test.ts'
     ],
     
     // 测试前的准备
     setupFilesAfterEnv: ['<rootDir>/test/setup.js'],
     
-    // 覆盖率收集
-    collectCoverage: true,
+    // 覆盖率收集：默认关闭（本地跑提速），CI 以 --coverage 显式开启；
+    // 统计源码而非 build 产物，未 build 时不再产出 0% 假指标
+    collectCoverage: false,
     collectCoverageFrom: [
-        'build/**/*.js',
-        '!build/**/*.test.js',
-        '!build/**/*.spec.js'
+        'src/**/*.ts',
+        '!src/**/*.d.ts',
+        '!src/**/__tests__/**'
     ],
     
     // 覆盖率输出目录

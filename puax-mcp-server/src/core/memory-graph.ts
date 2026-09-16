@@ -3,9 +3,10 @@
  * 不依赖 evolver 包，本地 JSONL。
  */
 
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 
 export type MemoryNodeType = 'hypothesis' | 'attempt' | 'outcome' | 'lesson';
 
@@ -64,7 +65,7 @@ export class MemoryGraph {
     if (content.length <= maxBytes) return;
     const lines = content.split('\n').filter(Boolean);
     const kept = lines.slice(-Math.floor(lines.length / 2));
-    writeFileSync(file, kept.join('\n') + '\n');
+    atomicWriteFileSync(file, kept.join('\n') + '\n');
   }
 }
 

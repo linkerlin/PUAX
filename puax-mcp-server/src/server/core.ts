@@ -19,6 +19,7 @@ import {
 import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type ToolHandler } from '../tools/index.js';
 import { promptManager } from '../prompts/index.js';
 import { guardToolCall } from '../core/tool-guard.js';
+import { randomUUID } from 'crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'http';
 import { Logger } from '../utils/logger.js';
 import { loadVersion } from '../utils/version.js';
@@ -178,7 +179,7 @@ export class PuaxMcpServer {
             const resources = [
                 {
                     uri: 'puax://v4/verbs',
-                    description: 'v4 对外 12 动词（默认路径）',
+                    description: 'v4 对外 13 动词（默认路径）',
                     mimeType: 'application/json',
                 },
                 {
@@ -419,8 +420,27 @@ export class PuaxMcpServer {
         }, 5000);
     }
 
-    private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
-        try {
+    /**
+     * HTTP 会话表无 TTL，异常断开的会话只能靠 onclose 清理；设上限并逐出最老会话，
+     * 防长跑 HTTP 模式内存缓慢增长（onclose 未触发的会话 close() 幂等，安全）。
+     */
+    private evictStaleTransports(): void {
+        const MAX_SESSIONS = 128;
+        while (this.transports.size >= MAX_SESSIONS) {
+            const oldest = this.transports.keys().next().value;
+            if (oldest === undefined) break;
+            const t = this.transports.get(oldest);
+            this.transports.delete(oldest);
+            try {
+                void t?.close();
+            } catch {
+                // 已关闭/半关闭的传输，忽略
+            }
+            this.logger.debug(`Session evicted (cap ${MAX_SESSIONS}): ${oldest}`);
+        }
+    }
+
+    private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {        try {
             const url = new URL(req.url || '/', `http://${req.headers.host}`);
             const pathname = url.pathname;
             
@@ -431,8 +451,9 @@ export class PuaxMcpServer {
                 
                 if (!transport) {
                     transport = new StreamableHTTPServerTransport({
-                        sessionIdGenerator: () => crypto.randomUUID(),
+                        sessionIdGenerator: () => randomUUID(),
                         onsessioninitialized: (sid: string) => {
+                            this.evictStaleTransports();
                             this.transports.set(sid, transport!);
                             this.logger.debug(`Session initialized: ${sid}`);
                         }

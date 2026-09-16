@@ -9,10 +9,11 @@
  * - feedback-history.json: 反馈历史
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { getGlobalLogger } from '../utils/logger.js';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 
 const logger = getGlobalLogger();
 
@@ -147,7 +148,7 @@ export class StateManager {
     allStates[state.sessionId] = state;
     
     try {
-      writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
+      atomicWriteFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to save session state:', error);
     }
@@ -171,7 +172,7 @@ export class StateManager {
     delete allStates[sessionId];
     
     try {
-      writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
+      atomicWriteFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to clear session state:', error);
     }
@@ -246,7 +247,7 @@ export class StateManager {
     // 只保留最近100条
     const recentFailures = failures.slice(-100);
     try {
-      writeFileSync(this.failureFile, JSON.stringify(recentFailures, null, 2));
+      atomicWriteFileSync(this.failureFile, JSON.stringify(recentFailures, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to save failure record:', error);
     }
@@ -316,7 +317,7 @@ export class StateManager {
     // 只保留最近200条
     const recentTriggers = triggers.slice(-200);
     try {
-      writeFileSync(this.triggerFile, JSON.stringify(recentTriggers, null, 2));
+      atomicWriteFileSync(this.triggerFile, JSON.stringify(recentTriggers, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to save trigger record:', error);
     }
@@ -494,7 +495,7 @@ ${entry.keyContext || 'N/A'}
     });
 
     try {
-      writeFileSync(this.feedbackFile, JSON.stringify(records, null, 2));
+      atomicWriteFileSync(this.feedbackFile, JSON.stringify(records, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to save feedback:', error);
     }
@@ -637,7 +638,7 @@ ${entry.keyContext || 'N/A'}
     }
 
     try {
-      writeFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
+      atomicWriteFileSync(this.stateFile, JSON.stringify(allStates, null, 2));
     } catch (error) {
       logger.error('[StateManager] Failed to cleanup sessions:', error);
     }

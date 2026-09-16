@@ -122,7 +122,7 @@ npx puax-mcp-server --export=cursor --output=./.cursor/rules
 npx puax-mcp-server --list-platforms
 ```
 
-将 50 角色导出为 Cursor Rules、VSCode Copilot Instructions、Skill.md 等。风味数据来自 `flavor-methodologies.yaml` 单一数据源。
+将 59 角色导出为 Cursor Rules、VSCode Copilot Instructions、Skill.md 等。风味数据来自 `flavor-methodologies.yaml` 单一数据源。
 
 ---
 
@@ -131,8 +131,8 @@ npx puax-mcp-server --list-platforms
 开发/发版前：
 
 ```bash
-node evals/run-all.js              # 12 项协议守门
-cd puax-mcp-server && npm test       # 578+ 测试
+node evals/run-all.js              # 31 项协议守门
+cd puax-mcp-server && npm test       # 965+ 测试
 node evals/benchmark.js            # 性能基准
 ```
 
@@ -177,6 +177,6 @@ node evals/benchmark.js            # 性能基准
 
 ## 相关链接
 
-- [API 参考](API.md) — 42 工具参数与示例  
+- [API 参考](API.md) — 50 工具参数与示例  
 - [CHANGELOG](../puax-mcp-server/CHANGELOG.md) — 版本历史  
 - [TODO](../TODO.md) — 路线图（P0–P3 已基本完成）
