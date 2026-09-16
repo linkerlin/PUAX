@@ -245,7 +245,9 @@ PUAX/
 | [GHM Guided Dreams](docs/GHM.md) | Controlled hallucination engine: pathologies, 8 tactics mapping, Zhuangzi dreams |
 | [GHM Academic Paper & Whitepaper](docs/GHM-PAPER.md) | **Formal Technical Paper**: Pathogenesis, 8 operators reversing, council pipeline, non-LLM evals |
 | [MCP Server README](puax-mcp-server/README.md) | Configuration, tool catalog, architecture, env vars |
-| [API Reference](docs/API.md) | **49 MCP tools** (13 core public verbs) |
+| [API Reference](docs/API.md) | **50 MCP tools** (13 core public verbs) |
+| [MCP Contract Reference](docs/MCP-CONTRACT.md) | Wire-level contract: dual transports, initialize/sampling commissar negotiation, resources & `/v4/*` routes, degradation invariants |
+| [Thin Prompt & Token Economics](docs/THIN-PROMPT.md) | Three-mode compression spec + reproducible baseline (minimal fixed floor ~162 tokens, 95%+ reduction on heavy roles) |
 | [User Guide](docs/USER-GUIDE.md) | Heartbeat-first workflow |
 | [Role Kernel Disposition](docs/ROLE-KERNEL.md) | Kernel / Skin / Experimental; All shamans kept |
 | [AMB v0](docs/AMB.md) | 12-scenario protocol coverage scorecard (No LLM) |

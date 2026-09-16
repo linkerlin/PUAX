@@ -41,6 +41,7 @@ must(zh.includes(`version-${pkg.version}`) || zh.includes(`v${pkg.version}`), `R
 // —— README_en.md ——
 const en = readDoc('README_en.md');
 must(en.includes(`(${tools} tools, ${verbs} outward primary verbs)`), `README_en.md 工具概览应为 ${tools} tools / ${verbs} verbs`);
+must(en.includes(`**${tools} MCP tools**`), `README_en.md 文档表应写 ${tools} MCP tools`);
 must(en.includes(`version-${pkg.version}`) || en.includes(`v${pkg.version}`), `README_en.md 应含版本号 ${pkg.version}`);
 
 // —— puax-mcp-server/README.md（包级首选参考）——

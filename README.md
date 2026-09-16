@@ -245,6 +245,8 @@ PUAX/
 | [GHM 学术论著与技术报告](docs/GHM-PAPER.md) | **论文级长文**：认知病机模型、八算子逆向工程、梦议会航线与无LLM量化评测 |
 | [MCP Server README](puax-mcp-server/README.md) | 配置、工具清单、架构、环境变量 |
 | [API 参考](docs/API.md) | **50 个 MCP 工具**（对外 13 黄金动词） |
+| [MCP 协议契约参考](docs/MCP-CONTRACT.md) | 线级行为契约：双传输、initialize/sampling 监军协商、资源与 `/v4/*` 路由、降级铁律 |
+| [Thin Prompt 与 Token 经济学](docs/THIN-PROMPT.md) | 三档压缩规格 + 可复现实测基线（minimal 固定地板 ~162 Token，重角色压降逾 95%） |
 | [使用指南](docs/USER-GUIDE.md) | 心跳优先工作流 |
 | [角色去留表](docs/ROLE-KERNEL.md) | 内核 / 皮肤 / 实验；萨满全留 |
 | [AMB v0](docs/AMB.md) | 12 场景协议覆盖记分卡（无 LLM） |
