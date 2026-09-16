@@ -57,9 +57,11 @@ function writeSpan(span: SpanRecord): void {
   }
 }
 
-async function exportOtlp(spans: SpanRecord[]): Promise<void> {
+// 直发（node:http 请求队列即发即忘，错误经 on('error') 吞并保留文件日志）；
+// 非 async 函数以维持调用侧 await 语义（req.end 入队即返回）
+function exportOtlp(spans: SpanRecord[]): Promise<void> {
   const endpoint = process.env.PUAX_OTEL_ENDPOINT;
-  if (!endpoint || spans.length === 0) return;
+  if (!endpoint || spans.length === 0) return Promise.resolve();
 
   const body = {
     resourceSpans: [{
@@ -91,7 +93,7 @@ async function exportOtlp(spans: SpanRecord[]): Promise<void> {
     // 走 node:http 直发：宿主与路径字面量化，仅端口取自端点配置。
     const parsed = new URL(endpoint);
     const host = parsed.hostname;
-    if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') return;
+    if (host !== 'localhost' && host !== '127.0.0.1' && host !== '::1') return Promise.resolve();
     const port = parsed.port || '4318';
     const req = request(`http://127.0.0.1:${port}/v1/traces`, {
       method: 'POST',
@@ -103,6 +105,7 @@ async function exportOtlp(spans: SpanRecord[]): Promise<void> {
   } catch {
     /* collector unavailable — file log remains */
   }
+  return Promise.resolve();
 }
 
 const pendingExport: SpanRecord[] = [];

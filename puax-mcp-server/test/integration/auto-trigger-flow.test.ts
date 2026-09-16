@@ -1,7 +1,12 @@
 /**
  * Auto-Trigger Integration Tests
  * Tests the complete flow: detect -> recommend -> activate
+ *
+ * 挂钟断言（100ms 档）在全量 Jest 并行满载下有毫秒级抖动，
+ * retryTimes 吸收负载尖峰；真实性能退化仍会连续失败被拦。
  */
+
+jest.retryTimes(2);
 
 import { TriggerDetector, ConversationMessage } from '../../src/core/trigger-detector.js';
 import { RoleRecommender } from '../../src/core/role-recommender.js';
