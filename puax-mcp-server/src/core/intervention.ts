@@ -28,6 +28,23 @@ const SAMPLE_TIMEOUT_MS = 15_000;
 const MAX_TOKENS = 120;
 const MAX_TEXT_CHARS = 600;
 
+/** 正整数环境变量（非法值回退默认）——监军三板斧参数可调，缺省行为不变 */
+function positiveIntEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const n = Number.parseInt(raw, 10);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}
+
+/** 调用期读取（非模块加载期），便于测试与运行时热调参 */
+export function commissarTuning(): { cooldownMs: number; timeoutMs: number; maxTokens: number } {
+  return {
+    cooldownMs: positiveIntEnv('PUAX_COMMISSAR_COOLDOWN_MS', SAMPLE_COOLDOWN_MS),
+    timeoutMs: positiveIntEnv('PUAX_COMMISSAR_TIMEOUT_MS', SAMPLE_TIMEOUT_MS),
+    maxTokens: positiveIntEnv('PUAX_COMMISSAR_MAX_TOKENS', MAX_TOKENS),
+  };
+}
+
 let requester: SamplingRequester | null = null;
 const lastSampledAt = new Map<string, number>();
 
@@ -69,19 +86,20 @@ function commissarUserPrompt(ctx: InterventionContext): string {
 
 export async function requestIntervention(
   ctx: InterventionContext,
-  timeoutMs: number = SAMPLE_TIMEOUT_MS,
+  timeoutMs: number = commissarTuning().timeoutMs,
 ): Promise<InterventionResult> {
+  const tuning = commissarTuning();
   const local: InterventionResult = { channel: 'local', text: localCommissarText(ctx) };
   if (!requester) return local;
 
-  if (Date.now() - (lastSampledAt.get(ctx.session_id) || 0) < SAMPLE_COOLDOWN_MS) return local;
+  if (Date.now() - (lastSampledAt.get(ctx.session_id) || 0) < tuning.cooldownMs) return local;
 
   try {
     const text = await Promise.race([
       requester({
         systemPrompt: COMMISSAR_SYSTEM_PROMPT,
         userPrompt: commissarUserPrompt(ctx),
-        maxTokens: MAX_TOKENS,
+        maxTokens: tuning.maxTokens,
       }),
       new Promise<null>(resolve => setTimeout(() => resolve(null), timeoutMs)),
     ]);

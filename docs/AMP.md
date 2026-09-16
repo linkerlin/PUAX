@@ -106,6 +106,10 @@ AMP 协议锁定四类结构化对象：**事件 (Events)**、**承诺块 (Block
 
 所有 AMP 0.1 兼容的协议响应，均必须包裹为如下信封结构：
 
+> **机器可校验契约**：[schemas/amp-envelope.schema.json](schemas/amp-envelope.schema.json)
+> （JSON Schema draft-07）——实现方可直接以 ajv 等校验器对齐；该 schema 与运行时产出
+> 的一致性由 `puax-mcp-server/test/core/amp-schema.test.ts` 守门（schema 与实现任一方漂移即红）。
+
 ```json
 {
   "spec": "AMP/0.1",
@@ -188,3 +192,10 @@ curl http://127.0.0.1:2333/v4/amp
 1. **硅基优先**：协议旨在约束与激发硅基 Agent，严禁用于人际心理操控。
 2. **工具层主权**：标记权、放行权与评测权归于工具/系统层，不归 Agent 自我判定。
 3. **零膨胀**：保持核心四类对象的精炼，禁止将具体角色口音上升为协议层规范。
+
+### 版本政策（0.1 → 0.2 及以后）
+
+- **语义化版本**：新增可选字段 = 小版本（0.1→0.2）；语义变更/删字段 = 主版本（1.0 前升次版本号并在此登记迁移说明）。
+- **兼容承诺**：消费者必须忽略未知字段（`additionalProperties: true`）；`spec` 字段是唯一判别器，未知 `spec` 须整体拒收。
+- **schema 单一来源**：draft-07 schema 即规范；本文件 JSON 示例若与 schema 冲突，以 schema 为准。
+- **升版流程**：schema 变更须经 `amp-schema.test.ts` 守门 + 本节登记变更项 + CHANGELOG 记录。

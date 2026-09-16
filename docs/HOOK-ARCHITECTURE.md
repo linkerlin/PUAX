@@ -1,6 +1,6 @@
 # PUAX Hook 架构
 
-> 版本: v3.11 | 配套: [Hook机制演进方案.md](../Hook机制演进方案.md)
+> 版本: v4.2.0 | 配套: [Hook机制演进方案.md](../Hook机制演进方案.md)、[MCP-CONTRACT.md](MCP-CONTRACT.md)
 
 本文档定义 PUAX 的 Hook 接入架构（Shape A/B/C 路由表、per-harness JSON 契约、gotcha 附录）。
 设计对标 obra/superpowers 的 `porting-to-a-new-harness.md`。
@@ -86,7 +86,9 @@ hooks/hook.js（node 入口）      .opencode/plugins/puax.js
 | Windsurf | A（harness=copilot） | `hooks/hooks-windsurf.json` + `hooks/` 脚本 | `--export=windsurf` |
 | Kiro | A（harness=copilot） | `hooks/hooks-kiro.json` + `hooks/` 脚本 | `--export=kiro` |
 | CodeBuddy | A（harness=copilot） | `hooks/hooks-codebuddy.json` + `hooks/` 脚本 | `--export=codebuddy` |
-| 其他（codex/pi 等） | C（指令文件） | skill/rule markdown | `--export=<platform>` |
+| Trae | C（指令文件） | skill/rule markdown | `--export=trae` |
+| Codex CLI | C（指令文件） | `.codex/rules` + skill markdown | `--export=codex` |
+| AMP 原生 | D（无文件挂载） | AMP 中间件直连（见 [AMP-INTEGRATION.md](AMP-INTEGRATION.md)） | 编排器侧接入 |
 
 Shape A 的 hooks.json 形态（Claude Code）：
 
@@ -108,6 +110,25 @@ Shape A 的 hooks.json 形态（Claude Code）：
 - `matcher: "startup|clear|compact"` 排除 `resume`（恢复会话已有上下文，重复注入浪费 token）
 - `async: false` 保证注入在模型首条消息**前**完成
 - 事件一律走 `hook.js`（引擎共享层单通路）
+
+### 宿主挂载矩阵（`puax doctor` 十宿主，v4.2）
+
+`npx puax doctor [--fix]` 探测与一键挂载的完整矩阵（探测路径为 doctor 实际检查项）：
+
+| # | 宿主 | 探测路径 | Shape | Hook 事件覆盖 | TTF 就绪判定 |
+|---|------|---------|-------|--------------|-------------|
+| 1 | Claude Code | `~/.claude/settings.json`、`config.json`、项目 `.claude/` | A | SessionStart / PreToolUse / PostToolUse | hooks 配置存在 |
+| 2 | Cursor | 项目 `.cursor/rules`、`.cursorrules`、`~/.cursor/rules` | A | 同上 | 同上 |
+| 3 | VS Code Copilot | 项目 `.vscode/settings.json` | A（harness=copilot） | 同上 | 同上 |
+| 4 | Windsurf | 项目 `.windsurfrules` | A（harness=copilot） | 同上 | 同上 |
+| 5 | OpenCode | `~/.opencode/config.json`、项目 `.opencode/` | B（进程内插件） | SessionStart / UserPromptSubmit | 插件就位 |
+| 6 | CodeBuddy | 项目 `.codebuddy/rules`、`~/.codebuddy/config.json` | A（harness=copilot） | 同 Shape A | hooks 配置存在 |
+| 7 | Kiro | 项目 `.kiro/settings.json`、`~/.kiro/config.json` | A（harness=copilot） | 同上 | 同上 |
+| 8 | Trae | 项目 `.trae/rules` | C（指令文件） | 无运行时事件（指令引导 Agent 自愿调 MCP） | 指令文件存在 |
+| 9 | Codex CLI | 项目 `.codex/rules`、`~/.codex/config.json` | C（指令文件） | 同上 | 同上 |
+| 10 | AMP 原生 | 编排器进程（无文件） | D | 由编排器中间件事件驱动（on_user_prompt / on_post_tool_use 等） | 恒就绪（直连） |
+
+TTF（Time-to-First-Pressure）指标与冷启动门禁见 `evals/test-ttf.js` 与 `test-hook-ttf.js`（run-all 守门）。
 
 ## 四、优雅降级契约（不可破）
 

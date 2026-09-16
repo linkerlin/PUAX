@@ -9,7 +9,34 @@ import {
   requestIntervention,
   setSamplingRequester,
   samplingAvailable,
+  commissarTuning,
 } from '../../src/core/intervention.js';
+
+describe('commissarTuning 参数化（env 可调，默认不变）', () => {
+  const NAMES = ['PUAX_COMMISSAR_COOLDOWN_MS', 'PUAX_COMMISSAR_TIMEOUT_MS', 'PUAX_COMMISSAR_MAX_TOKENS'] as const;
+
+  afterEach(() => {
+    for (const n of NAMES) delete process.env[n];
+  });
+
+  it('缺省值与历史常量一致（60000/15000/120）', () => {
+    expect(commissarTuning()).toEqual({ cooldownMs: 60000, timeoutMs: 15000, maxTokens: 120 });
+  });
+
+  it('环境变量覆盖生效', () => {
+    process.env.PUAX_COMMISSAR_COOLDOWN_MS = '5000';
+    process.env.PUAX_COMMISSAR_TIMEOUT_MS = '2000';
+    process.env.PUAX_COMMISSAR_MAX_TOKENS = '256';
+    expect(commissarTuning()).toEqual({ cooldownMs: 5000, timeoutMs: 2000, maxTokens: 256 });
+  });
+
+  it('非法值回退默认（零/负/非数字）', () => {
+    process.env.PUAX_COMMISSAR_MAX_TOKENS = '-5';
+    expect(commissarTuning().maxTokens).toBe(120);
+    process.env.PUAX_COMMISSAR_TIMEOUT_MS = 'abc';
+    expect(commissarTuning().timeoutMs).toBe(15000);
+  });
+});
 
 const baseCtx = {
   reason: 'consecutive_failures',

@@ -27,6 +27,8 @@
 2. `puax_tick` 检测到连败 ≥3 或敷衍收敛且压力 L3+ 时，经该通道向**宿主侧独立模型**发出监军棒喝令（`maxTokens` 120、超时 15s、会话冷却 60s、回文截断 600 字）；
 3. 未声明 sampling 能力的宿主自动降级为**本地文言棒喝**（`[PUAX-COMMISSAR]` 前缀）——零逃逸、零依赖，两条通道对外行为语义一致。
 
+监军三板斧参数可经环境变量调整（缺省值即上述契约值）：`PUAX_COMMISSAR_COOLDOWN_MS`（60000）、`PUAX_COMMISSAR_TIMEOUT_MS`（15000）、`PUAX_COMMISSAR_MAX_TOKENS`（120）；非法值一律回退缺省。
+
 ## 3. MCP 资源（Resources）
 
 | URI | 内容 |

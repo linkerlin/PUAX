@@ -1,0 +1,39 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/linkerlin/PUAX/main/docs/schemas/amp-envelope.schema.json",
+  "title": "AMP/0.1 Envelope",
+  "description": "PUAX AMP/0.1 信封机器可校验契约。所有动词级响应的 amp 字段、POST /v4/tick 响应体、Python SDK AmpEnvelope 序列化均须满足本 schema。规格全文见 docs/AMP.md。",
+  "type": "object",
+  "required": ["spec", "events", "blocks", "gate", "state"],
+  "properties": {
+    "spec": { "const": "AMP/0.1" },
+    "events": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "触发事件流，如 failure / breakthrough"
+    },
+    "blocks": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "注入块标记，如 [PUAX-RUNTIME] / [PUAX-ARENA] / [PUAX-DIAGNOSIS]"
+    },
+    "gate": {
+      "type": "string",
+      "enum": ["none", "diagnosis", "confidence", "verify", "pretooluse"],
+      "description": "当前闸门（AMP_GATES）"
+    },
+    "state": {
+      "type": "object",
+      "required": ["pressure", "arena", "dream", "happened", "role"],
+      "properties": {
+        "pressure": { "type": "integer", "minimum": 0, "maximum": 4 },
+        "arena": { "type": "boolean" },
+        "dream": { "type": "boolean" },
+        "happened": { "type": "boolean" },
+        "role": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
