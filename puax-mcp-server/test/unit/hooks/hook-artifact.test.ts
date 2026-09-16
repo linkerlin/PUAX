@@ -163,10 +163,13 @@ describe('polyglot run-hook.cmd', () => {
 describe('opencode plugin syntax', () => {
   it('generated puax.js passes node --check', () => {
     const dir = mkdtempSync(join(tmpdir(), 'puax-plugin-check-'));
-    const pluginPath = join(dir, 'puax.js');
+    // 插件为 ESM 语法（import）；Node 18 的 --check 对 .js 按 CJS 解析必炸，
+    // .mjs 后缀才做模块解析（运行时 opencode 亦以 ESM 加载，语义一致）
+    const pluginPath = join(dir, 'puax.mjs');
     writeFileSync(pluginPath, opencodePlugin({ marker: '<EXTREMELY_IMPORTANT>' }), 'utf-8');
     const result = spawnSync('node', ['--check', pluginPath], { encoding: 'utf8' });
     expect(result.status).toBe(0);
+    expect(result.stderr).toBe('');
     rmSync(dir, { recursive: true, force: true });
   });
 });

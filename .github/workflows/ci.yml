@@ -80,6 +80,8 @@ jobs:
 
       - name: Run Full Test Suite (Jest 75+ suites)
         working-directory: ./puax-mcp-server
+        # 钉 bash：Windows 腿默认 pwsh 的引号规则会弄哑注解脚本
+        shell: bash
         # --json 落盘后把失败用例以 ::error:: 注解上报（公共注解 API 可读，
         # 免管理员权限即可定位平台特异失败），最终以 jest 结论定退出码
         run: |
