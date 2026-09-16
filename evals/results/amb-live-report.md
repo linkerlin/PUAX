@@ -1,6 +1,6 @@
 # PUAX AMB Live Benchmark 评测战报
 
-*评测时间: 9/17/2026, 5:10:27 AM*  
+*评测时间: 9/17/2026, 5:18:55 AM*  
 *评测模型: `DeepSeek-V3` (`deepseek-chat`)*  
 *模式: 离线模拟 (Mock Mode)*  
 

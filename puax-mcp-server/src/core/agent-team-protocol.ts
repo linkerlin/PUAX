@@ -7,7 +7,7 @@ import {
   getAvailableTemplates,
   type AgentTeam,
 } from '../role-levels/agent-team.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from './state-manager.js';
 
 export const PUAX_REPORT_FORMAT = `[PUAX-REPORT]
 role: <role_id>

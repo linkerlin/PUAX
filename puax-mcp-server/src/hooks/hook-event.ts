@@ -8,29 +8,9 @@
  * 历史：原增强系统 HookEventType（PascalCase，缺 PreToolUse）与确定性引擎
  * TriggerType（snake_case，有 PreToolUse）为两套并行枚举，语义重叠且命名冲突。
  * v3.11 起统一为 PuaxHookEvent（见 Hook机制演进方案.md Phase 0.1）。
+ *
+ * v4.3 起：随运行时状态层迁至 src/core/hook-event.ts（解 core↔hooks 环），
+ * 本文件为兼容转出口，新代码请直接引用 core 侧。
  */
 
-export type PuaxHookEvent =
-  | 'UserPromptSubmit'
-  | 'PostToolUse'
-  | 'PreToolUse'
-  | 'PreCompact'
-  | 'SessionStart'
-  | 'Stop';
-
-export const PUAX_HOOK_EVENTS: readonly PuaxHookEvent[] = [
-  'UserPromptSubmit',
-  'PostToolUse',
-  'PreToolUse',
-  'PreCompact',
-  'SessionStart',
-  'Stop'
-];
-
-/** 运行时类型守卫：判断字符串是否为合法 Hook 事件 */
-export function isPuaxHookEvent(value: unknown): value is PuaxHookEvent {
-  return typeof value === 'string' && (PUAX_HOOK_EVENTS as readonly string[]).includes(value);
-}
-
-/** @deprecated 使用 PuaxHookEvent（统一事件枚举） */
-export type HookEventType = PuaxHookEvent;
+export * from '../core/hook-event.js';

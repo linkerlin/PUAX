@@ -9,8 +9,8 @@
  * Phase 0.4）；宿主侧的真正强制拦截由原生 hook（hook CLI + PreToolUse matcher）承担。
  */
 
-import { deterministicTriggersEngine, TriggerType, type TriggerContext, type TriggerResult } from '../hooks/deterministic-triggers.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { deterministicTriggersEngine, TriggerType, type TriggerContext, type TriggerResult } from './deterministic-triggers.js';
+import { stateManager } from './state-manager.js';
 import { getGlobalLogger } from '../utils/logger.js';
 import type { PressureLevel } from '../types.js';
 

@@ -5,7 +5,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from './state-manager.js';
 
 export interface TtfSample {
   session_id: string;

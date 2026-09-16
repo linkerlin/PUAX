@@ -3,7 +3,7 @@
  * MCP 只是插头。河床是这四类对象：事件、块、闸门、状态。
  */
 
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from './state-manager.js';
 import type { EvolveResult, TickEvent } from './evolve-cycle.js';
 
 export const AMP_SPEC = 'AMP/0.1';

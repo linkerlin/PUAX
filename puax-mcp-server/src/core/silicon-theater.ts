@@ -5,7 +5,7 @@
 import { runEvolveCycle } from './evolve-cycle.js';
 import { arenaStore } from './arena.js';
 import { toAmpEnvelope } from './amp.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from './state-manager.js';
 
 export const SILICON_CAST = [
   'silicon-throne',
