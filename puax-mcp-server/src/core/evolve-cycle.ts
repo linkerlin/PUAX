@@ -133,12 +133,16 @@ function uniqueSignals(list: string[]): string[] {
   return [...new Set(list.filter(Boolean))];
 }
 
+// 缝合层：enhanced 检测器发射 camelCase，YAML 目录/策略/角色映射说 snake_case。
+// 契约：键集必须覆盖 trigger-patterns 的全部模式键（守门见 trigger-catalog-consistency.test.ts）。
 const TRIGGER_ALIASES: Record<string, string> = {
   userFrustration: 'user_frustration',
   givingUp: 'giving_up_language',
   bashFailure: 'consecutive_failures',
   blameEnvironment: 'blame_environment',
-  passiveWaiting: 'passive_wait',
+  passiveWait: 'passive_wait',
+  surfaceFix: 'surface_fix',
+  noSearch: 'tool_underuse',
   sessionRestore: 'need_more_context',
 };
 
@@ -178,7 +182,8 @@ function collectSignals(input: EvolveInput): string[] {
         errorMessage: input.error_message,
       });
       if (detected.triggered && detected.triggerType) {
-        signals.push(detected.triggerType);
+        // 检测器发射 camelCase，信号层统一归一为 YAML 目录的 snake_case
+        signals.push(normalizeTriggerId(detected.triggerType));
       }
       if (detected.metadata && typeof detected.metadata === 'object') {
         const extra = (detected.metadata as { triggers?: string[] }).triggers;
