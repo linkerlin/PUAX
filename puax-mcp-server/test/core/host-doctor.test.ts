@@ -1,10 +1,16 @@
 import { runHostDoctor, fixHostDoctor } from "../../src/core/host-doctor.js";
 import { dispatchV4 } from "../../src/server/v4-http.js";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 describe("PUAX Host Doctor & TTF Engine", () => {
   test("runHostDoctor 返回完整诊断报告", () => {
     const report = runHostDoctor();
-    expect(report.version).toBe("4.2.0");
+    // 版本号取自 package.json 单一事实源，杜绝每次发版手改此断言
+    const pkgVersion = JSON.parse(
+      readFileSync(join(__dirname, "../../package.json"), "utf-8")
+    ).version as string;
+    expect(report.version).toBe(pkgVersion);
     expect(typeof report.overallTtfReady).toBe("boolean");
     expect(typeof report.topHostsCovered).toBe("number");
     expect(report.topHostsTotal).toBeGreaterThanOrEqual(10);

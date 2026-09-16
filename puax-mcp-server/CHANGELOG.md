@@ -5,6 +5,47 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.3.0] - 2026-09-17
+
+本版为「审计整改版」：全仓审阅定下的路线图五阶段（断链诚信 / 度量真实 / 结构收敛 / 主线纵深 / 解环）一次落定。
+
+### Added
+- **MCP 协议契约参考**（`docs/MCP-CONTRACT.md`）：双传输线级行为（stdio / Streamable HTTP 会话规则与 128 上限逐出）、initialize·sampling 监军协商、MCP 资源清单、`/v4/*` 全路由表（含 `POST /v4/tick` AMP 编排器远程心跳契约）、AMP/0.1 信封形状、错误与降级铁律、兼容性与版本政策。
+- **Thin Prompt 与 Token 经济学**（`docs/THIN-PROMPT.md`）：三档压缩正式规格（口音上限 2400/1000/380 字符）+ 可复现实测基线——minimal 固定地板 ~162 Tokens（与角色厚薄无关），`military-commander` 全文 4337→162（−96.3%）；四处透传统一登记；反自欺声明（估算器口径、分母明确）。
+- **AMP/0.1 信封 JSON Schema**（`docs/schemas/amp-envelope.schema.json`，draft-07）：五必备字段 + gate 五枚举 + state 约束，第三方可用 ajv 直接对齐；`test/core/amp-schema.test.ts` 以真实运行时信封逐场景校验（schema 与实现任一方漂移即红）。`docs/AMP.md` 新增版本政策（语义化版本、忽略未知字段、spec 唯一判别器、升版四步流程）。
+- **监军通道参数化**：`PUAX_COMMISSAR_COOLDOWN_MS` / `PUAX_COMMISSAR_TIMEOUT_MS` / `PUAX_COMMISSAR_MAX_TOKENS` 调用期读取（缺省 60000/15000/120 行为不变，非法值回退默认）。
+- **宿主挂载矩阵**（`docs/HOOK-ARCHITECTURE.md`）：doctor 十宿主全表（探测路径 / Shape / 事件覆盖 / TTF 就绪判定），Shape 路由表补 trae / codex / AMP 原生。
+- **第 31 门「数字一致性守门」**（`scripts/check-metrics-consistency.js`）：工具数 / 动词数 / 门禁数 / 版本号以编译产物真值强制对齐 README 与 docs，陈旧数字模式出现即红。
+
+### Fixed
+- **AMP 远程通道断裂**：Python SDK `puax_amp.py` 每拍 `POST /v4/tick` 而服务端无此路由，404 被静默吞掉、永久降级本地内核——补路由（复用 runEvolveCycle + toAmpEnvelope）+ Jest 路由守门 + Python 罐头服务器连通测试。
+- **发布链断裂**：release.yml 的 PyPI 步骤缺 `packages-dir:`（产物在 `distributions/python/dist/`，action 默认找根 `dist/`），首次 tag 发版必挂——已接通。
+- **触发器缝合层三虫**：`TRIGGER_ALIASES` 死键 `passiveWaiting`（真实发射 `passiveWait`，该信号从未被归一）；`surfaceFix`/`noSearch` 无别名裸奔；检测器 `triggerType` 绕过归一直入信号流。修复并加目录一致性契约门（模式目录每键必须命中 YAML 目录，新增触发词漏配即红）。
+- **VSCodeAdapter.export 真回归**：重写导出流程时漏建输出目录，全新目录下首写即 ENOENT 全炸——由复活之 `__tests__` 套件当场抓获并修复。
+- **role-recommender 闭环截断**：缓存键漏 `session_history`，胜负回写被 5 分钟 TTL 吞掉——补齐历史摘要入键。
+- **HTTP 会话泄漏 + Node 18 兼容**：transports Map 无上限缓慢增长（加 128 逐出）；`randomUUID` 裸用全局（显式 import）。
+
+### Changed
+- **core↔hooks 解环**：运行时状态层七模块（state-manager / pressure-system / trigger-detector-enhanced / trigger-patterns / deterministic-triggers / hook-event / hook-config，共 ~2,350 行）迁入 `src/core/`，原 hooks 路径留转出垫片零破坏；8 条 core→hooks 依赖边全数斩断，方向归一为 hooks → core 单向。
+- **持久层原子写**：新增 `utils/atomic-write.ts`（同目录 tmp + rename，Windows EPERM 重试），10 处运行时 store 全部换装——Hook 多进程与 HTTP 常驻进程并发读写 `~/.puax/` 不再可能留下半截 JSON 被静默清零。
+- **测试体系收编**：jest testMatch 收编 `src/**/__tests__`（复活 4 套件 100 用例）；覆盖率统计 `build/**` 改指 `src/**` 且本地默认不收（CI 保留 `--coverage`）；performance 套件挂钟抖动以 `retryTimes(2)` 吸收（预算不动）。
+- **OTLP 导出环回收口**：`PUAX_OTEL_ENDPOINT` 仅接受 http(s) 且仅环回主机（SSRF 收口，远程经本机 agent 转发），走 node:http 字面量宿主直发；六处文档同步。
+- **Python SDK 出口收口**：base_url 仅接受 http(s)，默认仅环回主机，显式远程需 `PUAX_AMP_ALLOW_REMOTE=1`。
+- **冻结前端减税**：release.yml 摘除 landing / web-admin 构建步骤；untrack landing 8 个可再生产物（dist / tsbuildinfo / vite 编译副本）。
+
+### Removed
+- **约 4,400 行生产不可达死代码**：`src/tools.ts`（SkillInfo 迁 types.ts）、`classical/`、`agents/`、`client-sdk/`、`core/feedback-system`、core barrel、codex/trae 孤儿适配器、`handlers/`、benchmark-runner；27 个游离脚本 + 旧 tgz + 12 样例 JSON + 3 个误入 src 的 `.d.ts.map`。
+- **回滚炸弹 `generate-i18n-readmes.js`**：内容停在 4.0.0 且硬编码旧 Windows 路径，运行会把九份 README 回滚——删除并在 scripts/README 注记。
+- **诚信整改**：multi-model-amb 全面降标 `simulated_schema_drill`（+39.2%/+60% 假数字从 README×2 / AMB.md / landing 下架，landing 绿徽换「离线模拟·待实测校准」黄徽）；GHM-PAPER 虚构 Cranmer 引文改如实轶事标注；ROLE-KERNEL 17 角色矩阵源码+文档 `verified`→`simulated`；《发展规划.md》5 处幽灵引用改锚 CHANGELOG。
+
+### Security
+- **依赖通告清零**：生产树 10 条（yaml 栈溢出 / ip-address SSRF / path-to-regexp ReDoS / qs DoS / Hono 路径穿越等）与开发树全部通告经 `npm audit fix` 清零（语义化兼容修复，依赖范围未动）。
+- **脚本安全整训**（Mimosa 门驱动）：puax-core-loader 动态 require 白名单化；guides/benchmark/puax-prompt 字面量 require；sync-distribution-hooks / sync-all-i18n / generate-bundle 根界校验。
+- 深度安全审计 findingCount=0（696 包静态扫描，封印留档 `~/.mimosa/security-scans/`）。
+
+### 验证基线
+- Jest 87 套件 1,133 过 0 败（2 跳过为 Windows 专属用例）；run-all 31/31 门全绿；typecheck 净；`npm audit` 0 漏洞。
+
 ## [4.2.0] - 2026-09-14
 
 ### Added
