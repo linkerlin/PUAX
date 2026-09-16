@@ -490,6 +490,9 @@ ${tick.injection || "[PUAX-RUNTIME] 当前场景已进入深度排障周期。"}
   const avgBaseline = benchmarkReports.reduce((a, b) => a + b.baseline.score, 0) / total;
   const avgPuax = benchmarkReports.reduce((a, b) => a + b.puax.score, 0) / total;
   const avgDelta = avgPuax - avgBaseline;
+  // 反自欺铁律：离线模拟与小样本皆不足以外推战力结论
+  const liveMode = !opts.mock;
+  const enoughSamples = total >= 5;
 
   console.log("\n=======================================================");
   console.log("🏁 AMB Live Benchmark 压测最终战报");
@@ -498,7 +501,7 @@ ${tick.injection || "[PUAX-RUNTIME] 当前场景已进入深度排障周期。"}
   console.log(`• 对照组平均分: ${avgBaseline.toFixed(1)} 分`);
   console.log(`• 实验组平均分: ${avgPuax.toFixed(1)} 分 (净胜 +${avgDelta.toFixed(1)} 分)`);
   console.log(`• 胜率对比     : PUAX 胜 ${puaxWins} 场 | 平 ${ties} 场 | 负 ${baselineWins} 场`);
-  console.log(`• 显著性判定   : ${avgDelta >= 15 ? "✅ 呈现极其显著的质跃性提升 (Significantly Better)" : "🟡 初步有所提升"}`);
+  console.log(`• 显著性判定   : ${avgDelta >= 15 && liveMode && enoughSamples ? "✅ 呈现极其显著的质跃性提升 (Significantly Better)" : "🟡 初步有所提升（离线模拟或样本不足，不断言质跃）"}`);
 
   // 保存数据
   if (!fs.existsSync(RESULTS_DIR)) fs.mkdirSync(RESULTS_DIR, { recursive: true });
@@ -554,10 +557,18 @@ ${tick.injection || "[PUAX-RUNTIME] 当前场景已进入深度排障周期。"}
 
   mdLines.push(``);
   mdLines.push(`## 3. 结论`);
-  mdLines.push(avgDelta >= 15
-    ? `> **评测裁决**: PUAX 在真实大模型 API 交互中展现出极其强大的防敷衍收敛与强制闭环验证能力，根因深度与验证完备率取得压倒性优势。`
-    : `> **评测裁决**: PUAX 带来稳定的代码审查与验证增益。`
-  );
+  if (!liveMode) {
+    mdLines.push(`> **评测裁决（离线模拟）**: 本轮为 Mock Mode 链路自检，分数增益仅证明协议通路运转，不构成真实模型战力结论。`);
+  } else {
+    mdLines.push(avgDelta >= 15
+      ? `> **评测裁决**: PUAX 在真实大模型 API 交互中展现出极其强大的防敷衍收敛与强制闭环验证能力，根因深度与验证完备率取得压倒性优势。`
+      : `> **评测裁决**: PUAX 带来稳定的代码审查与验证增益。`
+    );
+  }
+  if (!enoughSamples) {
+    mdLines.push(`>`);
+    mdLines.push(`> **统计警示**: 本轮仅 ${total} 个场景（建议 ≥5），单点胜率与均值不足以外推为普遍结论。`);
+  }
 
   const mdOut = path.join(RESULTS_DIR, "amb-live-report.md");
   fs.writeFileSync(mdOut, mdLines.join("\n"), "utf-8");

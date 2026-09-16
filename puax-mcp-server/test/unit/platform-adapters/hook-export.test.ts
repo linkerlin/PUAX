@@ -13,6 +13,9 @@ import '../../../src/platform-adapters/vscode-adapter.js';
 import '../../../src/platform-adapters/windsurf-adapter.js';
 import '../../../src/platform-adapters/kiro-adapter.js';
 import '../../../src/platform-adapters/codebuddy-adapter.js';
+import { mkdtempSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 describe('Platform adapter hook generation', () => {
   it('should register claude-code and opencode adapters', () => {
@@ -97,11 +100,17 @@ describe('Platform adapter hook generation', () => {
       metadata: { tone: 'strict', intensity: 'high', version: '1.0' }
     };
     // 经 export() 全流程验证文件落位（protected 方法不可直接访问，用公共入口断言）
-    const result = adapter!.export([role as never], [], { outputPath: 'C:/Temp/opencode/hook-export-test' });
-    expect(result.success).toBe(true);
-    const normalize = (p: string) => p.replace(/\\/g, '/');
-    expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/skills/military-warrior.md'))).toBe(true);
-    expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/plugins/puax.js'))).toBe(true);
+    // outputPath 用系统临时目录：硬编码 C:/Temp 在 POSIX 宿主会沦为字面量 "C:" 相对目录
+    const outDir = mkdtempSync(join(tmpdir(), 'puax-hook-export-'));
+    try {
+      const result = adapter!.export([role as never], [], { outputPath: outDir });
+      expect(result.success).toBe(true);
+      const normalize = (p: string) => p.replace(/\\/g, '/');
+      expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/skills/military-warrior.md'))).toBe(true);
+      expect(result.exportedFiles.some(f => normalize(f).includes('.opencode/plugins/puax.js'))).toBe(true);
+    } finally {
+      rmSync(outDir, { recursive: true, force: true });
+    }
   });
 
   it('v4：七宿主均可生成 hook 产物', () => {

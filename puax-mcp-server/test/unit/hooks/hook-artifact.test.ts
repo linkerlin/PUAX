@@ -122,10 +122,11 @@ describe('polyglot run-hook.cmd', () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  it('cmd.exe branch: degrades to {} exit 0 when package missing', () => {
+  // cmd.exe 仅存于 Windows 宿主；非 Windows 平台（macOS/Linux CI 腿）无此解释器，整例跳过
+  (process.platform === 'win32' ? it : it.skip)('cmd.exe branch: degrades to {} exit 0 when package missing', () => {
     const result = spawnSync('cmd.exe', ['/c', 'run-hook.cmd', 'session-start', '--harness', 'claude'], {
       cwd: dir,
-      encoding: 'utf8',
+      encoding: 'utf-8',
       timeout: 30000
     });
     expect(result.status).toBe(0);

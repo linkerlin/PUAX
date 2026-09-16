@@ -1,7 +1,0 @@
-README.md
-puax_amp.py
-pyproject.toml
-puax_amp.egg-info/PKG-INFO
-puax_amp.egg-info/SOURCES.txt
-puax_amp.egg-info/dependency_links.txt
-puax_amp.egg-info/top_level.txt

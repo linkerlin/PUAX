@@ -22,6 +22,8 @@ profile.cov
 **/__pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
+**/*.egg-info/
 
 # Build output
 dist/
