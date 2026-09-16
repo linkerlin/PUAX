@@ -80,7 +80,22 @@ jobs:
 
       - name: Run Full Test Suite (Jest 75+ suites)
         working-directory: ./puax-mcp-server
-        run: npm test -- --coverage
+        # --json 落盘后把失败用例以 ::error:: 注解上报（公共注解 API 可读，
+        # 免管理员权限即可定位平台特异失败），最终以 jest 结论定退出码
+        run: |
+          npx jest --coverage --json --outputFile=/tmp/jest-result.json || true
+          node -e "
+            const r = require('/tmp/jest-result.json');
+            for (const s of r.testResults) {
+              if (s.status !== 'failed') continue;
+              console.log('::error::FAIL SUITE ' + s.name.replace(process.cwd() + '/', ''));
+              for (const a of (s.assertionResults || []).filter(x => x.status === 'failed')) {
+                const head = (a.failureMessages && a.failureMessages[0] || '').split('\n').slice(0, 4).join(' | ');
+                console.log('::error::FAIL ' + a.fullName + ' :: ' + head);
+              }
+            }
+            process.exit(r.success ? 0 : 1);
+          "
 
       - name: Upload Coverage Artifacts
         if: matrix.os == 'ubuntu-latest' && matrix.node-version == '20.x'
