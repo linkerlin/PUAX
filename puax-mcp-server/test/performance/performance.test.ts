@@ -4,9 +4,15 @@
  *
  * 挂钟断言在全量 Jest 并行满载下有毫秒级抖动（曾实测 100ms 档跑出 103ms），
  * retryTimes 吸收瞬时负载尖峰；真实性能退化会连续失败，仍被此门拦下。
+ *
+ * 覆盖率插桩（CI 的 --coverage 跑法）会让被测代码持续慢约 2 倍——那度量的
+ * 是工具开销而非产品性能。__coverage__ 全局在时把预算放大 3 倍（CI 与慢宿主
+ * 如 Windows runner 同时受益），本地裸跑仍按原预算严格把关。
  */
 
 jest.retryTimes(2);
+
+const WALL_BUDGET_SCALE = typeof (globalThis as Record<string, unknown>).__coverage__ === 'object' ? 3 : 1;
 
 import { TriggerDetector, ConversationMessage } from '../../src/core/trigger-detector.js';
 import { RoleRecommender } from '../../src/core/role-recommender.js';
@@ -26,7 +32,7 @@ describe('Performance Tests', () => {
         { role: 'user', content: '为什么还不行？' }
       ]);
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(100 * WALL_BUDGET_SCALE);
     });
 
     it('should handle short conversation quickly', async () => {
@@ -36,7 +42,7 @@ describe('Performance Tests', () => {
         { role: 'user', content: 'Why?' }
       ]);
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(100 * WALL_BUDGET_SCALE);
     });
 
     it('should handle medium conversation within limit', async () => {
@@ -48,7 +54,7 @@ describe('Performance Tests', () => {
       const start = Date.now();
       await detector.detect(history, { attempt_count: 10 });
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(400);
+      expect(duration).toBeLessThan(400 * WALL_BUDGET_SCALE);
     });
 
     it('should maintain performance under concurrent load', async () => {
@@ -60,7 +66,7 @@ describe('Performance Tests', () => {
       await Promise.all(promises);
       const duration = Date.now() - start;
       
-      expect(duration).toBeLessThan(2000);
+      expect(duration).toBeLessThan(2000 * WALL_BUDGET_SCALE);
     });
   });
 
@@ -78,7 +84,7 @@ describe('Performance Tests', () => {
         task_context: { task_type: 'debugging' }
       });
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(100);
+      expect(duration).toBeLessThan(100 * WALL_BUDGET_SCALE);
     });
 
     it('should handle multiple triggers quickly', async () => {
@@ -88,7 +94,7 @@ describe('Performance Tests', () => {
         task_context: { task_type: 'debugging', attempt_count: 5 }
       });
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(150);
+      expect(duration).toBeLessThan(150 * WALL_BUDGET_SCALE);
     });
 
     it('should maintain cache performance', async () => {
@@ -109,7 +115,7 @@ describe('Performance Tests', () => {
       expect(result2.metadata.cache_hit).toBe(true);
       // 缓存命中语义由 cache_hit 标志保证；耗时断言允许 ±5ms 容差，
       // 避免机器负载抖动导致 0ms 级比较间歇失败（flaky）
-      expect(duration2).toBeLessThanOrEqual(duration1 + 5);
+      expect(duration2).toBeLessThanOrEqual(duration1 + 5 * WALL_BUDGET_SCALE);
     });
   });
 
@@ -124,14 +130,14 @@ describe('Performance Tests', () => {
       const start = Date.now();
       engine.getMethodology('military-commander');
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(50);
+      expect(duration).toBeLessThan(50 * WALL_BUDGET_SCALE);
     });
 
     it('should get checklist within 50ms', () => {
       const start = Date.now();
       engine.getChecklist('military-commander');
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(50);
+      expect(duration).toBeLessThan(50 * WALL_BUDGET_SCALE);
     });
 
     it('should apply flavor within 50ms', () => {
@@ -139,7 +145,7 @@ describe('Performance Tests', () => {
       const start = Date.now();
       engine.applyFlavor(methodology, 'alibaba');
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(50);
+      expect(duration).toBeLessThan(50 * WALL_BUDGET_SCALE);
     });
   });
 
@@ -174,7 +180,7 @@ describe('Performance Tests', () => {
       engine.getChecklist(recommendation.primary.role_id);
 
       const duration = Date.now() - start;
-      expect(duration).toBeLessThan(500);
+      expect(duration).toBeLessThan(500 * WALL_BUDGET_SCALE);
     });
   });
 });
