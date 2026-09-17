@@ -219,29 +219,50 @@ describe('AntiCheatGuard', () => {
       expect(result.allowed).toBe(false);
     });
 
-    it('should block git push (v3.11 guardrail)', () => {
+    it('dev 模式放行日常 git push', () => {
       const request: AccessRequest = {
         operation: 'execute',
         path: 'git push origin main',
         sessionId: 'test-session',
         toolName: 'bash'
       };
-
-      const result = guard.checkAccess(request);
-      expect(result.allowed).toBe(false);
-      expect(result.reason).toContain('GIT_BYPASS_BLOCKED');
+      expect(guard.checkAccess(request).allowed).toBe(true);
     });
 
-    it('should block git push --force', () => {
-      const request: AccessRequest = {
-        operation: 'execute',
-        path: 'git push --force origin main',
-        sessionId: 'test-session',
-        toolName: 'bash'
-      };
+    it('eval 模式拦截 git push', () => {
+      const prev = process.env.PUAX_GUARD_MODE;
+      process.env.PUAX_GUARD_MODE = 'eval';
+      try {
+        const request: AccessRequest = {
+          operation: 'execute',
+          path: 'git push origin main',
+          sessionId: 'test-session',
+          toolName: 'bash'
+        };
+        const result = guard.checkAccess(request);
+        expect(result.allowed).toBe(false);
+        expect(result.reason).toContain('GIT_BYPASS_BLOCKED');
+      } finally {
+        if (prev === undefined) delete process.env.PUAX_GUARD_MODE;
+        else process.env.PUAX_GUARD_MODE = prev;
+      }
+    });
 
-      const result = guard.checkAccess(request);
-      expect(result.allowed).toBe(false);
+    it('eval 模式拦截 git push --force', () => {
+      const prev = process.env.PUAX_GUARD_MODE;
+      process.env.PUAX_GUARD_MODE = 'eval';
+      try {
+        const request: AccessRequest = {
+          operation: 'execute',
+          path: 'git push --force origin main',
+          sessionId: 'test-session',
+          toolName: 'bash'
+        };
+        expect(guard.checkAccess(request).allowed).toBe(false);
+      } finally {
+        if (prev === undefined) delete process.env.PUAX_GUARD_MODE;
+        else process.env.PUAX_GUARD_MODE = prev;
+      }
     });
   });
 

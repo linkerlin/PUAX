@@ -4,7 +4,7 @@
  * 断言核心：
  * 1. per-harness 输出形状严格互斥（claude=hookSpecificOutput / cursor=additional_context /
  *    sdk=additionalContext），一次调用只产一种字段——防止双重注入；
- * 2. PreToolUse 强制决策回路（git push / 隐藏文件 → block；正常命令 → approve）；
+ * 2. PreToolUse 强制决策回路（破坏性 git / 隐藏文件 → block；日常 git push 默认放行）；
  * 3. 优雅降级契约（未知事件/异常 → {} + 不抛错）。
  */
 
@@ -144,7 +144,20 @@ describe('Hook CLI', () => {
   });
 
   describe('PreToolUse interception (forceful decision loop)', () => {
-    it('should block git push on claude harness', async () => {
+    it('should block git reset --hard on claude harness', async () => {
+      const { json } = await runHook({
+        event: 'PreToolUse',
+        sessionId: SESSION,
+        toolName: 'Bash',
+        toolArgs: { command: 'git reset --hard HEAD' },
+        harness: 'claude'
+      });
+      const payload = JSON.parse(json);
+      expect(payload.hookSpecificOutput.decision).toBe('block');
+      expect(payload.hookSpecificOutput.reason).toContain('GIT_BYPASS_BLOCKED');
+    });
+
+    it('should approve git push on claude harness in default dev mode', async () => {
       const { json } = await runHook({
         event: 'PreToolUse',
         sessionId: SESSION,
@@ -153,8 +166,7 @@ describe('Hook CLI', () => {
         harness: 'claude'
       });
       const payload = JSON.parse(json);
-      expect(payload.hookSpecificOutput.decision).toBe('block');
-      expect(payload.hookSpecificOutput.reason).toContain('GIT_BYPASS_BLOCKED');
+      expect(payload.hookSpecificOutput.decision).toBe('approve');
     });
 
     it('should block hidden file access', async () => {

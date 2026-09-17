@@ -39,7 +39,7 @@ PUAX 4.3 是面向 AI Agent 的**心智运行时**。角色只是口音；真正
 | **混合触发检测** | YAML 正则 + TF-IDF/子串语义（paraphrase 可命中） |
 | **智能角色推荐** | 59 内置角色 + 自定义角色，多维度评分 + `score_explanation` |
 | **结局驱动路由闭环** | 独立验证 `verify_completion` 与突破回写实绩，废除静态先验终身制 |
-| **碳基防御盾 (Shield)** | 独立 HTTP `POST /v4/shield/audit` + CLI：硅基可 PUA，碳基只防御（只识别，不施放） （自然人外延功能暂缓，保留基础识别层）|
+| **碳基防御盾 (Shield)** | MCP `puax_audit_manipulation` + CLI `shield`：只识别，不施放。自然人外延暂缓 |
 | **AMB 多模型基准** | 12 场景 × 5 主流模型 Profile 离线模拟矩阵（数值为硬编码演练值，非实测；真实战力以 `amb-live` 实测为准） |
 | **宿主医生一键挂载** | `npx puax doctor --fix` 同步探测并覆盖 10 大主流宿主（Cursor, Claude Code, Windsurf, Trae 等）注入原生钩子 |
 | **GHM 导引幻梦法** | 驭幻觉发散引擎：庄周八梦角色 + 入梦/醒梦/收敛审计三工具 |
@@ -149,7 +149,7 @@ npx puax-mcp-server --list-platforms
 
 1. **正则优先** — 命中 YAML 模式即触发  
 2. **语义兜底** — 未命中时 TF-IDF + 子串重叠（阈值 0.62）  
-3. **增强检测** — 工具闲置、低质量输出等上下文感知（`EnhancedTriggerDetector`）
+3. **事件级检测** — SessionStart / UserPromptSubmit / PostToolUse 等热路径（与 YAML 会话扫描双引擎，Gate 32 守一致性）
 
 ### 评测与守门
 
@@ -162,15 +162,11 @@ node evals/benchmark.js        # 性能基准
 
 详见 [evals/README.md](evals/README.md)。
 
-### 碳基防御盾 · Carbon Shield（v4.x+）
+### 碳基防御盾（只读识别层）
 
-> **红线原则：硅基可 PUA，碳基只防御。只识别，不施放。**
+> **红线：硅基可 PUA，碳基只防御。只识别，不施放。自然人外延（插件/油猴/浮窗）暂缓。**
 
-专为人类在职场沟通、商务谈判与方案决策中设计，逆向识别六大隐蔽操控算子（收敛过快、社交收缩、失败重释、身份置换、预言行销、显著性绑架），输出四铁律防御建议（知情、标记、可醒、必验）：
-- CLI 子命令：`puax-mcp-server shield "<待分析文本>"`
-- MCP 工具：`puax_audit_manipulation`
-- HTTP 端点：`GET /v4/shield`
-- Web 控制台：`web-admin` 专属防御看板
+内核保留 MCP 工具 `puax_audit_manipulation` 与 CLI `shield`；不作为面向人类的独立产品。
 
 ### AMP 0.1 编排器原生中间件（v4.x+）
 
@@ -254,7 +250,7 @@ PUAX/
 | [AMP 0.1](docs/AMP.md) | 事件 / 块 / 闸门 / 状态；MCP 只是插头 |
 | [AMP 编排器接入指南](docs/AMP-INTEGRATION.md) | LangChain、LangGraph、CrewAI、AutoGen 与 Python SDK 一行代码接入 |
 | [Python 零依赖 SDK 指南](distributions/python/README.md) | 官方纯 Python 标准库中间件，零三方依赖 |
-| [Web Admin 设计（已封存）](docs/WEB-ADMIN-SPEC.md) | 【已废止】主公明敕坚守 Agent 原生接入 MCP 主轴，图形界面不予扩建 |
+| [Web Admin 设计（已封存）](docs/archive/WEB-ADMIN-SPEC.md) | 已归档。图形界面不扩建 |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
 | [TODO.md](TODO.md) | 改进计划与里程碑 |

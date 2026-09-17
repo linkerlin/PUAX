@@ -3,9 +3,10 @@
  * v3.4: ~/.puax/evolution.json 基线追踪 + 段位体系
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -131,7 +132,7 @@ export class EvolutionEngine {
   save(data: EvolutionData): void {
     data.updated_at = new Date().toISOString();
     try {
-      writeFileSync(this.evolutionFile, JSON.stringify(data, null, 2));
+      atomicWriteFileSync(this.evolutionFile, JSON.stringify(data, null, 2));
     } catch (error) {
       logger.error('[EvolutionEngine] Failed to save:', error);
     }

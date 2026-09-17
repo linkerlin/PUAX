@@ -6,7 +6,7 @@
  * 能够将 AMP 0.1 事件、块、闸门与状态作为一等公民消费。
  */
 
-import { stateManager } from "../hooks/state-manager.js";
+import { stateManager } from "./state-manager.js";
 import { runEvolveCycle, type TickEvent } from "./evolve-cycle.js";
 import {
   AMP_SPEC,
@@ -100,6 +100,7 @@ export class AmpMiddleware {
           arena: true,
           dream: false,
           happened: true,
+          role: 'none',
         },
       };
       return {

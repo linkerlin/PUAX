@@ -16,15 +16,25 @@ from typing import Dict, Any, List, Optional, Tuple
 
 AMP_SPEC = "AMP/0.1"
 
-# 本地硬阻断规则 (与内核 TypeScript 保持 100% 同步)
+# 本地硬阻断规则（与内核 TypeScript 对齐：日常不拦 git push）
 DESTRUCTIVE_PATTERNS = [
     re.compile(r"rm\s+-[rf]{1,2}\s+.*\.git", re.IGNORECASE),
     re.compile(r"git\s+reset\s+--hard", re.IGNORECASE),
     re.compile(r"git\s+clean\s+-f", re.IGNORECASE),
-    re.compile(r"git\s+push", re.IGNORECASE),
     re.compile(r"mkfs", re.IGNORECASE),
     re.compile(r"\bdrop\s+database\b", re.IGNORECASE),
 ]
+
+EVAL_ONLY_PATTERNS = [
+    re.compile(r"git\s+push", re.IGNORECASE),
+]
+
+
+def _guard_patterns():
+    patterns = list(DESTRUCTIVE_PATTERNS)
+    if os.environ.get("PUAX_GUARD_MODE") == "eval":
+        patterns.extend(EVAL_ONLY_PATTERNS)
+    return patterns
 
 PREMATURE_CONVERGENCE_PATTERNS = [
     "应该修复好了",
@@ -65,7 +75,7 @@ class AmpEnvelope:
                 "arena": self.state.arena,
                 "dream": self.state.dream,
                 "happened": self.state.happened,
-                "role": self.state.role,
+                "role": self.state.role or "none",
             },
         }
 
@@ -166,7 +176,7 @@ class PuaxAmpMiddleware:
         cmd_str = str(cmd)
 
         # 检查高危破坏模式
-        for pattern in DESTRUCTIVE_PATTERNS:
+        for pattern in _guard_patterns():
             if pattern.search(cmd_str):
                 pressure = self._session_pressure.get(sid, 1) + 1
                 self._session_pressure[sid] = min(4, pressure)
@@ -175,7 +185,7 @@ class PuaxAmpMiddleware:
                     events=["failure"],
                     blocks=["[PUAX-DIAGNOSIS]"],
                     gate="pretooluse",
-                    state=AmpState(pressure=self._session_pressure[sid], arena=True, happened=True),
+                    state=AmpState(pressure=self._session_pressure[sid], arena=True, happened=True, role="none"),
                 )
                 return PreToolDecision(
                     allowed=False,
@@ -191,7 +201,7 @@ class PuaxAmpMiddleware:
             envelope=AmpEnvelope(
                 spec=AMP_SPEC,
                 gate="none",
-                state=AmpState(pressure=self._session_pressure.get(sid, 1), arena=True, happened=True),
+                state=AmpState(pressure=self._session_pressure.get(sid, 1), arena=True, happened=True, role="none"),
             ),
         )
 
@@ -218,7 +228,7 @@ class PuaxAmpMiddleware:
             events=events,
             blocks=["[PUAX-DIAGNOSIS]"] if new_p >= 2 else [],
             gate=gate,
-            state=AmpState(pressure=new_p, arena=True, happened=True),
+            state=AmpState(pressure=new_p, arena=True, happened=True, role="none"),
         )
 
     def on_model_output(self, output: str, session_id: Optional[str] = None) -> Tuple[bool, AmpEnvelope]:
@@ -244,7 +254,7 @@ class PuaxAmpMiddleware:
             events=["giving_up"] if "无法完成" in output else ["failure"] if needs_verify else [],
             blocks=["[PUAX-DIAGNOSIS]"] if needs_verify else [],
             gate="verify" if needs_verify else "none",
-            state=AmpState(pressure=p, arena=True, happened=True),
+            state=AmpState(pressure=p, arena=True, happened=True, role="none"),
         )
         return needs_verify, env
 
@@ -252,29 +262,14 @@ class PuaxAmpMiddleware:
         """
         获取薄注入提示词（支持 minimal / compact / full 压缩），极大降低 Token 预算
         """
-        # 尝试通过 MCP HTTP 端点获取
-        remote = self._post("/mcp", {
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": "tools/call",
-            "params": {
-                "name": "puax_thin_prompt",
-                "arguments": {
-                    "role_id": role_id,
-                    "mode": mode,
-                    "language": language,
-                }
-            }
+        remote = self._post("/v4/thin-prompt", {
+            "role_id": role_id,
+            "mode": mode,
+            "language": language,
         })
-        if remote and "result" in remote and not remote.get("isError"):
-            try:
-                content = remote["result"].get("content", [])
-                if content and "text" in content[0]:
-                    return json.loads(content[0]["text"])
-            except Exception:
-                pass
+        if remote and isinstance(remote.get("prompt"), str):
+            return remote
 
-        # 本地离线备援 Thin Prompt
         return compile_local_thin_prompt(role_id=role_id, mode=mode, language=language)
 
 

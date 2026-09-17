@@ -39,7 +39,7 @@ Core capabilities also include:
 | **Hybrid Trigger Detection** | YAML regex + TF-IDF/semantic fallback (paraphrases match accurately) |
 | **Intelligent Role Recommendation** | 59 built-in roles + custom roles, multi-dimensional scoring + `score_explanation` |
 | **Outcome-Driven Adaptive Routing** | Independent `verify_completion` & breakthrough outcomes adjust routing weights in real time |
-| **Carbon Shield (Defense)** | Dedicated HTTP `POST /v4/shield/audit` + CLI: PUA silicon, protect carbon (identification only, never applied)  (Human-facing extensions deferred; baseline inspection preserved)|
+| **Carbon Shield (Defense)** | MCP `puax_audit_manipulation` + CLI `shield`: detect only, never deploy. Human-facing extensions deferred |
 | **AMB Multi-Model Benchmark** | 12 scenarios × 5 model profiles offline simulated matrix (hard-coded drill values, not measured; real verdicts come from `amb-live`) |
 | **Host Doctor One-Click Fix** | `npx puax doctor --fix` natively mounts hooks/rules into 10 major hosts (Cursor, Claude Code, Windsurf, Trae, etc.) |
 | **GHM Guided Hallucination** | Controlled hallucination engine for creative leaps: 8 Zhuangzi dream roles + enter/awaken/audit tools |
@@ -150,7 +150,7 @@ Alibaba, Huawei, Musk, Jobs, Baidu, Amazon, Google, Xiaomi, ByteDance, Netflix, 
 
 1. **Regex Priority** — Instant match against curated YAML patterns
 2. **Semantic Fallback** — TF-IDF + substring overlap scoring (threshold 0.62) when regex misses
-3. **Enhanced Detector** — Contextual awareness of tool idling, circular loops, and low-quality output (`EnhancedTriggerDetector`)
+3. **Event-level detector** — SessionStart / UserPromptSubmit / PostToolUse hot path (dual-engine with YAML session scan; Gate 32)
 
 ### Evals & Quality Gates
 
@@ -163,15 +163,11 @@ node evals/benchmark.js        # Latency & throughput benchmark
 
 See [evals/README.md](evals/README.md).
 
-### Carbon Shield (Human-Facing Defense) (v4.x+)
+### Carbon Shield (read-only recognition)
 
-> **Ironclad Line: Silicon agents may be motivated; carbon humans are strictly defended. Detect only, never deploy.**
+> **Detect only, never deploy. Human-facing plugins / userscripts / widgets are deferred.**
 
-Engineered for humans during workplace talks, commercial negotiations, and high-stakes decisions, it reversely detects six manipulation operators (rapid convergence, social isolation, failure reframing, identity replacement, prophecy marketing, salience hijacking) and outputs Four Iron Rules guidance (informed, tagged, awakenable, verifiable):
-- CLI Command: `puax-mcp-server shield "<text_to_audit>"`
-- MCP Tool: `puax_audit_manipulation`
-- HTTP Endpoint: `GET /v4/shield`
-- Web Admin: Dedicated Carbon Shield interactive audit tab
+Kernel keeps MCP tool `puax_audit_manipulation` and CLI `shield`. Not a human product surface.
 
 ### AMP 0.1 Orchestrator Native Middleware (v4.x+)
 
@@ -254,7 +250,7 @@ PUAX/
 | [AMP 0.1](docs/AMP.md) | Events / Blocks / Gates / State; MCP is merely a plug |
 | [AMP Orchestrator Guide](docs/AMP-INTEGRATION.md) | One-line integration for LangChain, LangGraph, CrewAI, AutoGen & Python SDK |
 | [Zero-Dep Python SDK Guide](distributions/python/README.md) | Official Python standard-library middleware |
-| [Web Admin Design (Archived)](docs/WEB-ADMIN-SPEC.md) | [Deprecated] Command strictly focuses on Agent native MCP pipeline |
+| [Web Admin Design (Archived)](docs/archive/WEB-ADMIN-SPEC.md) | Archived. GUI is frozen. |
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | Version changelog |
 | [evals/README.md](evals/README.md) | Evaluation tiers & L4 benchmarks |
 | [TODO.md](TODO.md) | Roadmap & milestones |

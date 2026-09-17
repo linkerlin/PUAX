@@ -3,7 +3,7 @@
  *
  * 用 junction 把真实包链接到临时目录的 node_modules，模拟"已安装 puax-mcp-server"
  * 环境，验证生成的 hooks/hook.js（Shape A 产物）经 stdin 载荷的完整行为：
- * - PreToolUse 拦截决策（git push → block / npm test → approve）
+ * - PreToolUse 拦截决策（破坏性 git → block / npm test → approve）
  * - SessionStart 无状态 → {}
  * - PostToolUse stdin exit_code 连续失败 → L1 压力注入
  *
@@ -63,10 +63,10 @@ skipped('Generated hook.js artifact (installed env, stdin payload)', () => {
     rmSync(env.dir, { recursive: true, force: true });
   });
 
-  it('blocks git push via stdin tool_input', () => {
+  it('blocks git reset --hard via stdin tool_input', () => {
     const { stdout } = runWithStdin(
       env.hookJs,
-      JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'git push origin main' }, session_id: 'art-1' }),
+      JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'git reset --hard HEAD' }, session_id: 'art-1' }),
       ['pre-tool-use', '--harness', 'claude']
     );
     const payload = JSON.parse(stdout.trim());

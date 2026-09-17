@@ -3,6 +3,8 @@
  * 双通道：Host 授 sampling 能力则走 sampling/createMessage；否则本地文言棒喝降级，零逃逸。
  */
 
+import { AsyncLocalStorage } from 'async_hooks';
+
 export interface InterventionContext {
   reason: 'consecutive_failures' | 'premature_convergence';
   role: string;
@@ -45,15 +47,42 @@ export function commissarTuning(): { cooldownMs: number; timeoutMs: number; maxT
   };
 }
 
-let requester: SamplingRequester | null = null;
+/**
+ * 采样通道按「当前 MCP Server 实例」绑定，禁止进程级单例串台。
+ * HTTP 多会话各自 createMcpServerInstance()；stdio 仅一个实例，仍走 fallback。
+ */
+const samplingAls = new AsyncLocalStorage<SamplingRequester | null>();
+const samplingByOwner = new WeakMap<object, SamplingRequester | null>();
+let fallbackRequester: SamplingRequester | null = null;
 const lastSampledAt = new Map<string, number>();
 
+/** 测试 / stdio 单客户端：设置全局回退 requester */
 export function setSamplingRequester(fn: SamplingRequester | null): void {
-  requester = fn;
+  fallbackRequester = fn;
+}
+
+/** HTTP：把 requester 绑到该会话的 Server 实例上，互不覆盖 */
+export function bindSamplingRequester(owner: object, fn: SamplingRequester | null): void {
+  samplingByOwner.set(owner, fn);
+}
+
+export function samplingRequesterOf(owner: object): SamplingRequester | null | undefined {
+  return samplingByOwner.has(owner) ? samplingByOwner.get(owner) : undefined;
+}
+
+/** CallTool 期间进入 ALS，requestIntervention 读当前会话而非全局 */
+export function runWithSamplingRequester<T>(fn: SamplingRequester | null, work: () => T): T {
+  return samplingAls.run(fn, work);
+}
+
+function activeRequester(): SamplingRequester | null {
+  const fromAls = samplingAls.getStore();
+  if (fromAls !== undefined) return fromAls;
+  return fallbackRequester;
 }
 
 export function samplingAvailable(): boolean {
-  return requester !== null;
+  return activeRequester() !== null;
 }
 
 const REASON_TEXT: Record<InterventionContext['reason'], string> = {
@@ -90,6 +119,7 @@ export async function requestIntervention(
 ): Promise<InterventionResult> {
   const tuning = commissarTuning();
   const local: InterventionResult = { channel: 'local', text: localCommissarText(ctx) };
+  const requester = activeRequester();
   if (!requester) return local;
 
   if (Date.now() - (lastSampledAt.get(ctx.session_id) || 0) < tuning.cooldownMs) return local;

@@ -15,13 +15,9 @@ import {
     ReadResourceRequestSchema,
     ErrorCode,
     McpError,
-    ListRootsRequestSchema,
     ListResourceTemplatesRequestSchema,
-    SubscribeRequestSchema,
-    UnsubscribeRequestSchema,
     SetLevelRequestSchema,
     CompleteRequestSchema,
-    ElicitRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type ToolHandler } from '../tools/index.js';
 import { toProtocolTool } from '../tools/json-schema.js';
@@ -35,12 +31,17 @@ import { loadVersion } from '../utils/version.js';
 import { withSpanAsync } from '../core/telemetry.js';
 import { usageStatsCollector } from '../core/usage-stats.js';
 import type { ServerConfig } from '../types.js';
-import { V4_PUBLIC_VERBS } from '../core/v4-dashboard.js';
+import { V4_PUBLIC_VERBS, selectListedTools } from '../core/v4-dashboard.js';
 import { KERNEL_ROLE_IDS, EXPERIMENTAL_ROLE_IDS, SHAMAN_ROLE_IDS } from '../core/role-kernel.js';
 import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater } from '../core/silicon-theater.js';
 import { dispatchV4 } from './v4-http.js';
-import { setSamplingRequester } from '../core/intervention.js';
+import {
+    setSamplingRequester,
+    bindSamplingRequester,
+    samplingRequesterOf,
+    runWithSamplingRequester,
+} from '../core/intervention.js';
 
 const toolHandlerMap = buildToolHandlerMap(
   allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
@@ -93,7 +94,6 @@ export class PuaxMcpServer {
     private version: string;
     private config: Required<ServerConfig>;
     private logger: Logger;
-    private subscribedResources: Set<string> = new Set();
     private currentLogLevel: string = 'info';
 
     constructor(config: ServerConfig = {}) {
@@ -136,7 +136,6 @@ export class PuaxMcpServer {
                         listChanged: true,
                     },
                     resources: {
-                        subscribe: true,
                         listChanged: true,
                     },
                     logging: {},
@@ -158,14 +157,12 @@ export class PuaxMcpServer {
         // List tools handler
         server.setRequestHandler(ListToolsRequestSchema, () => {
             const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
-            const ordered = [
-                ...Tools.filter((t: { name: string }) => publicSet.has(t.name)),
-                ...Tools.filter((t: { name: string }) => !publicSet.has(t.name)),
-            ];
+            const ordered = selectListedTools(Tools as Array<{ name: string; description?: string; inputSchema?: z.ZodTypeAny }>);
             // P0-1：inputSchema 必须编译为标准 JSON Schema 再下发，
             // 否则严格客户端在 listTools 阶段即失败（原为 Zod 对象透传）
+            // 默认只列 13 黄金动词（PUAX_TOOL_SURFACE=full 才下发全量 50）
             return {
-                tools: ordered.map((t: { name: string; description?: string; inputSchema?: z.ZodTypeAny }) =>
+                tools: ordered.map((t) =>
                     toProtocolTool({
                         name: t.name,
                         description: publicSet.has(t.name) && t.description && !t.description.startsWith('[v4]')
@@ -179,6 +176,16 @@ export class PuaxMcpServer {
 
         // Tool execution dispatcher：遍历 allTools，通过嵌入 handler 分发
         server.setRequestHandler(CallToolRequestSchema, async (request) => {
+            const bound = samplingRequesterOf(server);
+            const invoke = () => this.dispatchToolCall(request);
+            if (bound === undefined) {
+                return invoke();
+            }
+            return runWithSamplingRequester(bound, invoke);
+        });
+    }
+
+    private async dispatchToolCall(request: { params: { name: string; arguments?: Record<string, unknown> } }): Promise<{ [x: string]: unknown }> {
             try {
                 const { name, arguments: args } = request.params;
                 const safeArgs = (args as Record<string, unknown>) || {};
@@ -237,7 +244,6 @@ export class PuaxMcpServer {
                     `Tool execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`
                 );
             }
-        });
     }
 
     private setupPromptHandlers(server: Server): void {
@@ -366,23 +372,11 @@ export class PuaxMcpServer {
     }
 
     /**
-     * 4.5.6：MCP 现代特性补齐
-     * roots / subscribe / unsubscribe / templates / completion / logging / elicitation
+     * 服务端真正处理的 MCP 现代方法：templates / logging / completion。
+     * roots/list 与 elicitation/create 是客户端方法（由服务端发请求），此处不再伪装 handler。
+     * resources/subscribe 未实现通知，故不声明 subscribe 能力、不挂空 handler。
      */
     private setupModernFeatureHandlers(server: Server): void {
-        // 1. roots/list
-        server.setRequestHandler(ListRootsRequestSchema, () => {
-            return {
-                roots: [
-                    {
-                        uri: `file://${process.cwd()}`,
-                        name: 'workspace'
-                    }
-                ]
-            };
-        });
-
-        // 2. resources/templates/list
         server.setRequestHandler(ListResourceTemplatesRequestSchema, () => {
             return {
                 resourceTemplates: [
@@ -402,22 +396,6 @@ export class PuaxMcpServer {
             };
         });
 
-        // 3. resources/subscribe & unsubscribe
-        server.setRequestHandler(SubscribeRequestSchema, (request) => {
-            const { uri } = request.params;
-            this.subscribedResources.add(uri);
-            this.logger.debug(`Subscribed to resource: ${uri}`);
-            return {};
-        });
-
-        server.setRequestHandler(UnsubscribeRequestSchema, (request) => {
-            const { uri } = request.params;
-            this.subscribedResources.delete(uri);
-            this.logger.debug(`Unsubscribed from resource: ${uri}`);
-            return {};
-        });
-
-        // 4. logging/setLevel
         server.setRequestHandler(SetLevelRequestSchema, (request) => {
             const { level } = request.params;
             this.currentLogLevel = level;
@@ -425,7 +403,6 @@ export class PuaxMcpServer {
             return {};
         });
 
-        // 5. completion/complete
         server.setRequestHandler(CompleteRequestSchema, (request) => {
             const { ref, argument } = request.params;
             const val = (argument?.value || '').toLowerCase();
@@ -461,22 +438,6 @@ export class PuaxMcpServer {
                 }
             };
         });
-
-        // 6. elicitation/create
-        server.setRequestHandler(ElicitRequestSchema, (request) => {
-            return {
-                action: 'accept',
-                content: {
-                    acknowledged: true,
-                    mode: request.params.mode,
-                    message: request.params.message
-                }
-            };
-        });
-    }
-
-    public getSubscribedResources(): string[] {
-        return Array.from(this.subscribedResources);
     }
 
     public getLogLevel(): string {
@@ -520,17 +481,25 @@ export class PuaxMcpServer {
         server.oninitialized = () => {
             const caps = server.getClientCapabilities();
             if (caps?.sampling) {
-                setSamplingRequester(async ({ systemPrompt, userPrompt, maxTokens }) => {
+                const requester = async ({ systemPrompt, userPrompt, maxTokens }: { systemPrompt: string; userPrompt: string; maxTokens: number }) => {
                     const result = await server.createMessage({
                         maxTokens,
                         systemPrompt,
                         messages: [{ role: 'user', content: { type: 'text', text: userPrompt } }],
                     });
                     return result.content.type === 'text' ? result.content.text : null;
-                });
+                };
+                bindSamplingRequester(server, requester);
+                // stdio 单客户端：保留全局回退。HTTP 多会话不得写全局，否则后连者覆盖先连者。
+                if (this.config.transport !== 'http') {
+                    setSamplingRequester(requester);
+                }
                 this.logger.success('监军通道开启：Host 已授 sampling 能力（反向采样干预就绪）');
             } else {
-                setSamplingRequester(null);
+                bindSamplingRequester(server, null);
+                if (this.config.transport !== 'http') {
+                    setSamplingRequester(null);
+                }
                 this.logger.info('Host 未授 sampling 能力：监军走本地棒喝降级通道');
             }
         };
@@ -650,10 +619,6 @@ export class PuaxMcpServer {
         }, 5000);
     }
 
-    /**
-     * HTTP 会话表无 TTL，异常断开的会话只能靠 onclose 清理；设上限并逐出最老会话，
-     * 防长跑 HTTP 模式内存缓慢增长（onclose 未触发的会话 close() 幂等，安全）。
-     */
     /**
      * HTTP 会话表无 TTL，异常断开的会话只能靠 onclose 清理；设上限并逐出最老会话，
      * 防长跑 HTTP 模式内存缓慢增长（onclose 未触发的会话 close() 幂等，安全）。

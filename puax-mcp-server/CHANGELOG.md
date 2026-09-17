@@ -8,6 +8,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **`POST /v4/thin-prompt`**：编排器薄注入不再盲打无 session 的 `/mcp`；Python SDK `get_thin_prompt` 改走此路。
+- **`PUAX_TOOL_SURFACE`**：`tools/list` 默认只下发 13 黄金动词（`public`）；`full` 才列 50。`tools/call` 仍可按名调用未列出工具。
+- **`PUAX_GUARD_MODE`**：默认 `dev` 不拦日常 `git push`；评测集设 `eval`。
+
+### Changed
+- **监军采样按 MCP Server 实例绑定**（ALS + WeakMap）：HTTP 多会话不再进程级单例串台；stdio 仍走全局回退。
+- **MCP 现代特性收口**：删除方向反了的 `roots/list` / `elicitation/create` handler；不声明未实现通知的 `resources/subscribe`。保留 templates / logging / completion。
+- **AMP.md 信封与 schema/TS 对齐**：`blocks` 为标签字符串、`gate` 为枚举；去掉未实现的 `trust` / `consecutive_failure` 线格式。
+- **看板 `integrity_metrics`**：缺样本标 `unknown`，不再写死 1.0 轮 / 14.2% / −76.8% pass。
+- **CI**：协议门注释改为 32；`frontend-apps` 不再阻塞 `ci-success`（策令冻结店面）。
+- **`docs/WEB-ADMIN-SPEC.md` 迁入 `docs/archive/`**。
+
+### Fixed
+- **custom-role-store / evolution-engine** 补齐原子写。
+- **amp-middleware** 改从 `core/state-manager` 进口，不再走 hooks 垫片。
+- **Python 信封 `state.role`**：缺省 `"none"`，对齐 schema required。
+
+### Added
 - **第 32 门「双引擎信号一致性」**（`evals/trigger-signal-consistency.js`）：触发器双引擎（会话级扫描 / 事件级实时）经 `TRIGGER_ALIASES` 缝合层归一到 YAML 目录 id，本门守三层——模式键↔别名完备、别名目标全部命中目录真实 id（生命周期信号 preCompact/stopFeedback 按设计直通且与目录零碰撞）、七场景跨引擎归一一致（同一话语/上下文双引擎必须落在同一目录 id，含 bashFailure≡attempt_count 与 noSearch≡tool_underuse 两条上下文路径）。引擎合并第二步（模式源归一）以此为前置护栏。
 
 - **Zod → JSON Schema 转换器**（`src/tools/json-schema.ts`，零新增依赖）：MCP `tools/list` 要求 `inputSchema` 为标准 JSON Schema，而工具层持有的一直是 **Zod 对象本体**——直接透传时序列化出的是 `_def` / `typeName` 等内部结构，严格客户端在发现阶段即报 `inputSchema.type expected "object"`。此乃协议契约第一硬伤。转换器覆盖 object / string（min·max·email·url·uuid·regex）/ number（min·max·int）/ boolean / enum / array / tuple / record / union / intersection / default / optional / nullable / effects / branded，未支持类型一律退化为 `{}`（等价「任意」），保证 `tools/list` 绝不因单个工具而整体失败。

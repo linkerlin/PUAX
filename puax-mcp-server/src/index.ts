@@ -128,7 +128,7 @@ PUAX MCP Server v${version}
 Hook 子命令（原生 hook 引擎共享层）:
   puax-mcp-server hook <事件> [选项]
   npx puax-mcp-server hook session-start --session-id xxx
-  npx puax-mcp-server hook pre-tool-use --tool Bash --tool-args '{"command":"git push"}'
+  npx puax-mcp-server hook pre-tool-use --tool Bash --tool-args '{"command":"git reset --hard"}'
 
   事件: SessionStart | UserPromptSubmit | PostToolUse | PreToolUse | PreCompact | Stop
   选项: --session-id <id>  --message <文本>  --tool <工具名>

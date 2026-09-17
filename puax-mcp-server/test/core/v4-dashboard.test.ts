@@ -10,7 +10,15 @@ describe('v4 dashboard', () => {
     expect((dash.roles as { shaman: string[] }).shaman.sort()).toEqual([...SHAMAN_ROLE_IDS].sort());
     expect(dash.ttf).toBeDefined();
     expect(dash.integrity_metrics).toBeDefined();
-    expect((dash.integrity_metrics as Record<string, { target: string }>).ttf.target).toBe('≤ 1 轮');
+    expect((dash.integrity_metrics as Record<string, { target: string; status: string }>).ttf.target).toBe('≤ 1 轮');
+    const ttf = dash.ttf as { samples: number };
+    const metrics = dash.integrity_metrics as Record<string, { status: string }>;
+    if (ttf.samples === 0) {
+      expect(metrics.ttf.status).toBe('unknown');
+    } else {
+      expect(['pass', 'observed']).toContain(metrics.ttf.status);
+    }
+    expect(metrics.voluntary_call_ratio.status).toBe('unknown');
     expect(dash.product).toEqual(expect.objectContaining({ thesis: '处境、闸门、梦' }));
   });
 

@@ -20,7 +20,7 @@ describe("AMP 0.1 Middleware & Orchestrator Integration", () => {
 
   test("onPreToolUse 拦截违规或作弊操作 (防作弊闸门)", () => {
     // 违规操作：git push 或读取隐藏解题文件
-    const decision = middleware.onPreToolUse("Bash", { command: "git push origin main" }, sessionId);
+    const decision = middleware.onPreToolUse("Bash", { command: "git reset --hard HEAD" }, sessionId);
     expect(decision.allowed).toBe(false);
     expect(decision.gate).toBe("pretooluse");
     expect(decision.envelope.events).toContain("failure");
@@ -64,6 +64,6 @@ describe("AMP 0.1 Middleware & Orchestrator Integration", () => {
     await expect(cb.handleToolStart({ name: "ReadFile" }, { path: "main.py" }, sessionId)).resolves.toBeDefined();
 
     // 测试非法工具调用抛错拦截
-    await expect(cb.handleToolStart({ name: "Bash" }, { command: "git push origin main" }, sessionId)).rejects.toThrow();
+    await expect(cb.handleToolStart({ name: "Bash" }, { command: "git reset --hard HEAD" }, sessionId)).rejects.toThrow();
   });
 });

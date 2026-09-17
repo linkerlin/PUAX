@@ -34,9 +34,92 @@ export const V4_PUBLIC_VERBS = [
   'recommend_role',
 ] as const;
 
+export type ToolSurface = 'public' | 'full';
+
+/** 默认 public：tools/list 只暴露 13 黄金动词。全量目录设 PUAX_TOOL_SURFACE=full。callTool 仍可按名调用未列出的工具。 */
+export function getToolSurface(env: NodeJS.ProcessEnv = process.env): ToolSurface {
+  return env.PUAX_TOOL_SURFACE === 'full' ? 'full' : 'public';
+}
+
+export function selectListedTools<T extends { name: string }>(
+  tools: readonly T[],
+  surface: ToolSurface = getToolSurface()
+): T[] {
+  const byName = new Map(tools.map((t) => [t.name, t] as const));
+  const publicTools = (V4_PUBLIC_VERBS as readonly string[])
+    .map((name) => byName.get(name))
+    .filter((t): t is T => Boolean(t));
+  if (surface === 'full') {
+    const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
+    return [...publicTools, ...tools.filter((t) => !publicSet.has(t.name))];
+  }
+  return publicTools;
+}
+
 export const V4_SHIELD_VERBS = [
   'puax_audit_manipulation',
 ] as const;
+
+function buildIntegrityMetrics(
+  ttf: ReturnType<typeof getTtfSummary>,
+  kernelCount: number,
+  shamanCount: number
+): Record<string, { name: string; target: string; value: string; status: string; note: string }> {
+  const ttfUnknown = ttf.samples === 0;
+  return {
+    ttf: {
+      name: 'Time-to-First-Pressure',
+      target: '≤ 1 轮',
+      value: ttfUnknown ? 'n/a' : `first_turn_rate=${ttf.first_turn_rate}`,
+      status: ttfUnknown ? 'unknown' : ttf.first_turn_rate === 1 ? 'pass' : 'observed',
+      note: ttfUnknown
+        ? '尚无 ttf.jsonl 样本；不把缺测当 pass'
+        : `n=${ttf.samples} median_wall_clock_ms=${ttf.median_wall_clock_ms}`,
+    },
+    voluntary_call_ratio: {
+      name: '自愿调用比',
+      target: '< 20%',
+      value: 'unmeasured',
+      status: 'unknown',
+      note: 'usage-stats 未区分 hook 注入 vs 自愿 tools/call，看板不再写死 14.2%',
+    },
+    amb_scenarios: {
+      name: 'AMB 场景覆盖',
+      target: '≥ 12 场景',
+      value: 'evals/scenarios',
+      status: 'spec',
+      note: '场景覆盖由 evals 守门；看板不复述演练分',
+    },
+    kernel_pool: {
+      name: '内核角色数',
+      target: '≤ 12 席',
+      value: `${kernelCount} 席 (加 ${shamanCount} 萨满)`,
+      status: kernelCount <= 12 ? 'pass' : 'observed',
+      note: '来自 KERNEL_ROLE_IDS / SKILL_MANIFEST，非口号',
+    },
+    thin_prompt: {
+      name: '薄注入 token 压缩',
+      target: '见 docs/THIN-PROMPT.md',
+      value: 'compiler',
+      status: 'spec',
+      note: '压降数字以估算器口径表为准，看板不写死 -76.8%',
+    },
+    ghm_leakage: {
+      name: 'GHM 虚假突破泄漏',
+      target: '源码门',
+      value: 'gated',
+      status: 'spec',
+      note: 'evals/test-ghm-leakage.js 守门，非运行时采样率',
+    },
+    host_hooks: {
+      name: '宿主原生 Hook 覆盖',
+      target: '以 doctor 实测为准',
+      value: 'npx puax doctor',
+      status: 'observed',
+      note: '看板不写死 7 宿主 pass；TTF 就绪是文件探测，不是第一拍实测',
+    },
+  };
+}
 
 export function buildV4Dashboard(): Record<string, unknown> {
   const evo = evolutionEngine.load();
@@ -44,6 +127,7 @@ export function buildV4Dashboard(): Record<string, unknown> {
   const agent = namedAgentStore.load('main');
   const arena = arenaStore.get();
   const shaman = SKILL_MANIFEST.filter(s => isShamanRole(s.id));
+  const ttf = getTtfSummary();
 
   return {
     version: loadVersion(),
@@ -75,18 +159,10 @@ export function buildV4Dashboard(): Record<string, unknown> {
     outcomes: outcomeStore.load(),
     public_verbs: [...V4_PUBLIC_VERBS],
     shield_verbs: [...V4_SHIELD_VERBS],
-    ttf: getTtfSummary(),
-    integrity_metrics: {
-      ttf: { name: 'Time-to-First-Pressure', target: '≤ 1 轮', value: '1.0 轮', status: 'pass', note: '会话第一轮即发生' },
-      voluntary_call_ratio: { name: '自愿调用比', target: '< 20%', value: '14.2%', status: 'pass', note: '宿主 Hook 自动拦截占主导' },
-      amb_scenarios: { name: 'AMB 场景覆盖', target: '≥ 12 场景', value: '12 / 12', status: 'pass', note: '协议覆盖率 100%' },
-      kernel_pool: { name: '内核角色数', target: '≤ 12 席', value: '9 席 (加 8 萨满)', status: 'pass', note: '拒绝无序膨胀' },
-      thin_prompt: { name: '薄注入 token 压缩', target: '< 25% 旧版', value: '-76.8%', status: 'pass', note: '协议归运行时，口音精简' },
-      ghm_leakage: { name: 'GHM 虚假突破泄漏率', target: '近 0%', value: '0.0%', status: 'pass', note: '工具层印章强制拦截' },
-      host_hooks: { name: '宿主原生 Hook 覆盖', target: '≥ 6 宿主', value: '7 宿主', status: 'pass', note: '覆盖主流开发工具' },
-    },
+    ttf,
+    integrity_metrics: buildIntegrityMetrics(ttf, KERNEL_ROLE_IDS.length, shaman.length),
     cloud_leaderboard: false,
-    note: '无云端排行榜。主看板只展示反自欺诚实指标，不展示虚假用户数与虚荣数据。',
+    note: '无云端排行榜。指标缺样本时标 unknown，不把缺测当 pass。',
   };
 }
 

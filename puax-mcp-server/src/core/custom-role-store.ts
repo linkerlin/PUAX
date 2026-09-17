@@ -3,9 +3,10 @@
  * 持久化于 ~/.puax/custom-roles.json，并入推荐池与激活流程
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
+import { atomicWriteFileSync } from '../utils/atomic-write.js';
 import { getGlobalLogger } from '../utils/logger.js';
 import { getManifestEntryById } from '../prompts/prompts-bundle.js';
 import type { BundledSkill, SkillManifestEntry } from '../prompts/bundle-types.js';
@@ -102,7 +103,7 @@ export class CustomRoleStore {
   }
 
   private saveRegistry(): void {
-    writeFileSync(this.registryFile, JSON.stringify(this.registry, null, 2), 'utf-8');
+    atomicWriteFileSync(this.registryFile, JSON.stringify(this.registry, null, 2), 'utf-8');
   }
 
   list(): CustomRoleRecord[] {

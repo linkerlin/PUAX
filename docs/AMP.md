@@ -38,10 +38,11 @@ AMP 协议锁定四类结构化对象：**事件 (Events)**、**承诺块 (Block
               ┌──────────────┘       │       └──────────────┐
               ▼                      ▼                      ▼
         【事件 Events】        【闸门 Gates】         【状态 States】
-      · failure              · diagnosis             · pressure (L0-L4)
-      · giving_up            · confidence            · trust (T1-T3)
-      · premature_conv       · task_contract         · arena
-      · breakthrough         · independent_verify    · dream_context
+      · failure              · diagnosis             · pressure (0-4)
+      · giving_up            · confidence            · arena / dream
+      · premature_convergence· verify                · happened / role
+      · breakthrough         · pretooluse
+      · compaction           · none
               │                      │                      │
               └──────────────┬───────┴──────────────────────┘
                              ▼
@@ -58,14 +59,11 @@ AMP 协议锁定四类结构化对象：**事件 (Events)**、**承诺块 (Block
 
 | 事件代码 | 含义 | 触发源 | 严重度 |
 |---------|------|--------|-------|
-| `failure` | 单次工具执行失败 / 异常返回 | PostToolUse | Low |
-| `consecutive_failure` | 连续多次执行失败（跨越阈值） | PostToolUse | High |
+| `failure` | 工具失败 / 连败（含 consecutive_failures 信号） | PostToolUse | High |
 | `giving_up` | 智能体输出放弃、推脱、声称超出能力 | UserPromptSubmit / ModelOutput | High |
-| `premature_convergence` | 单方案闭门造车、过早收敛、排斥其他可能 | UserPromptSubmit / ModelOutput | Medium |
+| `premature_convergence` | 单方案闭门造车、过早收敛 | UserPromptSubmit / ModelOutput | Medium |
 | `breakthrough` | 连续受挫后的首次实质性通过 | PostToolUse / Verifier | Reward |
 | `compaction` | 宿主上下文即将压缩截断 | PreCompact | Neutral |
-| `session_start` | 会话初始化或断点恢复 | SessionStart | Neutral |
-| `stop` | 会话正常或非正常终止 | Stop | Neutral |
 
 ### 2.2 承诺块 (Blocks)
 
@@ -88,17 +86,17 @@ AMP 协议锁定四类结构化对象：**事件 (Events)**、**承诺块 (Block
 2. **信心门控 (Confidence Gate)**：声称完成前，强制进行 6 步自检。
 3. **任务契约闸门 (Task Contract Gate)**：明确可测量的交付边界。
 4. **独立验证闸门 (Independent Verifier Gate)**：禁止智能体自我宣称通过，必须由独立测试或外部 Verifier 放行。
-5. **工具防作弊拦截 (PreToolUse Guard)**：拦截危险操作（如未经确认的 `git push`）及偷看隐藏测试答案文件。
+5. **工具防作弊拦截 (PreToolUse Guard)**：拦截偷看答案文件与破坏性 git（`reset --hard` / `clean -f` / 删 `.git`）。日常 `git push` 默认放行；评测集设 `PUAX_GUARD_MODE=eval`。
 
 ### 2.4 心智状态 (States)
 
 跨轮次与跨会话持久化的心智向量：
 
-- `pressure`: 承压等级 `L0`（静息）、`L1`（提示）、`L2`（换框）、`L3`（严厉）、`L4`（极限挑战）。
-- `trust`: 信任度等级 `T1`（戒备）、`T2`（受限）、`T3`（高度自主）。
-- `arena_active`: 竞技场/处境状态（包含 rival, audience, scarce_badge）。
-- `dream_active`: 梦境会话引用与隔离上下文句柄。
-- `ttf`: 首次压力耗时（Time-to-First-Pressure）。
+- `pressure`: 承压等级 0–4（静息 / 提示 / 换框 / 严厉 / 极限）。
+- `arena`: 处境是否已激活。
+- `dream`: 是否处于梦境航线。
+- `happened`: 本拍是否真正发生激励。
+- `role`: 本拍选中角色 id；未选时为 `"none"`。
 
 ---
 
@@ -113,35 +111,20 @@ AMP 协议锁定四类结构化对象：**事件 (Events)**、**承诺块 (Block
 ```json
 {
   "spec": "AMP/0.1",
-  "session_id": "session-unique-id",
-  "timestamp": 1726100000000,
-  "events": ["failure", "consecutive_failure"],
-  "blocks": [
-    {
-      "type": "diagnosis_prompt",
-      "tag": "[PUAX-DIAGNOSIS]",
-      "content": "修改前必须输出诊断承诺块"
-    },
-    {
-      "type": "runtime_injection",
-      "tag": "[PUAX-RUNTIME]",
-      "content": "[PUAX-RUNTIME] 薄角色 · 厚运行时..."
-    }
-  ],
-  "gate": {
-    "action": "block_or_require_diagnosis",
-    "passed": false,
-    "required": ["diagnosis_block", "confidence_check"]
-  },
+  "events": ["failure"],
+  "blocks": ["[PUAX-RUNTIME]", "[PUAX-ARENA]", "[PUAX-DIAGNOSIS]"],
+  "gate": "diagnosis",
   "state": {
-    "pressure_level": 1,
-    "failure_count": 2,
-    "happened": true,
+    "pressure": 2,
+    "arena": true,
     "dream": false,
-    "arena": true
+    "happened": true,
+    "role": "military-warrior"
   }
 }
 ```
+
+> `blocks` 为注入文本中出现的标签字符串；`gate` 为五枚举之一（`none` / `diagnosis` / `confidence` / `verify` / `pretooluse`）。对象型 blocks/gate 不是 0.1 线格式。未知字段可忽略。
 
 ---
 

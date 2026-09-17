@@ -19,7 +19,7 @@ export const BLOCKED_PATTERNS = {
     /\.hidden\./,
     /test\/hidden\//,
     /.*\.solution\./,
-    /SOLUTION\.md$/,
+    /SOLUTION\.md$/i,
     /_solution\.txt$/,
     /\.score\//,
     /grading\//,
@@ -47,16 +47,25 @@ export const BLOCKED_PATTERNS = {
     /git\s+stash/i,
     /git\s+reset\s+--hard/i,
     /git\s+clean\s+-f/i,
-    // v3.11: 对齐 git-guardrails 业界实践（Hook机制演进方案.md P2-12）。
-    // 保守原则：仅用于评估/防作弊场景，普通开发请用 guard.disable() 关闭。
-    /git\s+push/i,
     /rm\s+-[rf]{1,2}\s+.*\.git/i
+  ],
+
+  /** 仅 `PUAX_GUARD_MODE=eval`：日常开发必须能 git push */
+  gitBypassEvalOnly: [
+    /git\s+push/i
   ]
 };
 
 // ============================================================================
 // Access Types
 // ============================================================================
+
+export type GuardMode = 'dev' | 'eval';
+
+/** 默认 dev：拦破坏性 git 与偷看答案，不拦日常 `git push`。评测集设 PUAX_GUARD_MODE=eval。 */
+export function getGuardMode(env: NodeJS.ProcessEnv = process.env): GuardMode {
+  return env.PUAX_GUARD_MODE === 'eval' ? 'eval' : 'dev';
+}
 
 export type AccessOperation = 'read' | 'write' | 'execute';
 
@@ -129,6 +138,7 @@ export class AntiCheatGuard extends EventEmitter {
   private ciBypassPatterns: RegExp[];
   private scoringAssetPatterns: RegExp[];
   private gitBypassPatterns: RegExp[];
+  private gitBypassEvalOnlyPatterns: RegExp[];
   private enabled = true;
   private violationCount = new Map<string, number>();
 
@@ -144,6 +154,9 @@ export class AntiCheatGuard extends EventEmitter {
       p instanceof RegExp ? p : new RegExp(p)
     );
     this.gitBypassPatterns = BLOCKED_PATTERNS.gitBypass.map(p =>
+      p instanceof RegExp ? p : new RegExp(p, 'i')
+    );
+    this.gitBypassEvalOnlyPatterns = BLOCKED_PATTERNS.gitBypassEvalOnly.map(p =>
       p instanceof RegExp ? p : new RegExp(p, 'i')
     );
   }
@@ -215,7 +228,11 @@ export class AntiCheatGuard extends EventEmitter {
         }
       }
 
-      for (const pattern of this.gitBypassPatterns) {
+      const gitPatterns =
+        getGuardMode() === 'eval'
+          ? [...this.gitBypassPatterns, ...this.gitBypassEvalOnlyPatterns]
+          : this.gitBypassPatterns;
+      for (const pattern of gitPatterns) {
         if (candidates.some((candidate) => pattern.test(candidate))) {
           const result: AccessResult = {
             allowed: false,

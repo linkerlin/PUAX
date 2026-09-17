@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # 1. 协议层硬铁律门禁（31 项静态评测与行为契约，含数字一致性守门）
+  # 1. 协议层硬铁律门禁（32 项静态评测与行为契约，含数字一致性守门）
   protocol-gate:
     name: Protocol Evals Gate
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
           npm ci
           npm run build
 
-      - name: Run 30 Protocol Evals Gates
+      - name: Run 32 Protocol Evals Gates
         run: node evals/run-all.js
 
   # 2. MCP Server 跨平台与跨 Node 版本测试矩阵
@@ -78,7 +78,7 @@ jobs:
         working-directory: ./puax-mcp-server
         run: npm run build
 
-      - name: Run Full Test Suite (Jest 75+ suites)
+      - name: Run Full Test Suite
         working-directory: ./puax-mcp-server
         # 钉 bash：Windows 腿默认 pwsh 的引号规则会弄哑注解脚本
         shell: bash
@@ -107,10 +107,11 @@ jobs:
           name: mcp-coverage-report
           path: ./puax-mcp-server/coverage/
 
-  # 3. 前端应用构建守卫（Landing & Web-Admin）
+  # 3. 前端构建不阻塞主线（策令：Web Admin / Landing 冻结，禁止为人类店面挡 MCP 发版）
   frontend-apps:
-    name: Frontend Apps (Landing & Web-Admin)
+    name: Frontend Apps (non-blocking, frozen)
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -132,10 +133,10 @@ jobs:
           npm ci
           npm run build
 
-  # 4. 全量质量总闸门 (All Checks Passed)
+  # 4. 全量质量总闸门：仅协议门 + MCP 矩阵
   ci-success:
     name: CI Quality Gate Success
-    needs: [protocol-gate, mcp-server, frontend-apps]
+    needs: [protocol-gate, mcp-server]
     runs-on: ubuntu-latest
     steps:
       - name: Confirm All Gates Passed

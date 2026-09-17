@@ -75,7 +75,7 @@
 - [ ] **日文版** — 50 角色日文文化适配（**暂不实施**，用户确认跳过）
 - [x] **行为级评测** — L4 + governance + heartbeat + benchmark
 - [x] **依赖注入** — service-registry.ts
-- [x] **trigger-detector 合并** — Enhanced 并入 core/trigger-detector.ts
+- [x] **trigger-detector 双引擎** — 会话扫描（YAML）与事件级热路径并存；死继承引擎已剟；Gate 32 守一致性
 - [x] **模式匹配增强** — TF-IDF + 子串混合（v3.10.0）
 - [x] **自定义角色** — custom-roles.json + MCP CRUD（v3.9.0）
 - [x] **更多风味** — Amazon / Google / Xiaomi（v3.9.1）

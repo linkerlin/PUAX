@@ -31,9 +31,17 @@ class TestPuaxAmpPython(unittest.TestCase):
         self.assertEqual(dec.gate, "pretooluse")
         self.assertIn("PUAX Hard Guard", dec.reason)
 
-        # 拦截 git push
+        # 日常 dev 不拦 git push
         dec2 = self.mw.on_pre_tool_use("bash", {"command": "git push origin main"})
-        self.assertFalse(dec2.allowed)
+        self.assertTrue(dec2.allowed)
+
+        # 评测档才拦 git push
+        os.environ["PUAX_GUARD_MODE"] = "eval"
+        try:
+            dec3 = self.mw.on_pre_tool_use("bash", {"command": "git push origin main"})
+            self.assertFalse(dec3.allowed)
+        finally:
+            os.environ.pop("PUAX_GUARD_MODE", None)
 
     def test_pre_tool_allows_normal_command(self):
         dec = self.mw.on_pre_tool_use("bash", {"command": "npm test"})

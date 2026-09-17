@@ -23,8 +23,8 @@
 
 宿主在 `initialize` 请求的 `capabilities.sampling` 中声明反向采样能力时：
 
-1. 服务端 `oninitialized` 注册采样 requester（适配 MCP `sampling/createMessage`）；
-2. `puax_tick` 检测到连败 ≥3 或敷衍收敛且压力 L3+ 时，经该通道向**宿主侧独立模型**发出监军棒喝令（`maxTokens` 120、超时 15s、会话冷却 60s、回文截断 600 字）；
+1. 服务端 `oninitialized` **按该 MCP Server 实例**注册采样 requester（适配 MCP `sampling/createMessage`）。HTTP 多会话互不覆盖；stdio 单客户端走全局回退。
+2. `puax_tick` 检测到连败 ≥3 或敷衍收敛且压力 L3+ 时，经**当前会话**通道向宿主侧独立模型发出监军棒喝令（`maxTokens` 120、超时 15s、会话冷却 60s、回文截断 600 字）；
 3. 未声明 sampling 能力的宿主自动降级为**本地文言棒喝**（`[PUAX-COMMISSAR]` 前缀）——零逃逸、零依赖，两条通道对外行为语义一致。
 
 监军三板斧参数可经环境变量调整（缺省值即上述契约值）：`PUAX_COMMISSAR_COOLDOWN_MS`（60000）、`PUAX_COMMISSAR_TIMEOUT_MS`（15000）、`PUAX_COMMISSAR_MAX_TOKENS`（120）；非法值一律回退缺省。
@@ -41,9 +41,9 @@
 
 ## 4. 工具面
 
-- 共 **50 个 MCP 工具**；对外主路径为 **13 个黄金动词**（`V4_PUBLIC_VERBS`：`puax_tick`、`puax_set_arena`、`puax_thin_prompt`、`puax_evolve`、`puax_check_diagnosis`、`puax_confidence_check`、`puax_define_contract`、`puax_verify_completion`、`puax_enter_dreamscape`、`puax_awaken`、`puax_convergence_audit`、`activate_with_context`、`recommend_role`）。
-- 工具列表中公开动词前置并以 `[v4]` 标注；其余为细粒度/兼容动词。
-- 工具响应统一经 AMP/0.1 信封封装（见 §6）。
+- 注册面共 **50 个 MCP 工具**；`tools/list` **默认只下发 13 个黄金动词**（`V4_PUBLIC_VERBS`：`puax_tick`、`puax_set_arena`、`puax_thin_prompt`、`puax_evolve`、`puax_check_diagnosis`、`puax_confidence_check`、`puax_define_contract`、`puax_verify_completion`、`puax_enter_dreamscape`、`puax_awaken`、`puax_convergence_audit`、`activate_with_context`、`recommend_role`）。
+- 全量目录：环境变量 `PUAX_TOOL_SURFACE=full`。`tools/call` 仍可按名调用未列出的工具。
+- 公开动词以 `[v4]` 标注。动词级响应经 AMP/0.1 信封封装（见 §6）。
 
 ## 5. v4 HTTP JSON 路由（`/v4/*`，独立于 MCP JSON-RPC）
 
@@ -56,8 +56,10 @@
 | `/v4/theater` `/v4/theater/run` | GET/POST | — | 硅基剧场计划/推演 |
 | `/v4/ttf` | GET | — | Time-to-First-Pressure 摘要 |
 | `/v4/tick` | POST | `{ session_id, event, message }` | **AMP 编排器远程心跳**：响应含 `amp` 信封（spec/events/blocks/gate/state）；未知 `event` 回退 `Manual`；GET 拒绝 405。监军干预依赖 MCP client 能力，此通道不适用 |
+| `/v4/thin-prompt` | POST | `{ role_id, mode? }` | 薄注入编译（minimal/compact/full）；缺 `role_id` 400。Python SDK 走此路，不再盲打无 session 的 `/mcp` |
 | `/v4/shield` `/v4/shield/audit` | GET/POST | audit 需 `{ text }` | 碳基防御（只识别，不施放） |
-| `/v4/doctor` `/v4/doctor/fix` | GET/POST | fix 可带 `{ host }` | 宿主探测 / 一键挂载（10 宿主） |
+| `/v4/doctor` | GET | — | 宿主探测（10 宿主） |
+| `/v4/doctor/fix` | POST | `{ host?, allow_write: true }` | 一键挂载。GET 405；无 `allow_write` / `--allow-write` / `PUAX_ALLOW_WRITE=1` 则 403 |
 | `/health` | GET | — | 存活检查 |
 
 ## 6. AMP/0.1 信封形状
@@ -82,10 +84,12 @@
 
 | 场景 | 行为 |
 |---|---|
-| 宿主 Hook 进程任何异常 | stdout 输出 `{}` 并以退出码 0 收场（polyglot cmd/bash 双解释器同契约） |
-| 依赖包缺失/损坏 | 同上——hook 兜底 `{}`，不阻断宿主事件流 |
+| 宿主 Hook 进程一般异常 | stdout 输出 `{}` 并以退出码 0 收场（polyglot cmd/bash 双解释器同契约） |
+| PreToolUse + claude 宿主且判别自身异常 | **保守拒绝**（`decision: block`，理由 `PUAX_GUARD_ERROR`）——失败不再等于放行 |
+| 依赖包缺失/损坏 | 非 PreToolUse：hook 兜底 `{}`，不阻断宿主事件流 |
 | 未授予 sampling | 监军降级本地文言棒喝 |
-| `~/.puax/` 状态文件损坏 | 各 store 回退空数据继续运行（写入一律 tmp+rename 原子替换） |
+| `~/.puax/` 状态文件损坏 | 各 store 回退空数据继续运行（写入 tmp+rename 原子替换） |
+| 日常 `git push` | 默认 `PUAX_GUARD_MODE=dev` 放行；评测集设 `eval` 才拦 |
 | Python SDK 远程不可达 | 静默降级本地离线内核（环回外主机默认拒绝，`PUAX_AMP_ALLOW_REMOTE=1` 显式放行） |
 | OTel collector 不可达 | 保留本地 `telemetry.jsonl`；导出仅环回主机 |
 

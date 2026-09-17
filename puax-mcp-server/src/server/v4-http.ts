@@ -12,6 +12,7 @@ import { getTtfSummary } from "../core/ttf.js";
 import { MANIPULATION_PATTERNS, auditManipulation } from "../core/carbon-shield.js";
 import { runHostDoctor, fixHostDoctor } from "../core/host-doctor.js";
 import { runEvolveCycle, type TickEvent } from "../core/evolve-cycle.js";
+import { compileThinPrompt, type ThinPromptMode } from "../core/thin-prompt.js";
 
 export interface V4Response {
   status: number;
@@ -90,6 +91,20 @@ export function dispatchV4(method: string, pathname: string, body?: unknown): V4
         return handleHttpTick(body);
       }
       return { status: 405, json: { error: "Method Not Allowed, use POST with { session_id, event, message }" } };
+    case "/v4/thin-prompt": {
+      if (method !== "POST") {
+        return { status: 405, json: { error: "Method Not Allowed, use POST with { role_id, mode? }" } };
+      }
+      const b = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+      const role_id = typeof b.role_id === "string" && b.role_id ? b.role_id : "";
+      if (!role_id) {
+        return { status: 400, json: { error: "role_id required" } };
+      }
+      const rawMode = typeof b.mode === "string" ? b.mode : "compact";
+      const mode: ThinPromptMode = rawMode === "full" || rawMode === "minimal" || rawMode === "compact" ? rawMode : "compact";
+      const language = b.language === "en" ? "en" : "zh";
+      return { status: 200, json: compileThinPrompt({ role_id, mode, language }) };
+    }
     case "/v4/amb":
       return { status: 200, json: getAmbMatrixData() };
     case "/v4/theater":

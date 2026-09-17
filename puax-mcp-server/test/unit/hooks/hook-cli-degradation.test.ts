@@ -70,7 +70,7 @@ describe('Hook CLI full-path degradation (spawn)', () => {
 
     it('PreToolUse block decision survives full process path', () => {
       const { stdout, status } = runNode(
-        [BUILD_ENTRY, 'hook', 'pre-tool-use', '--session-id', e2eSession, '--tool', 'Bash', '--tool-args', '{"command":"git push origin main"}', '--harness', 'claude']
+        [BUILD_ENTRY, 'hook', 'pre-tool-use', '--session-id', e2eSession, '--tool', 'Bash', '--tool-args', '{"command":"git reset --hard HEAD"}', '--harness', 'claude']
       );
       const payload = JSON.parse(stdout.trim());
       expect(payload.hookSpecificOutput.decision).toBe('block');

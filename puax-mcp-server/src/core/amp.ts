@@ -40,7 +40,7 @@ export interface AmpEnvelope {
     arena: boolean;
     dream: boolean;
     happened: boolean;
-    role?: string;
+    role: string;
   };
 }
 
@@ -83,7 +83,7 @@ export function toAmpEnvelope(result: EvolveResult, sessionId: string, event?: T
       arena: result.arena_active || injection.includes('[PUAX-ARENA]'),
       dream: result.action === 'dream_suggest' || injection.includes('[DREAM]') || injection.includes('[PUAX-DREAM-COUNCIL]'),
       happened: result.happened,
-      role: result.selected_role,
+      role: result.selected_role || 'none',
     },
   };
 }
@@ -95,7 +95,7 @@ export function ampSpecDoc(): Record<string, unknown> {
       events: [...AMP_EVENTS],
       blocks: [...AMP_BLOCKS],
       gates: [...AMP_GATES],
-      state: ['pressure L0–L4', 'trust T1–T3', 'dream_context_ref', 'arena'],
+      state: ['pressure L0–L4', 'arena', 'dream', 'happened', 'role'],
     },
     note: 'puax-mcp-server 是参考实现。宿主只要能吃这四类对象，即可挂 PUAX inside。',
   };

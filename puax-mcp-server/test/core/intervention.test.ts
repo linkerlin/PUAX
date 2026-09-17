@@ -10,6 +10,7 @@ import {
   setSamplingRequester,
   samplingAvailable,
   commissarTuning,
+  runWithSamplingRequester,
 } from '../../src/core/intervention.js';
 
 describe('commissarTuning 参数化（env 可调，默认不变）', () => {
@@ -115,6 +116,24 @@ describe('监军通道', () => {
       skip_detect: true,
     });
     expect(result.needs_intervention).toBeUndefined();
+  });
+
+  it('ALS 按会话隔离采样通道，空 ALS 不覆盖全局回退', async () => {
+    setSamplingRequester(async () => '全局棒喝');
+    const isolated = await runWithSamplingRequester(async () => '甲席棒喝', () =>
+      requestIntervention({ ...baseCtx, session_id: 'commissar-als-a' }),
+    );
+    expect(isolated.channel).toBe('sampling');
+    expect(isolated.text).toContain('甲席');
+
+    const noSampling = await runWithSamplingRequester(null, () =>
+      requestIntervention({ ...baseCtx, session_id: 'commissar-als-b' }),
+    );
+    expect(noSampling.channel).toBe('local');
+
+    const fallback = await requestIntervention({ ...baseCtx, session_id: 'commissar-als-c' });
+    expect(fallback.channel).toBe('sampling');
+    expect(fallback.text).toContain('全局');
   });
 
   it('tick 工具携带监军棒喝', async () => {

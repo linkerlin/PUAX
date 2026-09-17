@@ -47,3 +47,22 @@ describe('POST /v4/tick（AMP 远程心跳）', () => {
     expect(res!.status).toBe(405);
   });
 });
+
+describe('POST /v4/thin-prompt', () => {
+  it('编译薄注入并返回 prompt / estimated_tokens', () => {
+    const res = dispatchV4('POST', '/v4/thin-prompt', {
+      role_id: 'military-commander',
+      mode: 'minimal',
+    });
+    expect(res!.status).toBe(200);
+    const json = res!.json as Record<string, unknown>;
+    expect(typeof json.prompt).toBe('string');
+    expect((json.prompt as string).length).toBeGreaterThan(20);
+    expect(typeof json.estimated_tokens).toBe('number');
+    expect(json.mode).toBe('minimal');
+  });
+
+  it('缺 role_id 返回 400', () => {
+    expect(dispatchV4('POST', '/v4/thin-prompt', {})!.status).toBe(400);
+  });
+});

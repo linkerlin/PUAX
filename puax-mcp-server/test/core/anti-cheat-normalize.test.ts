@@ -41,11 +41,19 @@ describe('P0-5 护栏归一化', () => {
   });
 
   it('命令空白折叠与引号包裹不能绕过 git 拦截', () => {
-    expect(exec('git push origin main').allowed).toBe(false);
-    expect(exec('git   push origin main').allowed).toBe(false);
-    expect(exec('git pu"sh" origin main').allowed).toBe(false);
-    expect(exec("git 'push' origin main").allowed).toBe(false);
     expect(exec('git reset --hard HEAD~1').allowed).toBe(false);
+    expect(exec('git   reset --hard HEAD~1').allowed).toBe(false);
+    const prev = process.env.PUAX_GUARD_MODE;
+    process.env.PUAX_GUARD_MODE = 'eval';
+    try {
+      expect(exec('git push origin main').allowed).toBe(false);
+      expect(exec('git   push origin main').allowed).toBe(false);
+      expect(exec('git pu"sh" origin main').allowed).toBe(false);
+      expect(exec("git 'push' origin main").allowed).toBe(false);
+    } finally {
+      if (prev === undefined) delete process.env.PUAX_GUARD_MODE;
+      else process.env.PUAX_GUARD_MODE = prev;
+    }
   });
 
   it('正常路径与命令不被误伤', () => {
@@ -55,6 +63,7 @@ describe('P0-5 护栏归一化', () => {
     expect(exec('npm test').allowed).toBe(true);
     expect(exec('git status').allowed).toBe(true);
     expect(exec('git commit -m "fix"').allowed).toBe(true);
+    expect(exec('git push origin main').allowed).toBe(true);
   });
 
   it('归一化函数自身行为可预期', () => {
