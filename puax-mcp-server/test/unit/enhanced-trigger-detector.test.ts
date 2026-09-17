@@ -1,395 +1,218 @@
 /**
- * 增强触发检测器单元测试
+ * 事件级触发检测器（EnhancedTriggerDetector）单元测试
+ *
+ * 本文件原为 trigger-detector.ts 内嵌继承式 EnhancedTriggerDetector 的
+ * 孤儿单测；v4.4 该零消费死引擎剟除后，改测真正在跑的事件级引擎
+ * （src/core/trigger-detector-enhanced.ts，evolve-cycle 心跳热路径）。
+ *
+ * 会话态持久于 ~/.puax/，每例用唯一会话 ID 防跨例泄漏；
+ * 压力阈值取默认配置（L1=2 次失败，冷却 30s，仅升级时触发）。
  */
 
 import {
-  EnhancedTriggerDetector,
-  ConversationMessage,
-  TaskContext,
-} from '../../src/core/trigger-detector.js';
+  enhancedTriggerDetector,
+  type TriggerContext,
+} from '../../src/core/trigger-detector-enhanced.js';
 
-describe('EnhancedTriggerDetector', () => {
-  let detector: EnhancedTriggerDetector;
+function sid(label: string): string {
+  return `edt-${label}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
-  beforeEach(() => {
-    detector = new EnhancedTriggerDetector({ sensitivity: 'medium', language: 'auto' });
-  });
+function promptContext(sessionId: string, message: string): TriggerContext {
+  return { sessionId, eventType: 'UserPromptSubmit', message };
+}
 
-  describe('基础功能', () => {
-    it('应该正确创建实例', () => {
-      expect(detector).toBeInstanceOf(EnhancedTriggerDetector);
-    });
-
-    it('应该返回增强的触发条件定义', () => {
-      const definitions = detector.getEnhancedDefinitions();
-      expect(Object.keys(definitions)).toHaveLength(5);
-      expect(definitions).toHaveProperty('tool_underuse');
-      expect(definitions).toHaveProperty('low_quality');
-      expect(definitions).toHaveProperty('unverified_claim');
-      expect(definitions).toHaveProperty('edge_case_ignored');
-      expect(definitions).toHaveProperty('over_complication');
-    });
-
-    it('应该返回正确的触发条件计数', () => {
-      const count = detector.getTriggerCount();
-      expect(count.enhanced).toBe(5);
-      expect(count.base).toBeGreaterThan(0);
-      expect(count.total).toBe(count.base + count.enhanced);
-    });
-  });
-
-  describe('工具使用不足检测', () => {
-    it('应该检测到工具使用不足', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '我觉得这个问题可能是网络原因。' }
-      ];
-      
-      const context: TaskContext = {
-        tools_available: ['search', 'read_file', 'bash'],
-        tools_used: ['read_file']
-      };
-
-      const result = await detector.detectEnhanced(messages, context);
-      
-      const toolUnderuseTrigger = result.triggers_detected.find(
-        t => t.id === 'tool_underuse'
+describe('事件级触发检测器 EnhancedTriggerDetector', () => {
+  describe('UserPromptSubmit 路由', () => {
+    it('用户挫折语言 → userFrustration（critical + 狂战士 + 注入提示）', () => {
+      const sessionId = sid('frustration');
+      const result = enhancedTriggerDetector.detect(
+        promptContext(sessionId, '为什么还不行？再试试，太差了，重新做')
       );
-      
-      expect(toolUnderuseTrigger).toBeDefined();
-      expect(toolUnderuseTrigger?.confidence).toBeGreaterThan(0.6);
+
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('userFrustration');
+      expect(result.severity).toBe('critical');
+      expect(result.confidence).toBeGreaterThanOrEqual(0.5);
+      expect(result.recommendedRole.id).toBe('military-warrior');
+      expect(result.injectionPrompt).toBeDefined();
+      expect(result.metadata.matchedPatterns.length).toBeGreaterThan(0);
     });
 
-    it('不应该在没有未使用工具时触发', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '我觉得这个问题可能是网络原因。' }
-      ];
-      
-      const context: TaskContext = {
-        tools_available: ['read_file'],
-        tools_used: ['read_file']  // 所有工具都已使用
-      };
-
-      const result = await detector.detectEnhanced(messages, context);
-      
-      const toolUnderuseTrigger = result.triggers_detected.find(
-        t => t.id === 'tool_underuse'
+    it('中性消息 → 空结果', () => {
+      const result = enhancedTriggerDetector.detect(
+        promptContext(sid('neutral'), '这段代码的复杂度是 O(n log n)')
       );
-      
-      expect(toolUnderuseTrigger).toBeUndefined();
+
+      expect(result.triggered).toBe(false);
+      expect(result.triggerType).toBe('none');
+      expect(result.recommendedRole.id).toBe('none');
     });
 
-    it('不应该在没有猜测性陈述时触发', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '我已经使用搜索工具验证了这个问题。' }
-      ];
-      
-      const context: TaskContext = {
-        tools_available: ['search', 'read_file'],
-        tools_used: ['read_file']
-      };
-
-      const result = await detector.detectEnhanced(messages, context);
-      
-      const toolUnderuseTrigger = result.triggers_detected.find(
-        t => t.id === 'tool_underuse'
+    it('触发后 30s 冷却窗口内的再检测被拦（cooldownRemaining > 0）', () => {
+      const sessionId = sid('cooldown');
+      const first = enhancedTriggerDetector.detect(
+        promptContext(sessionId, '为什么还不行？再试试，太差了，重新做')
       );
-      
-      expect(toolUnderuseTrigger).toBeUndefined();
+      expect(first.triggered).toBe(true);
+
+      const second = enhancedTriggerDetector.detect(
+        promptContext(sessionId, '为什么还不行？再试试，太差了，重新做')
+      );
+      expect(second.triggered).toBe(false);
+      expect(second.metadata.cooldownRemaining).toBeGreaterThan(0);
     });
   });
 
-  describe('低质量输出检测', () => {
-    it('应该检测到过短的敷衍回复', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '大概就是这样了。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const lowQualityTrigger = result.triggers_detected.find(
-        t => t.id === 'low_quality'
-      );
-      
-      expect(lowQualityTrigger).toBeDefined();
-      expect(lowQualityTrigger?.severity).toBe('medium');
-    });
-
-    it('应该检测到敷衍词汇', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '差不多行了，就这样吧。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const lowQualityTrigger = result.triggers_detected.find(
-        t => t.id === 'low_quality'
-      );
-      
-      expect(lowQualityTrigger).toBeDefined();
-    });
-
-    it('不应该检测高质量输出', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '这是一个详细的技术分析报告，涵盖了多个方面... [长内容]' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const lowQualityTrigger = result.triggers_detected.find(
-        t => t.id === 'low_quality'
-      );
-      
-      expect(lowQualityTrigger).toBeUndefined();
-    });
-  });
-
-  describe('未验证断言检测', () => {
-    it('应该检测到绝对性断言', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '这肯定是配置文件的问题。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const unverifiedClaimTrigger = result.triggers_detected.find(
-        t => t.id === 'unverified_claim'
-      );
-      
-      expect(unverifiedClaimTrigger).toBeDefined();
-      expect(unverifiedClaimTrigger?.confidence).toBeGreaterThan(0.7);
-    });
-
-    it('不应该在已验证时触发', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '我运行了搜索和验证命令，这肯定是配置文件的问题。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const unverifiedClaimTrigger = result.triggers_detected.find(
-        t => t.id === 'unverified_claim'
-      );
-      
-      // 因为包含"验证"，应该不触发
-      expect(unverifiedClaimTrigger).toBeUndefined();
-    });
-
-    it('应该检测英文未验证断言', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: 'This is definitely the root cause.' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const unverifiedClaimTrigger = result.triggers_detected.find(
-        t => t.id === 'unverified_claim'
-      );
-      
-      expect(unverifiedClaimTrigger).toBeDefined();
-    });
-  });
-
-  describe('边界情况忽略检测', () => {
-    it('应该检测到仅考虑正常情况', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '正常情况下这个方案可以工作。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const edgeCaseTrigger = result.triggers_detected.find(
-        t => t.id === 'edge_case_ignored'
-      );
-      
-      expect(edgeCaseTrigger).toBeDefined();
-    });
-
-    it('不应该在提到边界处理时触发', async () => {
-      const messages: ConversationMessage[] = [
-        { 
-          role: 'assistant', 
-          content: '正常情况下可以工作，我已经处理了边界情况和异常输入。' 
-        }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const edgeCaseTrigger = result.triggers_detected.find(
-        t => t.id === 'edge_case_ignored'
-      );
-      
-      expect(edgeCaseTrigger).toBeUndefined();
-    });
-
-    it('应该检测英文边界忽略', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: 'In the normal case, this works fine.' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const edgeCaseTrigger = result.triggers_detected.find(
-        t => t.id === 'edge_case_ignored'
-      );
-      
-      expect(edgeCaseTrigger).toBeDefined();
-    });
-  });
-
-  describe('过度复杂化检测', () => {
-    it('应该检测到过度复杂化', async () => {
-      const messages: ConversationMessage[] = [
-        { 
-          role: 'assistant', 
-          content: '我们需要设计一个复杂的解决方案，采用多层架构和完整的系统框架。' 
-        }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const overComplicationTrigger = result.triggers_detected.find(
-        t => t.id === 'over_complication'
-      );
-      
-      expect(overComplicationTrigger).toBeDefined();
-    });
-
-    it('不应该在提到简化时触发', async () => {
-      const messages: ConversationMessage[] = [
-        { 
-          role: 'assistant', 
-          content: '虽然这是一个复杂的解决方案，但我们应该简化它，采用最小化的方法。' 
-        }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const overComplicationTrigger = result.triggers_detected.find(
-        t => t.id === 'over_complication'
-      );
-      
-      expect(overComplicationTrigger).toBeUndefined();
-    });
-
-    it('应该检测英文过度复杂化', async () => {
-      const messages: ConversationMessage[] = [
-        { 
-          role: 'assistant', 
-          content: 'We need a complex solution with multi-layer architecture.' 
-        }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      const overComplicationTrigger = result.triggers_detected.find(
-        t => t.id === 'over_complication'
-      );
-      
-      expect(overComplicationTrigger).toBeDefined();
-    });
-  });
-
-  describe('结果汇总与严重级别', () => {
-    it('应该正确汇总多个触发条件', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '我觉得肯定是网络问题，大概就是这样了。' }
-      ];
-      
-      const context: TaskContext = {
-        tools_available: ['search', 'read_file'],
-        tools_used: []
-      };
-
-      const result = await detector.detectEnhanced(messages, context);
-      
-      // 应该检测到多个问题
-      expect(result.triggers_detected.length).toBeGreaterThan(1);
-      expect(result.summary.should_trigger).toBe(true);
-    });
-
-    it('应该根据最高严重级别设置总体级别', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '这肯定是配置文件的问题。' }  // high severity
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      // unverified_claim 是 high severity
-      expect(result.summary.overall_severity).toBe('high');
-    });
-
-    it('高置信度应该触发立即激活', async () => {
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '这绝对是、肯定是、无疑是正确的。' }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      // 多个绝对性断言，置信度应该很高
-      expect(result.summary.recommended_action).toBe('immediate_activation');
-    });
-
-    it('低严重级别应该仅建议监控', async () => {
-      const messages: ConversationMessage[] = [
-        { 
-          role: 'assistant', 
-          content: '这是一个复杂的架构设计。'  // over_complication 是 low severity
-        }
-      ];
-
-      const result = await detector.detectEnhanced(messages);
-      
-      expect(result.summary.recommended_action).toBe('monitor');
-    });
-  });
-
-  describe('工具使用追踪', () => {
-    it('应该追踪工具使用情况', () => {
-      detector.trackToolUsage('session-1', ['search', 'read', 'write'], ['read']);
-      
-      const stats = detector.getToolUsageStats('session-1');
-      expect(stats).not.toBeNull();
-      expect(stats?.utilizationRate).toBe(1/3);
-      expect(stats?.unusedTools).toContain('search');
-      expect(stats?.unusedTools).toContain('write');
-    });
-
-    it('应该返回null获取不存在的会话', () => {
-      const stats = detector.getToolUsageStats('non-existent-session');
-      expect(stats).toBeNull();
-    });
-
-    it('应该正确处理空工具列表', () => {
-      detector.trackToolUsage('session-2', [], []);
-      
-      const stats = detector.getToolUsageStats('session-2');
-      expect(stats?.utilizationRate).toBe(0);
-    });
-  });
-
-  describe('置信度阈值控制', () => {
-    it('应该根据敏感度调整置信度', async () => {
-      const highSensitivityDetector = new EnhancedTriggerDetector({ 
-        sensitivity: 'high', 
-        language: 'auto' 
-      });
-      
-      const lowSensitivityDetector = new EnhancedTriggerDetector({ 
-        sensitivity: 'low', 
-        language: 'auto' 
+  describe('PostToolUse 路由', () => {
+    it('Bash 首败不触发（L0），连败第 2 次升 L1 → bashFailure', () => {
+      const sessionId = sid('bashfail');
+      const failCtx = (): TriggerContext => ({
+        sessionId,
+        eventType: 'PostToolUse',
+        toolName: 'Bash',
+        toolResult: { exit_code: 1 },
+        errorMessage: 'npm ERR code ELIFECYCLE',
       });
 
-      const messages: ConversationMessage[] = [
-        { role: 'assistant', content: '大概可以了。' }
-      ];
+      const first = enhancedTriggerDetector.detect(failCtx());
+      expect(first.triggered).toBe(false);
+      expect(first.metadata.failureCount).toBe(1);
 
-      const highResult = await highSensitivityDetector.detectEnhanced(messages);
-      const lowResult = await lowSensitivityDetector.detectEnhanced(messages);
+      const second = enhancedTriggerDetector.detect(failCtx());
+      expect(second.triggered).toBe(true);
+      expect(second.triggerType).toBe('bashFailure');
+      expect(second.severity).toBe('high');
+      expect(second.confidence).toBe(1.0);
+      expect(second.pressureLevel).toBe(1);
+      expect(second.recommendedRole.id).toBe('military-warrior');
+      expect(second.metadata.matchedPatterns).toContain('bash_exit_code_nonzero');
+    });
 
-      // 高敏感度应该检测到更多触发
-      expect(highResult.triggers_detected.length).toBeGreaterThanOrEqual(
-        lowResult.triggers_detected.length
+    it('Bash 成功 → 空结果', () => {
+      const result = enhancedTriggerDetector.detect({
+        sessionId: sid('bashok'),
+        eventType: 'PostToolUse',
+        toolName: 'Bash',
+        toolResult: { exit_code: 0, stdout: 'ok' },
+      });
+
+      expect(result.triggered).toBe(false);
+    });
+
+    it('非 Bash 工具失败 → 空结果（只处理 Bash）', () => {
+      const result = enhancedTriggerDetector.detect({
+        sessionId: sid('readfail'),
+        eventType: 'PostToolUse',
+        toolName: 'Read',
+        toolResult: { isError: true },
+        errorMessage: 'File not found',
+      });
+
+      expect(result.triggered).toBe(false);
+      expect(result.triggerType).toBe('none');
+    });
+  });
+
+  describe('PreCompact 路由', () => {
+    it('有触发史的会话 → preCompact（状态持久）', () => {
+      const sessionId = sid('precompact');
+      const triggered = enhancedTriggerDetector.detect(
+        promptContext(sessionId, '为什么还不行？再试试，太差了，重新做')
       );
+      expect(triggered.triggered).toBe(true);
+
+      const result = enhancedTriggerDetector.detect({
+        sessionId,
+        eventType: 'PreCompact',
+        metadata: { currentTask: 'release v4.4' },
+      });
+
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('preCompact');
+      expect(result.metadata.matchedPatterns).toContain('session_has_pua_triggers');
+    });
+
+    it('零触发的新会话 → 空结果', () => {
+      const result = enhancedTriggerDetector.detect({
+        sessionId: sid('precompact-fresh'),
+        eventType: 'PreCompact',
+      });
+
+      expect(result.triggered).toBe(false);
+    });
+  });
+
+  describe('SessionStart 路由', () => {
+    it('带压力/失败状态的回归会话 → sessionRestore', () => {
+      const sessionId = sid('restore');
+      enhancedTriggerDetector.detect({
+        sessionId,
+        eventType: 'PostToolUse',
+        toolName: 'Bash',
+        toolResult: { exit_code: 1 },
+        errorMessage: 'build failed',
+      });
+      enhancedTriggerDetector.detect({
+        sessionId,
+        eventType: 'PostToolUse',
+        toolName: 'Bash',
+        toolResult: { exit_code: 1 },
+        errorMessage: 'build failed again',
+      });
+
+      const result = enhancedTriggerDetector.detect({
+        sessionId,
+        eventType: 'SessionStart',
+      });
+
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('sessionRestore');
+      expect(result.confidence).toBe(0.9);
+      expect(result.metadata.matchedPatterns).toContain('previous_session_detected');
+    });
+
+    it('干净会话 → 空结果', () => {
+      const result = enhancedTriggerDetector.detect({
+        sessionId: sid('restore-fresh'),
+        eventType: 'SessionStart',
+      });
+
+      expect(result.triggered).toBe(false);
+    });
+  });
+
+  describe('Stop 路由', () => {
+    it('PUA 参与过的会话 → stopFeedback', () => {
+      const sessionId = sid('stop');
+      const triggered = enhancedTriggerDetector.detect(
+        promptContext(sessionId, '为什么还不行？再试试，太差了，重新做')
+      );
+      expect(triggered.triggered).toBe(true);
+
+      const result = enhancedTriggerDetector.detect({ sessionId, eventType: 'Stop' });
+
+      expect(result.triggered).toBe(true);
+      expect(result.triggerType).toBe('stopFeedback');
+    });
+
+    it('未参与的会话 → 空结果', () => {
+      const result = enhancedTriggerDetector.detect({ sessionId: sid('stop-fresh'), eventType: 'Stop' });
+
+      expect(result.triggered).toBe(false);
+    });
+  });
+
+  describe('PreToolUse 路由', () => {
+    it('→ 空结果（拦截决策归 DeterministicTriggersEngine）', () => {
+      const result = enhancedTriggerDetector.detect({
+        sessionId: sid('pretool'),
+        eventType: 'PreToolUse',
+        toolName: 'Bash',
+      });
+
+      expect(result.triggered).toBe(false);
+      expect(result.triggerType).toBe('none');
     });
   });
 });

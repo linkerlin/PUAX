@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **触发器引擎合并（第一步：死引擎剟除）**：`core/trigger-detector.ts` 内嵌的继承式 `EnhancedTriggerDetector`（上下文感知五检测器）、`ENHANCED_TRIGGER_DEFINITIONS`、工厂与 `enhancedTriggerDetectorCore` 单例（合计 ~350 行）经查系零消费死代码——生产路径无一处调用 `detectEnhanced`（`detect_trigger` / `activate_with_context` 只用基类 `detect()`），唯一引用是其孤儿单测。整体剟除并在模块头明确双引擎分工：会话级扫描（TriggerDetector，YAML 目录）与事件级实时检测（trigger-detector-enhanced.ts，v4 心跳热路径）。被剟四类触发语义（low_quality / unverified_claim / edge_case_ignored / over_complication）如需复活应落入 YAML 目录而非代码硬编。
+- **事件级检测器获得专属单测**：原孤儿测试文件改造为 `EnhancedTriggerDetector`（事件级活体）13 例直接单测——六事件路由（UserPromptSubmit / PostToolUse / PreCompact / SessionStart / Stop / PreToolUse）、30s 冷却门、Bash 连败 L1 压力升级、状态持久与会话恢复。此前该热路径仅靠 hook 系测试间接覆盖。
+
 ## [4.3.0] - 2026-09-17
 
 本版为「审计整改版」：全仓审阅定下的路线图五阶段（断链诚信 / 度量真实 / 结构收敛 / 主线纵深 / 解环）一次落定。
