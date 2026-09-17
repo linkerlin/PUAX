@@ -5,14 +5,7 @@
 
 import { z } from 'zod';
 import { globalAdapterRegistry } from '../platform-adapters/base-adapter.js';
-import '../platform-adapters/skill-md-platform-adapter.js';
-import '../platform-adapters/cursor-adapter.js';
-import '../platform-adapters/vscode-adapter.js';
-import '../platform-adapters/kiro-adapter.js';
-import '../platform-adapters/codebuddy-adapter.js';
-import '../platform-adapters/windsurf-adapter.js';
-import '../platform-adapters/claude-code-adapter.js';
-import '../platform-adapters/opencode-adapter.js';
+import '../platform-adapters/register-all.js';
 
 const INSTALL_PATHS: Record<string, string> = {
   cursor: '.cursor/rules/*.mdc + hooks/hooks-cursor.json',

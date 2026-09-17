@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.3.1] - 2026-09-18
+
 ### Added
+- **`--list-platforms` / `puax_list_platforms` / `--export` 同一注册入口**（`platform-adapters/register-all.ts`）：CLI 不再漏载 skill-md 扩展宿主（codex / trae / pi / openclaw / antigravity）。
 - **Streamable HTTP 会话续传**：`MemoryEventStore` 挂上传输，`GET` + `Last-Event-ID` 重放；eventId 与 streamId 分存，避开 SDK 示例用 `_` 拼接导致的解错。
 - **`POST /v4/thin-prompt`**：编排器薄注入不再盲打无 session 的 `/mcp`；Python SDK `get_thin_prompt` 改走此路。
 - **`PUAX_TOOL_SURFACE`**：`tools/list` 默认只下发 13 黄金动词（`public`）；`full` 才列 50。`tools/call` 仍可按名调用未列出工具。
@@ -18,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **MCP 现代特性收口**：删除方向反了的 `roots/list` / `elicitation/create` handler；不声明未实现通知的 `resources/subscribe`。保留 templates / logging / completion。
 - **AMP.md 信封与 schema/TS 对齐**：`blocks` 为标签字符串、`gate` 为枚举；去掉未实现的 `trust` / `consecutive_failure` 线格式。
 - **看板 `integrity_metrics`**：缺样本标 `unknown`，不再写死 1.0 轮 / 14.2% / −76.8% pass。
-- **CI**：协议门注释改为 32；`frontend-apps` 不再阻塞 `ci-success`（策令冻结店面）。
+- **CI**：协议门注释改为 32；`frontend-apps` 不再阻塞 `ci-success`（策令冻结店面）。Linux Jest 挂钟放大后仍断言，仅 Windows 让位 `evals/benchmark.js`。
 - **`docs/WEB-ADMIN-SPEC.md` 迁入 `docs/archive/`**。
 
 ### Fixed

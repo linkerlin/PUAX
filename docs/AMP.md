@@ -3,7 +3,7 @@
 > **版本**：0.1-draft  
 > **发布日期**：2026-09-12  
 > **状态**：参考实现就绪 (Reference Implementation Ready)  
-> **参考实现**：`puax-mcp-server@4.3.0`
+> **参考实现**：`puax-mcp-server@4.3.1`
 
 ---
 

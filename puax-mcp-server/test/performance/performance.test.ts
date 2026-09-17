@@ -5,19 +5,21 @@
  * 挂钟断言在全量 Jest 并行满载下有毫秒级抖动（曾实测 100ms 档跑出 103ms），
  * retryTimes 吸收瞬时负载尖峰；真实性能退化会连续失败，仍被此门拦下。
  *
- * CI 共享 runner 系统性偏慢且噪声大（本地 2-worker+coverage+Node18 三重复刻
- * 皆绿，CI 三腿仍挂），Jest 档挂钟预算只在本地把关——CI 侧性能守门由
- * evals/benchmark.js（run-all「性能基准」门，ubuntu protocol-gate 恒绿）承担。
- * 覆盖率插桩（--coverage）另乘 3 倍：插桩度量的工具开销非产品性能。
+ * CI：Windows 共享 runner 噪声大，挂钟让位 evals/benchmark.js；
+ * Linux CI 仍断言，覆盖率插桩下放大预算（不是拔掉温度计）。
  */
 
 jest.retryTimes(2);
 
-const WALL_BUDGET_SCALE =
-  process.env.CI === 'true' ? 0 : (typeof (globalThis as Record<string, unknown>).__coverage__ === 'object' ? 3 : 1);
+const WALL_BUDGET_SCALE = ((): number => {
+  const coverage = typeof (globalThis as Record<string, unknown>).__coverage__ === 'object';
+  if (process.env.CI === 'true' && process.platform === 'win32') return 0;
+  if (process.env.CI === 'true') return coverage ? 5 : 4;
+  return coverage ? 3 : 1;
+})();
 
 function withinBudget(ms: number, budgetMs: number): void {
-  if (WALL_BUDGET_SCALE === 0) return; // CI：挂钟把关让位 benchmark 门
+  if (WALL_BUDGET_SCALE === 0) return;
   expect(ms).toBeLessThan(budgetMs * WALL_BUDGET_SCALE);
 }
 
