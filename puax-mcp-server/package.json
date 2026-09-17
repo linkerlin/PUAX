@@ -10,6 +10,7 @@
     "./amp-spec": "./build/core/amp.js",
     "./thin-prompt": "./build/core/thin-prompt.js",
     "./hook-cli": "./build/cli/hook-cli.js",
+    "./hookd": "./build/cli/hookd.js",
     "./build/*": "./build/*",
     "./package.json": "./package.json"
   },

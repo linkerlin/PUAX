@@ -144,6 +144,12 @@ Hook 子命令（原生 hook 引擎共享层）:
   puax-mcp-server doctor [--fix] [--host=<id>]
   npx puax doctor --fix
 
+Hook 常驻守护（可选，摊掉每事件冷启动）:
+  puax-mcp-server hookd              # 前台常驻，本机 socket
+  puax-mcp-server hookd --status
+  puax-mcp-server hookd --stop
+  PUAX_HOOKD=0                       # 强制回落每事件进程内 runHook
+
 
 服务器选项:
   -p, --port <端口>        指定监听端口 (默认: 2333)
@@ -247,6 +253,34 @@ async function main(): Promise<void> {
         return;
     }
 
+    if (args[0] === 'hookd') {
+        const { startHookd, probeHookd, stopHookdByPid } = await import('./cli/hookd.js');
+        if (args.includes('--stop')) {
+            const ok = stopHookdByPid();
+            logger.write(ok ? 'hookd: sent SIGTERM' : 'hookd: not running (no pid file)');
+            process.exit(ok ? 0 : 1);
+        }
+        if (args.includes('--status')) {
+            const st = await probeHookd();
+            logger.write(st.alive ? `hookd: alive pid=${st.pid ?? '?'} sock=${st.socket}` : `hookd: down sock=${st.socket}`);
+            process.exit(st.alive ? 0 : 1);
+        }
+        try {
+            const { path, close } = await startHookd();
+            logger.write(`hookd listening on ${path}`);
+            logger.write('宿主 hook 将优先走常驻引擎；停用: npx puax hookd --stop');
+            const shutdown = () => {
+                void close().then(() => process.exit(0));
+            };
+            process.on('SIGINT', shutdown);
+            process.on('SIGTERM', shutdown);
+        } catch (err) {
+            logger.error('hookd failed:', err instanceof Error ? err.message : err);
+            process.exit(1);
+        }
+        return;
+    }
+
     // 处理 shield 子命令（碳基防御盾：只识别，不施放）
     if (args[0] === 'shield') {
         const text = args.slice(1).join(' ').trim();
@@ -305,6 +339,7 @@ async function main(): Promise<void> {
                 logger.write(`     已挂载 Hook: ${h.hooksConfigured.join(', ')}`);
             }
         }
+        logger.write(`\nhookd 常驻: ${report.hookd.alive ? `✅ pid=${report.hookd.pid ?? '?'}` : '⚪ 未启用'}  (${report.hookd.socket})`);
         logger.write(`\n诊断建议: ${report.recommendation}\n`);
         process.exit(0);
     }

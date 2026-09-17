@@ -31,6 +31,8 @@ describe("PUAX Host Doctor & TTF Engine", () => {
     expect(report.topHostsTotal).toBeGreaterThanOrEqual(10);
     expect(typeof report.v5Condition3Satisfied).toBe("boolean");
     expect(Array.isArray(report.hosts)).toBe(true);
+    expect(typeof report.hookd.alive).toBe("boolean");
+    expect(typeof report.hookd.socket).toBe("string");
 
     const claude = report.hosts.find(h => h.id === "claude-code");
     expect(claude).toBeDefined();

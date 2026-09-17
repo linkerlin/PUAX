@@ -17,7 +17,8 @@ PUAX 的 Hook 能力分两层：
 | **原生 Hook 模式**（v3.11 新增） | 宿主运行时在事件点强制调用 | 强制守卫（防作弊、git 拦截）+ 会话注入 | Claude Code / Cursor / opencode |
 
 两者共用同一检测引擎。原生 Hook 统一经 **hook CLI**（`puax-mcp-server hook <事件>`）
-调用引擎共享层，避免两份实现漂移。
+调用引擎共享层，避免两份实现漂移。可选 `npx puax hookd` 常驻该引擎：每事件不再冷启动 Node；
+守护不在或 `PUAX_HOOKD=0` 时自动回落进程内 `runHook`（宿主脚本无需改）。
 
 ```
 宿主运行时（Claude Code / Cursor / opencode）
@@ -28,6 +29,7 @@ hooks/hook.js（node 入口）      .opencode/plugins/puax.js
    └─────────────┬────────────────┘
                  ▼
     puax-mcp-server hook <event>   ← 引擎共享层（cli/hook-cli.ts）
+        ↳ 可选 hookd 常驻（本机 socket）；未启动则进程内 runHook
         ├─ EnhancedTriggerDetector（激励检测）
         ├─ DeterministicTriggersEngine（PreToolUse 拦截）
         ├─ AntiCheatGuard（git/CI/文件守卫）

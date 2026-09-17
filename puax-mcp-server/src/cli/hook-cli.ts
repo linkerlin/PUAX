@@ -20,6 +20,7 @@ import { globalAntiCheatGuard } from '../core/anti-cheat-guard.js';
 import { isPuaxHookEvent, type PuaxHookEvent } from '../core/hook-event.js';
 import type { PressureLevel } from '../types.js';
 import { runEvolveCycle, normalizeTriggerId } from '../core/evolve-cycle.js';
+import { tryRunViaHookd } from './hookd.js';
 
 const logger = getGlobalLogger();
 
@@ -494,7 +495,8 @@ export async function mainHookCliWithStdin(args: string[]): Promise<void> {
   }
   const payload = await readStdinPayload();
   const opts = mergeStdinPayload(parsed.opts, payload);
-  const { json } = runHook(opts);
+  const remote = await tryRunViaHookd(opts);
+  const json = remote ?? runHook(opts).json;
   process.stdout.write(`${json}\n`);
   process.exit(0);
 }

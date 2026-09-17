@@ -86,6 +86,7 @@
 
 | 场景 | 行为 |
 |---|---|
+| 可选 hookd 常驻 | `npx puax hookd` 听本机 socket（posix `~/.puax/hookd.sock`，Windows named pipe）。`hook` 子命令先探守护（40ms），失败回落进程内。`PUAX_HOOKD=0` 强制回落 |
 | 宿主 Hook 进程一般异常 | stdout 输出 `{}` 并以退出码 0 收场（polyglot cmd/bash 双解释器同契约） |
 | PreToolUse + claude 宿主且判别自身异常 | **保守拒绝**（`decision: block`，理由 `PUAX_GUARD_ERROR`）——失败不再等于放行 |
 | 依赖包缺失/损坏 | 非 PreToolUse：hook 兜底 `{}`，不阻断宿主事件流 |

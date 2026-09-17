@@ -12,6 +12,7 @@ import { homedir } from "os";
 import { assertDoctorTargetDir } from "../utils/path-security.js";
 import { exportPlatform, type ExportPlatformId } from "../tools/export-platform.js";
 import { loadVersion } from "../utils/version.js";
+import { hookdStatusSync, type HookdPing } from "../cli/hookd.js";
 
 export interface HostDiagnostic {
   id: string;
@@ -34,6 +35,7 @@ export interface DoctorReport {
   v5Condition3Satisfied: boolean;
   hosts: HostDiagnostic[];
   recommendation: string;
+  hookd: HookdPing;
 }
 
 export interface FixResult {
@@ -228,6 +230,7 @@ export function runHostDoctor(targetDir: string = process.cwd()): DoctorReport {
   const coveredCount = hosts.filter(h => h.ttfReady || h.detected).length;
   const overallTtfReady = hosts.some(h => h.ttfReady);
   const v5Condition3Satisfied = coveredCount >= Math.ceil(hosts.length * 0.5);
+  const hookd = hookdStatusSync();
 
   return {
     timestamp: new Date().toISOString(),
@@ -237,8 +240,11 @@ export function runHostDoctor(targetDir: string = process.cwd()): DoctorReport {
     topHostsTotal: hosts.length,
     v5Condition3Satisfied,
     hosts,
+    hookd,
     recommendation: overallTtfReady
-      ? "宿主原生 Hook 与 TTF 环境就绪，首轮对话即自动发生 PUAX 处境注入。"
+      ? hookd.alive
+        ? "宿主原生 Hook 与 TTF 环境就绪；hookd 常驻已启用，冷启动税已摊掉。"
+        : "宿主原生 Hook 已挂载。可选 `npx puax hookd` 常驻引擎，免每事件冷启动。"
       : "建议执行 npx puax doctor --fix 一键挂载原生 Hook 以启用零延迟 Time-to-First-Pressure。",
   };
 }

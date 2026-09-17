@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`puax hookd` 常驻守护（可选）**：本机 socket 复用已加载引擎，免每事件 `exec node` 冷启动。`hook` 入口 40ms 探活，失败或 `PUAX_HOOKD=0` 回落进程内 `runHook`。`doctor` 报告 `hookd.alive`。
+
 ### Changed
 - **触发器模式源归一（引擎合并第二步）**：`TRIGGER_PATTERNS` 键与事件检测器发射改为 YAML 目录 id（`user_frustration` 等）。`normalizeTriggerId` / `canonicalPatternKey` 只消化历史 camelCase 与 `~/.puax/hooks.json` 旧键。Gate 32 改为守「键即目录」。
 
