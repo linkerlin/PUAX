@@ -2,9 +2,10 @@
  * STDIO 模式测试
  * 测试 PUAX MCP Server 的 STDIO 传输模式
  *
- * 子进程 JSON-RPC 握手在慢速 runner（Windows CI）上存在消息竞态
- * （服务器已正确应答而测试卡等下一条），retryTimes 吸收时序抖动；
- * 确定性失败不会连过三次，仍被拦下。
+ * 慢速 runner（Windows CI）上的历史败因是僵尸看门狗：done() 成功后
+ * 25s 定时器不清除、二次 done(err) 把已过测试翻成失败。现以一次性
+ * finish 闸门 + clearTimeout 根治；retryTimes 仅作兜底，确定性失败
+ * 不会连过三次，仍被拦下。
  */
 
 jest.retryTimes(2);
@@ -29,7 +30,17 @@ describe('STDIO Mode Tests', () => {
 
     test('Server should start in stdio mode', (done) => {
         const receivedMessages: any[] = [];
-        
+
+        // 一次性 finish 闸门：done 成功后清掉看门狗，杜绝僵尸定时器二次 done 翻盘
+        let finished = false;
+        let watchdog: NodeJS.Timeout | undefined;
+        const finish = (err?: Error) => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(watchdog);
+            done(err);
+        };
+
         serverProcess = spawn('node', [serverPath, '--stdio'], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
@@ -64,23 +75,23 @@ describe('STDIO Mode Tests', () => {
         let buffer = '';
         serverProcess.stdout?.on('data', (data) => {
             buffer += data.toString();
-            
+
             // 尝试解析 JSON-RPC 消息
             const lines = buffer.split('\n');
             buffer = lines.pop() || ''; // 保留不完整的行
-            
+
             for (const line of lines) {
                 if (line.trim()) {
                     try {
                         const msg = JSON.parse(line);
                         receivedMessages.push(msg);
-                        
+
                         // 收到 initialize 响应
                         if (msg.id === 1 && msg.result) {
                             expect(msg.result.protocolVersion).toBeDefined();
                             expect(msg.result.serverInfo).toBeDefined();
                             expect(msg.result.serverInfo.name).toBe('puax-mcp-server');
-                            done();
+                            finish();
                         }
                     } catch (e) {
                         // 忽略非 JSON 行
@@ -90,11 +101,11 @@ describe('STDIO Mode Tests', () => {
         });
 
         // 超时处理
-        setTimeout(() => {
+        watchdog = setTimeout(() => {
             if (receivedMessages.length === 0) {
-                done(new Error(`No response received. Stderr: ${stderr}`));
+                finish(new Error(`No response received. Stderr: ${stderr}`));
             } else {
-                done(new Error(`No initialize response. Received: ${JSON.stringify(receivedMessages)}`));
+                finish(new Error(`No initialize response. Received: ${JSON.stringify(receivedMessages)}`));
             }
         }, 25000);
     });
@@ -102,7 +113,16 @@ describe('STDIO Mode Tests', () => {
     test('Server should handle tools/list request in stdio mode', (done) => {
         const receivedMessages: any[] = [];
         let initialized = false;
-        
+
+        let finished = false;
+        let watchdog: NodeJS.Timeout | undefined;
+        const finish = (err?: Error) => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(watchdog);
+            done(err);
+        };
+
         serverProcess = spawn('node', [serverPath, '--stdio'], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
@@ -110,16 +130,16 @@ describe('STDIO Mode Tests', () => {
         let buffer = '';
         serverProcess.stdout?.on('data', (data) => {
             buffer += data.toString();
-            
+
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
-            
+
             for (const line of lines) {
                 if (line.trim()) {
                     try {
                         const msg = JSON.parse(line);
                         receivedMessages.push(msg);
-                        
+
                         if (msg.id === 1 && msg.result) {
                             initialized = true;
                             // 发送 tools/list 请求
@@ -131,12 +151,12 @@ describe('STDIO Mode Tests', () => {
                             };
                             serverProcess?.stdin?.write(JSON.stringify(toolsRequest) + '\n');
                         }
-                        
+
                         if (msg.id === 2 && msg.result) {
                             expect(msg.result.tools).toBeDefined();
                             expect(Array.isArray(msg.result.tools)).toBe(true);
                             expect(msg.result.tools.length).toBeGreaterThan(0);
-                            done();
+                            finish();
                         }
                     } catch (e) {
                         // 忽略非 JSON 行
@@ -163,15 +183,24 @@ describe('STDIO Mode Tests', () => {
             serverProcess?.stdin?.write(JSON.stringify(initRequest) + '\n');
         }, 1000);
 
-        setTimeout(() => {
-            done(new Error(`Test timeout. Initialized: ${initialized}. Messages: ${JSON.stringify(receivedMessages)}`));
+        watchdog = setTimeout(() => {
+            finish(new Error(`Test timeout. Initialized: ${initialized}. Messages: ${JSON.stringify(receivedMessages)}`));
         }, 25000);
     });
 
     test('Server should handle list_skills tool call', (done) => {
         const receivedMessages: any[] = [];
         let step = 0;
-        
+
+        let finished = false;
+        let watchdog: NodeJS.Timeout | undefined;
+        const finish = (err?: Error) => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(watchdog);
+            done(err);
+        };
+
         serverProcess = spawn('node', [serverPath, '--stdio'], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
@@ -179,16 +208,16 @@ describe('STDIO Mode Tests', () => {
         let buffer = '';
         serverProcess.stdout?.on('data', (data) => {
             buffer += data.toString();
-            
+
             const lines = buffer.split('\n');
             buffer = lines.pop() || '';
-            
+
             for (const line of lines) {
                 if (line.trim()) {
                     try {
                         const msg = JSON.parse(line);
                         receivedMessages.push(msg);
-                        
+
                         if (msg.id === 1 && msg.result) {
                             step = 1;
                             // 发送 initialized 通知
@@ -197,7 +226,7 @@ describe('STDIO Mode Tests', () => {
                                 method: 'notifications/initialized'
                             };
                             serverProcess?.stdin?.write(JSON.stringify(initializedNotification) + '\n');
-                            
+
                             // 然后发送 tools/call 请求
                             const callRequest = {
                                 jsonrpc: '2.0',
@@ -210,7 +239,7 @@ describe('STDIO Mode Tests', () => {
                             };
                             serverProcess?.stdin?.write(JSON.stringify(callRequest) + '\n');
                         }
-                        
+
                         if (msg.id === 2 && msg.result) {
                             expect(msg.result.content).toBeDefined();
                             expect(Array.isArray(msg.result.content)).toBe(true);
@@ -220,7 +249,7 @@ describe('STDIO Mode Tests', () => {
                             const data = JSON.parse(text);
                             expect(data.skills).toBeDefined();
                             expect(data.total).toBeGreaterThan(0);
-                            done();
+                            finish();
                         }
                     } catch (e) {
                         // 忽略非 JSON 行
@@ -246,8 +275,8 @@ describe('STDIO Mode Tests', () => {
             serverProcess?.stdin?.write(JSON.stringify(initRequest) + '\n');
         }, 1000);
 
-        setTimeout(() => {
-            done(new Error(`Test timeout. Step: ${step}. Messages: ${JSON.stringify(receivedMessages)}`));
+        watchdog = setTimeout(() => {
+            finish(new Error(`Test timeout. Step: ${step}. Messages: ${JSON.stringify(receivedMessages)}`));
         }, 25000);
     });
 });

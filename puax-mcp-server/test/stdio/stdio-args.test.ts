@@ -25,6 +25,16 @@ describe('STDIO Command Line Arguments', () => {
     });
 
     test('should accept --stdio argument', (done) => {
+        // 一次性 finish 闸门：stderr 事件与超时定时器都可能收尾，杜绝二次 done 翻盘
+        let finished = false;
+        let watchdog: NodeJS.Timeout | undefined;
+        const finish = (err?: Error) => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(watchdog);
+            done(err);
+        };
+
         serverProcess = spawn('node', [serverPath, '--stdio'], {
             stdio: ['pipe', 'pipe', 'pipe']
         });
@@ -32,20 +42,20 @@ describe('STDIO Command Line Arguments', () => {
         let stderr = '';
         serverProcess.stderr?.on('data', (data) => {
             stderr += data.toString();
-            
+
             // 检查是否显示 STDIO 模式启动信息
             if (stderr.includes('Mode: STDIO') || stderr.includes('STDIO')) {
-                done();
+                finish();
             }
         });
 
         // 超时
-        setTimeout(() => {
+        watchdog = setTimeout(() => {
             // 即使没有看到特定消息，只要进程还在运行就算成功
             if (serverProcess && !serverProcess.killed) {
-                done();
+                finish();
             } else {
-                done(new Error(`Process died. Stderr: ${stderr}`));
+                finish(new Error(`Process died. Stderr: ${stderr}`));
             }
         }, 3000);
     });
