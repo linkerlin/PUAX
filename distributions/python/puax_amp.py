@@ -395,6 +395,72 @@ def create_langgraph_node_interceptor(middleware: Optional[PuaxAmpMiddleware] = 
     return decorator
 
 
+def wrap_tool_execute(tool, middleware: Optional[PuaxAmpMiddleware] = None, session_id: Optional[str] = None):
+    """
+    包装带 execute(args) 的工具对象（OpenAI Agents / 自研 loop）。
+    不把 AMP 伪装成 Agent.callbacks。
+    """
+    mw = middleware or PuaxAmpMiddleware()
+    orig = tool.execute
+    name = getattr(tool, "name", None) or getattr(tool, "id", None) or "tool"
+    sid = session_id or mw.default_session_id
+
+    def execute(args, *rest, **kwargs):
+        payload = args if isinstance(args, dict) else {"command": args}
+        decision = mw.on_pre_tool_use(name, payload, session_id=sid)
+        if not decision.allowed:
+            raise PermissionError(decision.reason)
+        try:
+            result = orig(args, *rest, **kwargs)
+            mw.on_post_tool_use(name, result, session_id=sid)
+            return result
+        except Exception as e:
+            mw.on_post_tool_use(name, None, error=e, session_id=sid)
+            raise
+
+    tool.execute = execute
+    return tool
+
+
+def create_openai_agents_guard(middleware: Optional[PuaxAmpMiddleware] = None, session_id: str = "openai-agents-session"):
+    mw = middleware or PuaxAmpMiddleware(default_session_id=session_id)
+
+    def wrap_tool(tool):
+        return wrap_tool_execute(tool, mw, session_id)
+
+    return wrap_tool
+
+
+def create_google_adk_before_tool(middleware: Optional[PuaxAmpMiddleware] = None):
+    """Google ADK Agent(before_tool_callback=...)"""
+    mw = middleware or PuaxAmpMiddleware()
+
+    def before_tool_callback(tool, args, tool_context=None):
+        name = getattr(tool, "name", None) or getattr(tool, "id", None) or "adk-tool"
+        sid = None
+        if tool_context is not None:
+            sid = getattr(tool_context, "session_id", None) or getattr(tool_context, "invocation_id", None)
+        decision = mw.on_pre_tool_use(name, args if isinstance(args, dict) else {"input": args}, session_id=sid)
+        if not decision.allowed:
+            raise PermissionError(decision.reason)
+        return args
+
+    return before_tool_callback
+
+
+def create_dify_amp_handler(middleware: Optional[PuaxAmpMiddleware] = None):
+    """Dify 工具插件请求体 { tool_name, tool_parameters, conversation_id }"""
+    mw = middleware or PuaxAmpMiddleware()
+
+    def handler(req: Dict[str, Any]) -> PreToolDecision:
+        sid = req.get("conversation_id") or mw.default_session_id
+        name = req.get("tool_name") or "dify-tool"
+        params = req.get("tool_parameters") or {}
+        return mw.on_pre_tool_use(str(name), params if isinstance(params, dict) else {"input": params}, session_id=str(sid))
+
+    return handler
+
+
 def create_autogen_tool_guard(middleware: Optional[PuaxAmpMiddleware] = None):
     """
     AutoGen 工具拦截钩子

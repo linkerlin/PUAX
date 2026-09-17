@@ -2,7 +2,7 @@
 
 > **版本**：AMP/0.1  
 > **状态**：Stable Specification  
-> **适用框架**：LangChain, LangGraph, CrewAI, AutoGen, LlamaIndex, 自定义 Agent Loop  
+> **适用框架**：LangChain, LangGraph, CrewAI, AutoGen, OpenAI Agents, Mastra, Claude Agent SDK, Dify, n8n, 自定义 Agent Loop  
 > **设计纲领**：MCP 只是插座，AMP 才是河床。编排器应当把动机、压力、闸门与梦境作为一等公民消费。
 
 ---
@@ -56,20 +56,13 @@ AMP 规范只锁定四类核心对象：
 ### 3.1 LangChain / LangGraph 集成
 
 ```typescript
-import { ChatOpenAI } from "@langchain/openai";
-import { AmpMiddleware, createLangChainAmpCallback } from "puax-mcp-server/build/core/index.js";
+import { AmpMiddleware, createLangChainAmpCallback } from "puax-mcp-server/amp";
 
-// 1. 初始化 AMP 中间件
 const amp = new AmpMiddleware("prod-session-001");
+// 必须带 name；sessionId 显式传入，不要把 LangChain runId 当 PUAX 会话
+const ampCallback = createLangChainAmpCallback(amp, "prod-session-001");
 
-// 2. 创建 LangChain 原生回调
-const ampCallback = createLangChainAmpCallback(amp);
-
-// 3. 挂载到 Model 或 Agent 运行时
-const model = new ChatOpenAI({
-  modelName: "gpt-4o",
-  callbacks: [ampCallback],
-});
+model.callbacks = [ampCallback]; // LangChain 认 CallbackHandlerMethods（含 name）
 ```
 
 ### 3.2 Vercel AI SDK 集成
@@ -79,7 +72,7 @@ const model = new ChatOpenAI({
 ```typescript
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { createVercelAiAmpMiddleware } from "puax-mcp-server/build/core/index.js";
+import { createVercelAiAmpMiddleware } from "puax-mcp-server/amp";
 
 const ampMiddleware = createVercelAiAmpMiddleware();
 
@@ -119,7 +112,7 @@ await ampMiddleware.onCompletion(result.text, "vercel-agent-001");
 通过 `createLlamaIndexAmpCallback` 挂载至 AgentRunner 或 QueryEngine：
 
 ```typescript
-import { createLlamaIndexAmpCallback } from "puax-mcp-server/build/core/index.js";
+import { createLlamaIndexAmpCallback } from "puax-mcp-server/amp";
 
 const llamaAmp = createLlamaIndexAmpCallback();
 
@@ -141,7 +134,7 @@ llamaAmp.onStepStart(
 任何自行编写 `while` 循环的 Agent，仅需在 4 个关键生命周期埋点：
 
 ```typescript
-import { AmpMiddleware } from "puax-mcp-server/build/core/index.js";
+import { AmpMiddleware } from "puax-mcp-server/amp";
 
 const amp = new AmpMiddleware(sessionId);
 
@@ -188,7 +181,28 @@ async function runAgentStep(userMessage: string) {
 
 ---
 
-## 5. Python 编排器（CrewAI / LangGraph / AutoGen）原生接入
+## 5. 工具 execute 包装（OpenAI Agents / Mastra / n8n）
+
+这些 SDK **没有** AMP 一等 `callbacks` 数组。接入点是工具的 `execute`：
+
+```typescript
+import { wrapToolExecute, createOpenAIAgentsAmpGuard, createClaudeAgentSdkHooks } from "puax-mcp-server/amp";
+
+const guard = createOpenAIAgentsAmpGuard(amp, "sess-1");
+const bash = guard.wrapTool({
+  name: "bash",
+  execute: async ({ command }) => realExec(command),
+});
+// 交给 OpenAI Agents `tool({ ...bash })`
+
+const claudeHooks = createClaudeAgentSdkHooks(amp, "sess-1");
+// settings.hooks.PreToolUse = claudeHooks.PreToolUse
+```
+
+LangGraph JS 节点：`wrapLangGraphNode(nodeFn, amp)`，状态里 `tool_action: { name, args }`。  
+Dify：`createDifyAmpHandler(amp)({ tool_name, tool_parameters, conversation_id })`。
+
+## 6. Python 编排器（CrewAI / LangGraph / AutoGen / ADK）原生接入
 
 针对 Python 生态，PUAX 提供了零第三方依赖的官方单文件 SDK：[`distributions/python/puax_amp.py`](../distributions/python/puax_amp.py)。
 

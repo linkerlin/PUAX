@@ -36,7 +36,7 @@ export interface AmpGateDecision {
 }
 
 export class AmpMiddleware {
-  private defaultSessionId: string;
+  public readonly defaultSessionId: string;
 
   constructor(defaultSessionId: string = "default-amp-session") {
     this.defaultSessionId = defaultSessionId;
@@ -198,19 +198,25 @@ export class AmpMiddleware {
 }
 
 /**
- * 工厂函数：创建 LangChain / LangGraph 兼容的回调处理器
+ * LangChain JS CallbackHandlerMethods 形状（需 `name`）。
+ * 会话 id 请显式传入；勿把 LangChain runId 当 PUAX session。
  */
-export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMiddleware()) {
+export function createLangChainAmpCallback(
+  middleware: AmpMiddleware = new AmpMiddleware(),
+  sessionId?: string
+) {
+  const sid = (runId?: string) => sessionId || middleware.defaultSessionId || runId || 'langchain-session';
   return {
+    name: 'puax-amp',
     // eslint-disable-next-line @typescript-eslint/require-await
     handleChainStart: async (_chain: unknown, inputs: Record<string, unknown>, runId: string) => {
       const text = typeof inputs.input === "string" ? inputs.input : JSON.stringify(inputs);
-      return middleware.onUserPrompt(text, runId);
+      return middleware.onUserPrompt(text, sid(runId));
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     handleToolStart: async (tool: { name: string }, input: string | Record<string, unknown>, runId: string) => {
       const args = typeof input === "string" ? { command: input } : input;
-      const decision = middleware.onPreToolUse(tool.name, args, runId);
+      const decision = middleware.onPreToolUse(tool.name, args, sid(runId));
       if (!decision.allowed) {
         throw new Error(decision.reason || "Blocked by PUAX AMP Gate");
       }
@@ -218,16 +224,16 @@ export function createLangChainAmpCallback(middleware: AmpMiddleware = new AmpMi
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     handleToolEnd: async (output: unknown, runId: string) => {
-      return middleware.onPostToolUse("unknown-tool", output, undefined, runId);
+      return middleware.onPostToolUse("unknown-tool", output, undefined, sid(runId));
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     handleToolError: async (err: Error, runId: string) => {
-      return middleware.onPostToolUse("unknown-tool", null, err, runId);
+      return middleware.onPostToolUse("unknown-tool", null, err, sid(runId));
     },
     // eslint-disable-next-line @typescript-eslint/require-await
     handleLLMEnd: async (output: { generations: Array<Array<{ text: string }>> }, runId: string) => {
       const text = output?.generations?.[0]?.[0]?.text || "";
-      return middleware.onModelOutput(text, runId);
+      return middleware.onModelOutput(text, sid(runId));
     },
   };
 }
@@ -297,3 +303,14 @@ export function createLlamaIndexAmpCallback(middleware: AmpMiddleware = new AmpM
     },
   };
 }
+
+export {
+  wrapToolExecute,
+  wrapTools,
+  createOpenAIAgentsAmpGuard,
+  createMastraAmpGuard,
+  wrapLangGraphNode,
+  createClaudeAgentSdkHooks,
+  createDifyAmpHandler,
+  wrapN8nExecute,
+} from './amp-orchestrators.js';

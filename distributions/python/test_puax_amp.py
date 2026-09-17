@@ -10,6 +10,9 @@ from puax_amp import (
     create_crewai_step_callback,
     create_langgraph_node_interceptor,
     create_autogen_tool_guard,
+    wrap_tool_execute,
+    create_google_adk_before_tool,
+    create_dify_amp_handler,
 )
 
 
@@ -128,6 +131,26 @@ class TestPuaxAmpPython(unittest.TestCase):
         self.assertLess(len(min_p["prompt"]), len(compact_p["prompt"]))
         self.assertLess(len(compact_p["prompt"]), len(full_p["prompt"]))
         self.assertGreater(min_p["estimated_tokens"], 0)
+
+    def test_wrap_tool_execute_and_adk_dify(self):
+        class Tool:
+            name = "bash"
+
+            def execute(self, args):
+                return args.get("command")
+
+        t = wrap_tool_execute(Tool(), self.mw, session_id="py-wrap")
+        self.assertEqual(t.execute({"command": "pytest"}), "pytest")
+        with self.assertRaises(PermissionError):
+            t.execute({"command": "git reset --hard"})
+
+        before = create_google_adk_before_tool(self.mw)
+        with self.assertRaises(PermissionError):
+            before(type("T", (), {"name": "bash"})(), {"command": "git reset --hard"})
+
+        dify = create_dify_amp_handler(self.mw)
+        dec = dify({"tool_name": "bash", "tool_parameters": {"command": "git reset --hard"}, "conversation_id": "d1"})
+        self.assertFalse(dec.allowed)
 
 
 class TestRemoteTickChannel(unittest.TestCase):
