@@ -27,7 +27,7 @@ const logger = getGlobalLogger();
 // 宿主 JSON 形状（per-harness，严格互斥）
 // ============================================================================
 
-export type Harness = 'auto' | 'claude' | 'cursor' | 'copilot' | 'sdk';
+export type Harness = 'auto' | 'claude' | 'cursor' | 'copilot' | 'sdk' | 'unknown';
 
 export interface HookCliOptions {
   event: PuaxHookEvent;
@@ -52,7 +52,8 @@ export interface HookCliOutput {
 export function detectHarness(env: NodeJS.ProcessEnv = process.env): Exclude<Harness, 'auto'> {
   if (env.CURSOR_PLUGIN_ROOT) return 'cursor'; // Cursor 可能同时设置 CLAUDE_PLUGIN_ROOT，须先判
   if (env.CLAUDE_PLUGIN_ROOT && !env.COPILOT_CLI) return 'claude';
-  return 'copilot'; // COPILOT_CLI=1 或未知平台 → SDK 标准
+  if (env.COPILOT_CLI) return 'copilot';
+  return 'unknown'; // 未识别平台显式返回 unknown，平稳降级至标准 additionalContext 载荷
 }
 
 // ============================================================================
@@ -269,6 +270,10 @@ export function runHook(opts: HookCliOptions): HookCliOutput {
   const { event, sessionId } = opts;
   const session = sessionId || 'hook-cli';
 
+  if (harness === 'unknown') {
+    logger.warn('[HookCli] Unrecognized host harness, falling back to standard additionalContext payload');
+  }
+
   try {
     if (event === 'PreToolUse') {
       const decision = evaluatePreToolUse(
@@ -305,6 +310,24 @@ export function runHook(opts: HookCliOptions): HookCliOutput {
   } catch (error) {
     // 优雅降级契约：hook 故障绝不中断宿主会话
     logger.error('[HookCli] Error:', error);
+
+    // P0-4：PreToolUse 是唯一例外——原先此处与其余事件一样返回 `{}`，
+    // 即"失败即放行"，等于把闸门交给异常。判别逻辑自身出错的时刻，恰是
+    // 最不该放行高危动作的时刻。故保守拒绝，并留下可诊断缘由（误伤可重试，
+    // 绕过则整个防作弊面失效）。
+    if (event === 'PreToolUse' && harness === 'claude') {
+      return {
+        json: JSON.stringify({
+          hookSpecificOutput: {
+            hookEventName: 'PreToolUse',
+            decision: 'block',
+            reason:
+              'PUAX_GUARD_ERROR: 防作弊判别自身异常，保守拒绝。此为守卫故障而非策略判定——非高危动作可重试。'
+          }
+        }),
+        produced: true
+      };
+    }
     return { json: '{}', produced: false };
   }
 }
@@ -398,28 +421,48 @@ interface StdinHookPayload {
 
 /**
  * 从 stdin 读取宿主 JSON（非阻塞读取，读不到返回 null）。
- * 竞态防护：无管道输入（TTY/stdio ignore）时 stdin 永不 end，200ms 后放行；
- * 一旦收到过 data 就等 end，避免"宿主慢写导致 200ms 超时丢载荷"。
+ * 4.5.2：若 process.stdin.isTTY 为真立即 resolve(null)；
+ * 非 TTY 且无管道数据时，设短超时（20ms）快速放行，并对 timer.unref 避免阻滞事件循环。
  */
 export function readStdinPayload(): Promise<StdinHookPayload | null> {
+  if (process.stdin.isTTY) {
+    return Promise.resolve(null);
+  }
   return new Promise(resolve => {
     let data = '';
     let received = false;
+    let timer: NodeJS.Timeout | null = null;
+
+    const cleanup = () => {
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+    };
+
     process.stdin.setEncoding('utf8');
     process.stdin.on('data', (chunk: Buffer | string) => {
       received = true;
       data += chunk.toString();
     });
-    process.stdin.on('end', () => {
+    process.stdin.once('end', () => {
+      cleanup();
       if (!data.trim()) return resolve(null);
       try { resolve(JSON.parse(data) as StdinHookPayload); }
       catch { resolve(null); }
     });
-    // 无输入时（stdin 非管道）迅速放行
-    process.stdin.on('error', () => resolve(null));
-    setTimeout(() => {
-      if (!received) resolve(null);
-    }, 200);
+    // 无输入或错误时迅速放行
+    process.stdin.once('error', () => {
+      cleanup();
+      resolve(null);
+    });
+    timer = setTimeout(() => {
+      if (!received) {
+        cleanup();
+        resolve(null);
+      }
+    }, 20);
+    timer.unref?.();
   });
 }
 

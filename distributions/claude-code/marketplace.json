@@ -1,6 +1,6 @@
 {
   "name": "puax-skills",
-  "description": "PUAX skills marketplace — 50 roles, MCP tools, behavior protocols",
+  "description": "PUAX skills marketplace — 59 roles, 50 MCP tools, behavior protocols",
   "owner": {
     "name": "PUAX Team",
     "url": "https://github.com/linkerlin/PUAX"
@@ -9,7 +9,7 @@
     {
       "name": "puax",
       "description": "PUAX AI agent motivation — diagnosis-first, confidence gate, failure switching, evolution baseline, agent team.",
-      "version": "3.11.0",
+      "version": "4.3.0",
       "source": "./",
       "author": {
         "name": "PUAX Team",

@@ -209,6 +209,9 @@ async function showPlatforms(): Promise<void> {
     await import('./platform-adapters/vscode-adapter.js');
     await import('./platform-adapters/claude-code-adapter.js');
     await import('./platform-adapters/opencode-adapter.js');
+    await import('./platform-adapters/codebuddy-adapter.js');
+    await import('./platform-adapters/kiro-adapter.js');
+    await import('./platform-adapters/windsurf-adapter.js');
     
     const platforms = globalAdapterRegistry.getSupportedPlatforms();
     logger.write('\n支持的平台:');

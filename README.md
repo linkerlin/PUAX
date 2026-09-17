@@ -20,7 +20,7 @@
 
 ## 什么是 PUAX？
 
-PUAX 4.2 是面向 AI Agent 的**心智运行时**。角色只是口音；真正的产品是三件原语：
+PUAX 4.3 是面向 AI Agent 的**心智运行时**。角色只是口音；真正的产品是三件原语：
 
 | 原语 | 说明 |
 |------|------|
@@ -232,7 +232,8 @@ PUAX/
 ├── distributions/          # Claude 插件 / Skills CLI 安装说明
 ├── TODO.md                 # 改进计划（v4 当前）
 ├── landing/ / web-admin/   # 落地页与本机台
-└── 演进方案.md             # 3.x 对标（已冻结）
+├── docs/archive/            # 已冻结文档（3.x 对标账本）
+└── 演进方案.md             # v4.3 → v5.0 演进总纲（现行路线图）
 ```
 
 ---
@@ -257,7 +258,8 @@ PUAX/
 | [CHANGELOG](puax-mcp-server/CHANGELOG.md) | 版本变更记录 |
 | [evals/README.md](evals/README.md) | 评测分层与 L4 实测 |
 | [TODO.md](TODO.md) | 改进计划与里程碑 |
-| [演进方案.md](演进方案.md) | 3.x 对标（已冻结） |
+| [演进方案.md](演进方案.md) | **v4.3 → v5.0 演进总纲**（四期行军：固本 / 通脉 / 扩疆 / 立极） |
+| [演进方案-3x-冻结.md](docs/archive/演进方案-3x-冻结.md) | 3.x 对标账本（已归档，不作路线图） |
 
 ---
 
@@ -268,7 +270,7 @@ cd puax-mcp-server
 npm install && npm run build
 npm test
 npm run validate          # lint + typecheck + test
-node ../evals/run-all.js  # 从仓库根目录执行 31 项协议铁律门禁
+node ../evals/run-all.js  # 从仓库根目录执行 32 项协议铁律门禁
 
 # 真实大模型 API 连通压测与双轨对比评测 (AMB Live)
 node evals/amb-live.js --mock                 # 离线模拟压测（零成本、秒级闭环）

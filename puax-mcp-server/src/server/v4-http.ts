@@ -140,11 +140,35 @@ export function dispatchV4(method: string, pathname: string, body?: unknown): V4
         json: runHostDoctor(),
       };
     case "/v4/doctor/fix": {
+      // P0-2：写宿主配置属破坏性操作，禁止 GET 触发
+      if (method !== "POST") {
+        return {
+          status: 405,
+          json: { error: "Method Not Allowed, use POST with { host? } — 写宿主配置属破坏性操作" },
+        };
+      }
       const bodyRecord = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+      const allowWrite =
+        bodyRecord.allow_write === true ||
+        bodyRecord.allowWrite === true ||
+        process.env.PUAX_ALLOW_WRITE === "1" ||
+        process.argv.includes("--allow-write");
+
+      if (!allowWrite) {
+        return {
+          status: 403,
+          json: {
+            error: "Forbidden: Write authorization required. Pass allow_write: true or run with --allow-write / PUAX_ALLOW_WRITE=1",
+            remediation: "This endpoint writes host configurations. Explicit consent is mandatory."
+          },
+        };
+      }
+
       const host = typeof bodyRecord.host === "string" ? bodyRecord.host : undefined;
+      const targetDir = typeof bodyRecord.targetDir === "string" ? bodyRecord.targetDir : undefined;
       return {
         status: 200,
-        json: fixHostDoctor(undefined, host),
+        json: fixHostDoctor(targetDir, host),
       };
     }
     default:

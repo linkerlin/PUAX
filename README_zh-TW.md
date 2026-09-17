@@ -20,7 +20,7 @@
 
 ## 什麼是 PUAX？
 
-PUAX 4.2 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
+PUAX 4.3 是面向 AI Agent 的**心智運行時（Cognitive Runtime）**。角色只是口音；真正的產品是三件核心原語：
 
 | 原语 | 說明 |
 |------|------|

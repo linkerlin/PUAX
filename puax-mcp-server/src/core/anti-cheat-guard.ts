@@ -76,6 +76,51 @@ export interface AccessResult {
 }
 
 // ============================================================================
+// P0-5：匹配前归一化
+// ============================================================================
+// 此前为纯字符串匹配，故 `test/hidden/..//SOLUTION.md`、`%2e%2e/` 编码路径、
+// `git   push`、`git pu"sh"` 之类均可绕过护栏。归一化只用于判断「意图」，
+// 绝不改写调用方传入的路径或命令本身。
+
+function decodeRepeatedly(raw: string, rounds = 2): string {
+  let out = raw;
+  for (let i = 0; i < rounds; i += 1) {
+    try {
+      const decoded = decodeURIComponent(out);
+      if (decoded === out) break;
+      out = decoded;
+    } catch {
+      break;
+    }
+  }
+  return out;
+}
+
+/** 路径归一化视图：解码、反斜杠归正、折叠分隔符、解 `.` 与 `..` */
+export function normalizePathForMatch(raw: string): string {
+  const unified = decodeRepeatedly(raw).replace(/\\/g, '/').replace(/\/{2,}/g, '/');
+  const segments: string[] = [];
+  for (const segment of unified.split('/')) {
+    if (segment === '' || segment === '.') continue;
+    if (segment === '..') {
+      segments.pop();
+      continue;
+    }
+    segments.push(segment);
+  }
+  return `/${segments.join('/')}`;
+}
+
+/** 命令归一化视图：解码、续行归并、去引号、折叠空白 */
+export function normalizeCommandForMatch(raw: string): string {
+  return decodeRepeatedly(raw)
+    .replace(/\\\r?\n/g, ' ')
+    .replace(/["']/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ============================================================================
 // Anti-Cheat Guard
 // ============================================================================
 
@@ -123,9 +168,11 @@ export class AntiCheatGuard extends EventEmitter {
    */
   private checkFileAccess(request: AccessRequest): AccessResult {
     const { path } = request;
+    // P0-5：原串与归一化视图双候选，任一命中即拦
+    const candidates = [path, normalizePathForMatch(path)];
 
     for (const pattern of this.blockedPatterns) {
-      if (pattern.test(path)) {
+      if (candidates.some((candidate) => pattern.test(candidate))) {
         const result = this.createBlockedResult(pattern, path);
         this.recordViolation(request.sessionId);
         this.emit('violation', { request, pattern: pattern.toString() });
@@ -134,7 +181,7 @@ export class AntiCheatGuard extends EventEmitter {
     }
 
     for (const pattern of this.scoringAssetPatterns) {
-      if (pattern.test(path)) {
+      if (candidates.some((candidate) => pattern.test(candidate))) {
         const result = this.createBlockedResult(pattern, path);
         this.recordViolation(request.sessionId);
         this.emit('violation', { request, pattern: pattern.toString() });
@@ -152,8 +199,11 @@ export class AntiCheatGuard extends EventEmitter {
     const { path, toolName } = request;
 
     if (toolName === 'bash' || toolName === 'shell') {
+      // P0-5：命令亦双候选匹配（原串 + 归一化）
+      const candidates = [path, normalizeCommandForMatch(path)];
+
       for (const pattern of this.ciBypassPatterns) {
-        if (pattern.test(path)) {
+        if (candidates.some((candidate) => pattern.test(candidate))) {
           const result: AccessResult = {
             allowed: false,
             reason: 'CI_BYPASS_BLOCKED: Skipping tests or CI is not allowed',
@@ -166,7 +216,7 @@ export class AntiCheatGuard extends EventEmitter {
       }
 
       for (const pattern of this.gitBypassPatterns) {
-        if (pattern.test(path)) {
+        if (candidates.some((candidate) => pattern.test(candidate))) {
           const result: AccessResult = {
             allowed: false,
             reason: 'GIT_BYPASS_BLOCKED: Bypassing git history is not allowed',

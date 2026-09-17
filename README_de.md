@@ -20,7 +20,7 @@
 
 ## Was ist PUAX?
 
-PUAX 4.2 ist eine **kognitive Laufzeitumgebung (Cognitive Runtime)**, die speziell für KI-Agenten entwickelt wurde. Rollen sind lediglich stilistische Akzente; das eigentliche Produkt besteht aus drei Kern-Primitiven:
+PUAX 4.3 ist eine **kognitive Laufzeitumgebung (Cognitive Runtime)**, die speziell für KI-Agenten entwickelt wurde. Rollen sind lediglich stilistische Akzente; das eigentliche Produkt besteht aus drei Kern-Primitiven:
 
 | Primitive | Beschreibung |
 |-----------|--------------|

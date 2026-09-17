@@ -44,5 +44,5 @@ if (ttf.samples < 1) throw new Error('Hook 路径应记下 TTF 样本');
 if (!ttf.first_turn_rate) throw new Error('Hook 第一拍应记 first_turn');
 
 console.log(
-  `hook TTF ok  samples=${ttf.samples} median_ms=${ttf.median_ms} produced=${prompt.produced}`
+  `hook TTF ok  samples=${ttf.samples} in_process_ms=${ttf.median_ms} wall_clock_ms=${ttf.median_wall_clock_ms} produced=${prompt.produced}`
 );

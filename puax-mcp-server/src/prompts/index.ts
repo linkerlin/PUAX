@@ -91,11 +91,19 @@ export class PromptManager {
     logger.error(`[PromptManager] Indexed ${this.skills.length} SKILLs (content loads on demand)`);
   }
 
+  private ensureLoaded(): void {
+    if (this.skills.length === 0 && this.bundledMode) {
+      this.loadSkillsFromBundle();
+    }
+  }
+
   public getAllSkills(): SkillInfo[] {
+    this.ensureLoaded();
     return this.skills;
   }
 
   public getSkillsByCategory(category: string): SkillInfo[] {
+    this.ensureLoaded();
     if (category === 'all') {
       return this.skills;
     }
@@ -103,6 +111,7 @@ export class PromptManager {
   }
 
   public getSkillById(skillId: string): SkillInfo | undefined {
+    this.ensureLoaded();
     return this.skills.find(skill => skill.id === skillId);
   }
 

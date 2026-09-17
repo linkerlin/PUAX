@@ -1,7 +1,7 @@
 {
   "name": "puax",
-  "version": "3.11.0",
-  "description": "PUAX — MCP runtime + 50 AI motivation roles + native hooks. SessionStart injection, PreToolUse guardrails (git push / hidden files), PostToolUse failure escalation. Opt-in coaching for repeated failures, evidence-first delivery, diagnosis protocol, and agent team orchestration.",
+  "version": "4.3.0",
+  "description": "PUAX — MCP runtime + 59 AI motivation roles + 50 MCP tools + native hooks. SessionStart injection, PreToolUse guardrails (git push / hidden files), PostToolUse failure escalation. Opt-in coaching for repeated failures, evidence-first delivery, diagnosis protocol, and agent team orchestration.",
   "author": {
     "name": "PUAX Team",
     "url": "https://github.com/linkerlin/PUAX"

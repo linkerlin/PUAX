@@ -14,9 +14,18 @@ import {
     ListResourcesRequestSchema,
     ReadResourceRequestSchema,
     ErrorCode,
-    McpError
+    McpError,
+    ListRootsRequestSchema,
+    ListResourceTemplatesRequestSchema,
+    SubscribeRequestSchema,
+    UnsubscribeRequestSchema,
+    SetLevelRequestSchema,
+    CompleteRequestSchema,
+    ElicitRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { allTools, Tools, buildToolHandlerMap, normalizeToolResponse, type ToolHandler } from '../tools/index.js';
+import { toProtocolTool } from '../tools/json-schema.js';
+import { z } from 'zod';
 import { promptManager } from '../prompts/index.js';
 import { guardToolCall } from '../core/tool-guard.js';
 import { randomUUID } from 'crypto';
@@ -37,14 +46,55 @@ const toolHandlerMap = buildToolHandlerMap(
   allTools as ReadonlyArray<{ name: string; handler?: ToolHandler }>
 );
 
+/**
+ * 工具入参 schema 索引（P0-1）
+ * 供 CallTool 做运行时入参校验——Zod 此前只用于类型推断，从不实际 parse，
+ * 等于"声明了契约却不执行"。此处补上执行侧。
+ */
+const toolSchemaMap = new Map<string, z.ZodTypeAny>(
+  (allTools as ReadonlyArray<{ name: string; inputSchema?: z.ZodTypeAny }>)
+    .filter((t) => Boolean(t.inputSchema))
+    .map((t) => [t.name, t.inputSchema as z.ZodTypeAny])
+);
+
+/**
+ * P0-2：CORS 只对**环回来源**授权。
+ * 此前 `Access-Control-Allow-Origin: *` 全开，任意网页均可跨域调 `/v4/*`
+ * （含可写宿主配置的 `doctor/fix`）。本地工具与 MCP 客户端通常不发 Origin
+ * 头，故收紧后不影响正常调用。
+ */
+function loopbackOrigin(origin?: string): string | undefined {
+    if (!origin) return undefined;
+    try {
+        const host = new URL(origin).hostname.toLowerCase();
+        const isLoopback =
+            host === 'localhost' ||
+            host === '::1' ||
+            host === '[::1]' ||
+            host.endsWith('.localhost') ||
+            /^127\.\d+\.\d+\.\d+$/.test(host);
+        return isLoopback ? origin : undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+interface SessionContext {
+    transport: StreamableHTTPServerTransport;
+    server: Server;
+}
+
 export class PuaxMcpServer {
     private server: Server;
     private transports: Map<string, StreamableHTTPServerTransport> = new Map();
+    private sessions: Map<string, SessionContext> = new Map();
     private httpServer: ReturnType<typeof createServer> | null = null;
     private stdioTransport: StdioServerTransport | null = null;
     private version: string;
     private config: Required<ServerConfig>;
     private logger: Logger;
+    private subscribedResources: Set<string> = new Set();
+    private currentLogLevel: string = 'info';
 
     constructor(config: ServerConfig = {}) {
         // Merge configuration
@@ -63,59 +113,95 @@ export class PuaxMcpServer {
         this.logger.info(`Starting PUAX MCP Server v${this.version}...`);
         usageStatsCollector.recordSessionStart();
         
-        this.server = new Server(
+        // 4.5.6 / 架构收口：初始化基础 server 实例（用于 stdio 与单例引用）
+        this.server = this.createMcpServerInstance();
+    }
+
+    /**
+     * MCP Server 实例工厂：每个 HTTP transport 会话独立一个 Server 实例，
+     * 根治"同一 Server 实例被多个 HTTP transport connect 导致第二会话 500"的致命缺陷。
+     */
+    public createMcpServerInstance(): Server {
+        const server = new Server(
             {
                 name: 'puax-mcp-server',
                 version: this.version
             },
             {
                 capabilities: {
-                    tools: {},
-                    prompts: {},
-                    resources: {}
+                    tools: {
+                        listChanged: true,
+                    },
+                    prompts: {
+                        listChanged: true,
+                    },
+                    resources: {
+                        subscribe: true,
+                        listChanged: true,
+                    },
+                    logging: {},
+                    completions: {},
                 }
             }
         );
 
-        // Register capabilities
-        this.server.registerCapabilities({
-            prompts: {},
-            resources: {}
-        });
-        
-        this.setupToolHandlers();
-        this.setupPromptHandlers();
-        this.setupResourceHandlers();
-        this.setupErrorHandling();
-        this.setupCommissarChannel();
+        this.setupToolHandlers(server);
+        this.setupPromptHandlers(server);
+        this.setupResourceHandlers(server);
+        this.setupModernFeatureHandlers(server);
+        this.setupErrorHandling(server);
+        this.setupCommissarChannel(server);
+        return server;
     }
 
-    private setupToolHandlers(): void {
+    private setupToolHandlers(server: Server): void {
         // List tools handler
-        this.server.setRequestHandler(ListToolsRequestSchema, () => {
+        server.setRequestHandler(ListToolsRequestSchema, () => {
             const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
             const ordered = [
                 ...Tools.filter((t: { name: string }) => publicSet.has(t.name)),
                 ...Tools.filter((t: { name: string }) => !publicSet.has(t.name)),
             ];
+            // P0-1：inputSchema 必须编译为标准 JSON Schema 再下发，
+            // 否则严格客户端在 listTools 阶段即失败（原为 Zod 对象透传）
             return {
-                tools: ordered.map((t: { name: string; description?: string }) => ({
-                    ...t,
-                    description: publicSet.has(t.name) && t.description && !t.description.startsWith('[v4]')
-                        ? `[v4] ${t.description}`
-                        : t.description,
-                })),
+                tools: ordered.map((t: { name: string; description?: string; inputSchema?: z.ZodTypeAny }) =>
+                    toProtocolTool({
+                        name: t.name,
+                        description: publicSet.has(t.name) && t.description && !t.description.startsWith('[v4]')
+                            ? `[v4] ${t.description}`
+                            : t.description,
+                        inputSchema: t.inputSchema,
+                    })
+                ),
             };
         });
 
         // Tool execution dispatcher：遍历 allTools，通过嵌入 handler 分发
-        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+        server.setRequestHandler(CallToolRequestSchema, async (request) => {
             try {
                 const { name, arguments: args } = request.params;
                 const safeArgs = (args as Record<string, unknown>) || {};
 
                 const handler = toolHandlerMap.get(name);
                 if (handler) {
+                    // P0-1（执行侧）：声明了入参 schema 就当真校验，
+                    // 否则契约只是摆设。失败回 InvalidParams，不静默放行。
+                    let effectiveArgs = safeArgs;
+                    const schema = toolSchemaMap.get(name);
+                    if (schema) {
+                        const parsed = schema.safeParse(safeArgs);
+                        if (!parsed.success) {
+                            const detail = parsed.error.issues
+                                .map((i) => `${i.path.length ? i.path.join('.') : '<root>'}: ${i.message}`)
+                                .join('; ');
+                            throw new McpError(
+                                ErrorCode.InvalidParams,
+                                `Invalid arguments for ${name}: ${detail}`
+                            );
+                        }
+                        effectiveArgs = (parsed.data as Record<string, unknown>) || safeArgs;
+                    }
                     // 工具守卫：PreToolUse 拦截（防作弊，见 core/tool-guard.ts）
                     const guard = guardToolCall(name, safeArgs);
                     if (guard.blocked) {
@@ -129,7 +215,7 @@ export class PuaxMcpServer {
                         { 'tool.name': name },
                         async () => {
                             usageStatsCollector.recordToolCall(name);
-                            const result = handler(safeArgs);
+                            const result = handler(effectiveArgs);
                             if (result instanceof Promise) {
                                 return normalizeToolResponse(await result);
                             }
@@ -154,12 +240,12 @@ export class PuaxMcpServer {
         });
     }
 
-    private setupPromptHandlers(): void {
-        this.server.setRequestHandler(ListPromptsRequestSchema, () => ({
+    private setupPromptHandlers(server: Server): void {
+        server.setRequestHandler(ListPromptsRequestSchema, () => ({
             prompts: promptManager.listPrompts()
         }));
 
-        this.server.setRequestHandler(GetPromptRequestSchema, (request) => {
+        server.setRequestHandler(GetPromptRequestSchema, (request) => {
             const { name, arguments: args } = request.params;
             
             const result = promptManager.getPrompt(name, args);
@@ -174,8 +260,8 @@ export class PuaxMcpServer {
         });
     }
 
-    private setupResourceHandlers(): void {
-        this.server.setRequestHandler(ListResourcesRequestSchema, () => {
+    private setupResourceHandlers(server: Server): void {
+        server.setRequestHandler(ListResourcesRequestSchema, () => {
             const resources = [
                 {
                     uri: 'puax://v4/verbs',
@@ -207,7 +293,7 @@ export class PuaxMcpServer {
             return { resources };
         });
 
-        this.server.setRequestHandler(ReadResourceRequestSchema, (request) => {
+        server.setRequestHandler(ReadResourceRequestSchema, (request) => {
             const { uri } = request.params;
             if (uri === 'puax://v4/verbs') {
                 return {
@@ -279,18 +365,163 @@ export class PuaxMcpServer {
         });
     }
 
-    private setupErrorHandling(): void {
-        this.server.onerror = (error) => {
+    /**
+     * 4.5.6：MCP 现代特性补齐
+     * roots / subscribe / unsubscribe / templates / completion / logging / elicitation
+     */
+    private setupModernFeatureHandlers(server: Server): void {
+        // 1. roots/list
+        server.setRequestHandler(ListRootsRequestSchema, () => {
+            return {
+                roots: [
+                    {
+                        uri: `file://${process.cwd()}`,
+                        name: 'workspace'
+                    }
+                ]
+            };
+        });
+
+        // 2. resources/templates/list
+        server.setRequestHandler(ListResourceTemplatesRequestSchema, () => {
+            return {
+                resourceTemplates: [
+                    {
+                        uriTemplate: 'puax://skills/{skillId}',
+                        name: 'PUAX Skill Template',
+                        description: 'Access PUAX bundled or custom roles/skills by skill ID',
+                        mimeType: 'text/markdown'
+                    },
+                    {
+                        uriTemplate: 'puax://situations/{level}',
+                        name: 'PUAX Situation Template',
+                        description: 'Access PUAX situation prompts by pressure level (0-4)',
+                        mimeType: 'text/plain'
+                    }
+                ]
+            };
+        });
+
+        // 3. resources/subscribe & unsubscribe
+        server.setRequestHandler(SubscribeRequestSchema, (request) => {
+            const { uri } = request.params;
+            this.subscribedResources.add(uri);
+            this.logger.debug(`Subscribed to resource: ${uri}`);
+            return {};
+        });
+
+        server.setRequestHandler(UnsubscribeRequestSchema, (request) => {
+            const { uri } = request.params;
+            this.subscribedResources.delete(uri);
+            this.logger.debug(`Unsubscribed from resource: ${uri}`);
+            return {};
+        });
+
+        // 4. logging/setLevel
+        server.setRequestHandler(SetLevelRequestSchema, (request) => {
+            const { level } = request.params;
+            this.currentLogLevel = level;
+            this.logger.info(`Log level updated to: ${level}`);
+            return {};
+        });
+
+        // 5. completion/complete
+        server.setRequestHandler(CompleteRequestSchema, (request) => {
+            const { ref, argument } = request.params;
+            const val = (argument?.value || '').toLowerCase();
+            const candidates: string[] = [];
+
+            if (ref.type === 'ref/prompt') {
+                const skills = promptManager.getAllSkills();
+                for (const s of skills) {
+                    if (s.id.toLowerCase().includes(val) || s.name.toLowerCase().includes(val)) {
+                        candidates.push(s.id);
+                    }
+                }
+            } else if (ref.type === 'ref/resource') {
+                const staticUris = [
+                    'puax://v4/verbs',
+                    'puax://v4/kernel',
+                    'puax://v4/amp',
+                    'puax://v4/theater'
+                ];
+                for (const u of staticUris) {
+                    if (u.toLowerCase().includes(val)) {
+                        candidates.push(u);
+                    }
+                }
+            }
+
+            const values = candidates.slice(0, 10);
+            return {
+                completion: {
+                    values,
+                    total: candidates.length,
+                    hasMore: candidates.length > 10
+                }
+            };
+        });
+
+        // 6. elicitation/create
+        server.setRequestHandler(ElicitRequestSchema, (request) => {
+            return {
+                action: 'accept',
+                content: {
+                    acknowledged: true,
+                    mode: request.params.mode,
+                    message: request.params.message
+                }
+            };
+        });
+    }
+
+    public getSubscribedResources(): string[] {
+        return Array.from(this.subscribedResources);
+    }
+
+    public getLogLevel(): string {
+        return this.currentLogLevel;
+    }
+
+    public getMcpServer(): Server {
+        return this.server;
+    }
+
+    public async handleHttpRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        return this.handleRequest(req, res);
+    }
+
+    public async close(): Promise<void> {
+        const active = Array.from(this.sessions.values());
+        this.sessions.clear();
+        this.transports.clear();
+        for (const session of active) {
+            try {
+                await session.transport.close();
+            } catch {
+                // ignore
+            }
+        }
+        if (this.httpServer) {
+            await new Promise<void>((resolve) => {
+                this.httpServer?.close(() => resolve());
+            });
+            this.httpServer = null;
+        }
+    }
+
+    private setupErrorHandling(server: Server): void {
+        server.onerror = (error) => {
             this.logger.error('[MCP Error]', error);
         };
     }
 
-    private setupCommissarChannel(): void {
-        this.server.oninitialized = () => {
-            const caps = this.server.getClientCapabilities();
+    private setupCommissarChannel(server: Server): void {
+        server.oninitialized = () => {
+            const caps = server.getClientCapabilities();
             if (caps?.sampling) {
                 setSamplingRequester(async ({ systemPrompt, userPrompt, maxTokens }) => {
-                    const result = await this.server.createMessage({
+                    const result = await server.createMessage({
                         maxTokens,
                         systemPrompt,
                         messages: [{ role: 'user', content: { type: 'text', text: userPrompt } }],
@@ -356,9 +587,8 @@ export class PuaxMcpServer {
             this.logger.info('Endpoints:');
             this.logger.info(`  Health:  http://${host}:${port}/health`);
             this.logger.info(`  v4:      http://${host}:${port}/v4/dashboard|/amp|/theater|/roles`);
-            this.logger.info(`  MCP:     http://${host}:${port}/mcp`);
-            this.logger.info(`  SSE:     http://${host}:${port}/`);
-            this.logger.info(`  Message: http://${host}:${port}/message`);
+            this.logger.info(`  MCP:     http://${host}:${port}/mcp  (Streamable HTTP：POST 发消息 / GET 建 SSE 流)`);
+            this.logger.info(`  MCP alt: http://${host}:${port}/     (同上，兼容旧配置)`);
             this.logger.info('──────────────────────────────────────────');
             this.logger.info('Press Ctrl+C to stop the server');
         });
@@ -424,15 +654,20 @@ export class PuaxMcpServer {
      * HTTP 会话表无 TTL，异常断开的会话只能靠 onclose 清理；设上限并逐出最老会话，
      * 防长跑 HTTP 模式内存缓慢增长（onclose 未触发的会话 close() 幂等，安全）。
      */
+    /**
+     * HTTP 会话表无 TTL，异常断开的会话只能靠 onclose 清理；设上限并逐出最老会话，
+     * 防长跑 HTTP 模式内存缓慢增长（onclose 未触发的会话 close() 幂等，安全）。
+     */
     private evictStaleTransports(): void {
         const MAX_SESSIONS = 128;
-        while (this.transports.size >= MAX_SESSIONS) {
-            const oldest = this.transports.keys().next().value;
+        while (this.sessions.size >= MAX_SESSIONS) {
+            const oldest = this.sessions.keys().next().value;
             if (oldest === undefined) break;
-            const t = this.transports.get(oldest);
+            const ctx = this.sessions.get(oldest);
+            this.sessions.delete(oldest);
             this.transports.delete(oldest);
             try {
-                void t?.close();
+                void ctx?.transport.close();
             } catch {
                 // 已关闭/半关闭的传输，忽略
             }
@@ -440,48 +675,53 @@ export class PuaxMcpServer {
         }
     }
 
-    private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {        try {
+    private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
+        try {
             const url = new URL(req.url || '/', `http://${req.headers.host}`);
             const pathname = url.pathname;
             
-            // Handle streamable-http POST requests
-            if (req.method === 'POST' && (pathname === '/' || pathname === '/mcp')) {
+            // Handle Streamable HTTP: POST, GET, DELETE
+            if ((req.method === 'POST' || req.method === 'GET' || req.method === 'DELETE') && (pathname === '/' || pathname === '/mcp')) {
                 const sessionId = req.headers['mcp-session-id'] as string | undefined;
-                let transport = sessionId ? this.transports.get(sessionId) : undefined;
+                let session = sessionId ? this.sessions.get(sessionId) : undefined;
                 
-                if (!transport) {
-                    transport = new StreamableHTTPServerTransport({
+                if (!session) {
+                    if (req.method !== 'POST') {
+                        res.writeHead(req.method === 'DELETE' ? 404 : 400, { 'Content-Type': 'text/plain' });
+                        res.end(`Missing or invalid session ID for ${req.method} request`);
+                        return;
+                    }
+
+                    const sessionServer = this.createMcpServerInstance();
+                    let initializedSid: string | null = null;
+                    let isClosing = false;
+                    const transport = new StreamableHTTPServerTransport({
                         sessionIdGenerator: () => randomUUID(),
                         onsessioninitialized: (sid: string) => {
+                            initializedSid = sid;
                             this.evictStaleTransports();
-                            this.transports.set(sid, transport!);
+                            this.sessions.set(sid, { transport, server: sessionServer });
+                            this.transports.set(sid, transport);
                             this.logger.debug(`Session initialized: ${sid}`);
                         }
                     });
                     
                     transport.onclose = () => {
-                        if (transport?.sessionId) {
-                            this.logger.debug(`Session closed: ${transport.sessionId}`);
-                            this.transports.delete(transport.sessionId);
+                        if (isClosing) return;
+                        isClosing = true;
+                        const sid = transport.sessionId || initializedSid;
+                        if (sid) {
+                            this.logger.debug(`Session closed: ${sid}`);
+                            this.sessions.delete(sid);
+                            this.transports.delete(sid);
                         }
                     };
                     
-                    await this.server.connect(transport);
+                    await sessionServer.connect(transport);
+                    session = { transport, server: sessionServer };
                 }
                 
-                await transport.handleRequest(req, res);
-            }
-            // Handle GET requests (SSE/streamable)
-            else if (req.method === 'GET' && (pathname === '/' || pathname === '/mcp')) {
-                const sessionId = req.headers['mcp-session-id'] as string | undefined;
-                const transport = sessionId ? this.transports.get(sessionId) : undefined;
-                
-                if (transport) {
-                    await transport.handleRequest(req, res);
-                } else {
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Missing session ID for GET request');
-                }
+                await session.transport.handleRequest(req, res);
             }
             else if (pathname.startsWith('/v4/')) {
                 let body: unknown = undefined;
@@ -505,19 +745,31 @@ export class PuaxMcpServer {
                     res.end('Not Found');
                     return;
                 }
+                // P0-2：仅环回来源获 CORS 授权；非环回不发此头，浏览器同源策略自然拒绝
+                const corsOrigin = loopbackOrigin(req.headers.origin);
                 if (routed.status === 204) {
-                    res.writeHead(204, {
-                        'Access-Control-Allow-Origin': '*',
-                        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                        'Access-Control-Allow-Headers': 'Content-Type',
-                    });
+                    res.writeHead(
+                        204,
+                        corsOrigin
+                            ? {
+                                  'Access-Control-Allow-Origin': corsOrigin,
+                                  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                                  'Access-Control-Allow-Headers': 'Content-Type',
+                              }
+                            : {}
+                    );
                     res.end();
                     return;
                 }
-                res.writeHead(routed.status, {
-                    'Content-Type': 'application/json; charset=utf-8',
-                    'Access-Control-Allow-Origin': '*',
-                });
+                res.writeHead(
+                    routed.status,
+                    corsOrigin
+                        ? {
+                              'Content-Type': 'application/json; charset=utf-8',
+                              'Access-Control-Allow-Origin': corsOrigin,
+                          }
+                        : { 'Content-Type': 'application/json; charset=utf-8' }
+                );
                 res.end(JSON.stringify(routed.json));
             }
             // Health check

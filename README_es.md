@@ -20,7 +20,7 @@
 
 ## ¿Qué es PUAX?
 
-PUAX 4.2 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
+PUAX 4.3 es un **entorno cognitivo (Cognitive Runtime)** diseñado específicamente para Agentes de IA. Los roles son meros acentos estilísticos; el producto fundamental son tres primitivas esenciales:
 
 | Primitiva | Descripción |
 |-----------|-------------|

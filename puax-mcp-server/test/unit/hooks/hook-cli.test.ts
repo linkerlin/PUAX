@@ -67,9 +67,14 @@ describe('Hook CLI', () => {
       expect(detectHarness(env)).toBe('claude');
     });
 
-    it('should default to copilot/sdk standard', () => {
+    it('should return copilot when COPILOT_CLI set', () => {
       const env = { COPILOT_CLI: '1' } as NodeJS.ProcessEnv;
       expect(detectHarness(env)).toBe('copilot');
+    });
+
+    it('should return unknown when no recognized env vars set', () => {
+      const env = {} as NodeJS.ProcessEnv;
+      expect(detectHarness(env)).toBe('unknown');
     });
   });
 
@@ -107,6 +112,19 @@ describe('Hook CLI', () => {
         sessionId: SESSION,
         message: 'try harder',
         harness: 'sdk'
+      });
+      const payload = JSON.parse(json);
+      expect(payload.additionalContext).toBeDefined();
+      expect(payload.additional_context).toBeUndefined();
+      expect(payload.hookSpecificOutput).toBeUndefined();
+    });
+
+    it('unknown: falls back gracefully to additionalContext without throwing', async () => {
+      const { json } = await runHook({
+        event: 'UserPromptSubmit',
+        sessionId: SESSION,
+        message: 'try harder',
+        harness: 'unknown'
       });
       const payload = JSON.parse(json);
       expect(payload.additionalContext).toBeDefined();

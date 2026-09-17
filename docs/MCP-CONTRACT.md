@@ -1,6 +1,6 @@
 # PUAX MCP 协议契约参考（MCP Contract Reference）
 
-> **版本**: 4.2.0 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
+> **版本**: 4.3.0 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)；工具参数明细见 [API.md](API.md)。
 
 ---

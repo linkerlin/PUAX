@@ -4,6 +4,15 @@
   "description": "PUAX MCP Server - AI角色选择、切换和激活服务器（支持 HTTP/SSE 和 STDIO 模式）- 文言文增强版",
   "main": "build/index.js",
   "type": "commonjs",
+  "exports": {
+    ".": "./build/index.js",
+    "./amp": "./build/core/amp-middleware.js",
+    "./amp-spec": "./build/core/amp.js",
+    "./thin-prompt": "./build/core/thin-prompt.js",
+    "./hook-cli": "./build/cli/hook-cli.js",
+    "./build/*": "./build/*",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "puax-mcp-server": "build/index.js",
     "puax": "build/index.js"

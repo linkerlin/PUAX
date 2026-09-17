@@ -243,7 +243,6 @@ ${entries}
 
 function generatePromptsBundleLoader() {
   const loaderEntries = CATEGORIES.map(category => {
-    const varName = category.replace(/-/g, '_');
     return `  ${JSON.stringify(category)}: () => require('./bundles/bundle-${category}').bundledSkills as BundledSkill[]`;
   }).join(',\n');
 
@@ -257,10 +256,9 @@ import {
   Category,
   SkillManifestEntry
 } from './bundle-types.js';
-import { SKILL_MANIFEST } from './skill-manifest.js';
 
 export type { BundledSkill, Category, SkillManifestEntry };
-export { CATEGORIES, CATEGORY_NAMES, SKILL_MANIFEST };
+export { CATEGORIES, CATEGORY_NAMES };
 
 const categoryLoaders: Record<string, () => BundledSkill[]> = {
 ${loaderEntries}
@@ -293,22 +291,59 @@ function loadAllCategories(): void {
   }
 }
 
+let _manifest: SkillManifestEntry[] | null = null;
 export function getSkillManifest(): SkillManifestEntry[] {
-  return SKILL_MANIFEST;
+  if (!_manifest) {
+    _manifest = require('./skill-manifest.js').SKILL_MANIFEST as SkillManifestEntry[];
+  }
+  return _manifest;
 }
 
+export const SKILL_MANIFEST: SkillManifestEntry[] = new Proxy([] as SkillManifestEntry[], {
+  get(target, prop, receiver) {
+    return Reflect.get(getSkillManifest(), prop, receiver);
+  },
+  has(target, prop) {
+    return Reflect.has(getSkillManifest(), prop);
+  },
+  ownKeys() {
+    return Reflect.ownKeys(getSkillManifest());
+  },
+  getOwnPropertyDescriptor(target, prop) {
+    return Reflect.getOwnPropertyDescriptor(getSkillManifest(), prop);
+  }
+});
+
 export function getManifestEntryById(id: string): SkillManifestEntry | undefined {
-  return SKILL_MANIFEST.find(skill => skill.id === id);
+  return getSkillManifest().find(skill => skill.id === id);
 }
 
 export function getAllBundledSkills(): BundledSkill[] {
   loadAllCategories();
-  return SKILL_MANIFEST.map(entry => skillByIdCache.get(entry.id)!);
+  return getSkillManifest().map(entry => skillByIdCache.get(entry.id)!);
+}
+
+function inferCategoryFromId(id: string): string | undefined {
+  if (id === 'strategic-architect') return 'p10';
+  const prefix = id.split('-')[0];
+  if (CATEGORIES.includes(prefix as Category)) {
+    return prefix;
+  }
+  if (id.startsWith('self-motivation-')) return 'self-motivation';
+  return undefined;
 }
 
 export function getBundledSkillById(id: string): BundledSkill | undefined {
   if (skillByIdCache.has(id)) {
     return skillByIdCache.get(id);
+  }
+
+  const inferred = inferCategoryFromId(id);
+  if (inferred) {
+    loadCategory(inferred);
+    if (skillByIdCache.has(id)) {
+      return skillByIdCache.get(id);
+    }
   }
 
   const manifestEntry = getManifestEntryById(id);
@@ -329,7 +364,7 @@ export function getBundledSkillsByCategory(category: string): BundledSkill[] {
 
 export function searchBundledSkills(keyword: string): BundledSkill[] {
   const lowerKeyword = keyword.toLowerCase();
-  const matches = SKILL_MANIFEST.filter(skill =>
+  const matches = getSkillManifest().filter(skill =>
     skill.name.toLowerCase().includes(lowerKeyword) ||
     skill.description.toLowerCase().includes(lowerKeyword) ||
     skill.category.toLowerCase().includes(lowerKeyword) ||
@@ -343,12 +378,12 @@ export function searchBundledSkills(keyword: string): BundledSkill[] {
 }
 
 export function getSkillCategories(): string[] {
-  return [...new Set(SKILL_MANIFEST.map(skill => skill.category))].sort();
+  return [...new Set(getSkillManifest().map(skill => skill.category))].sort();
 }
 
 export function getSkillCountByCategory(): Record<string, number> {
   const count: Record<string, number> = {};
-  for (const skill of SKILL_MANIFEST) {
+  for (const skill of getSkillManifest()) {
     count[skill.category] = (count[skill.category] || 0) + 1;
   }
   return count;

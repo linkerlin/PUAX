@@ -94,14 +94,20 @@ export async function requestIntervention(
 
   if (Date.now() - (lastSampledAt.get(ctx.session_id) || 0) < tuning.cooldownMs) return local;
 
+  let timer: NodeJS.Timeout | null = null;
   try {
+    const timeoutPromise = new Promise<null>(resolve => {
+      timer = setTimeout(() => resolve(null), timeoutMs);
+      timer.unref?.();
+    });
+
     const text = await Promise.race([
       requester({
         systemPrompt: COMMISSAR_SYSTEM_PROMPT,
         userPrompt: commissarUserPrompt(ctx),
         maxTokens: tuning.maxTokens,
       }),
-      new Promise<null>(resolve => setTimeout(() => resolve(null), timeoutMs)),
+      timeoutPromise,
     ]);
     const trimmed = (text || '').trim().slice(0, MAX_TEXT_CHARS);
     if (trimmed) {
@@ -110,6 +116,11 @@ export async function requestIntervention(
     }
   } catch {
     // Host 拒答或离线：降级本地棒喝
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+      timer = null;
+    }
   }
   return local;
 }

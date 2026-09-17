@@ -1,6 +1,6 @@
 # PUAX 使用指南
 
-> **版本**: 4.0.0 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
+> **版本**: 4.3.0 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
 
 ---
 
@@ -131,7 +131,7 @@ npx puax-mcp-server --list-platforms
 开发/发版前：
 
 ```bash
-node evals/run-all.js              # 31 项协议守门
+node evals/run-all.js              # 32 项协议守门
 cd puax-mcp-server && npm test       # 965+ 测试
 node evals/benchmark.js            # 性能基准
 ```

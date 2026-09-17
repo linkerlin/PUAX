@@ -10,9 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **第 32 门「双引擎信号一致性」**（`evals/trigger-signal-consistency.js`）：触发器双引擎（会话级扫描 / 事件级实时）经 `TRIGGER_ALIASES` 缝合层归一到 YAML 目录 id，本门守三层——模式键↔别名完备、别名目标全部命中目录真实 id（生命周期信号 preCompact/stopFeedback 按设计直通且与目录零碰撞）、七场景跨引擎归一一致（同一话语/上下文双引擎必须落在同一目录 id，含 bashFailure≡attempt_count 与 noSearch≡tool_underuse 两条上下文路径）。引擎合并第二步（模式源归一）以此为前置护栏。
 
+- **Zod → JSON Schema 转换器**（`src/tools/json-schema.ts`，零新增依赖）：MCP `tools/list` 要求 `inputSchema` 为标准 JSON Schema，而工具层持有的一直是 **Zod 对象本体**——直接透传时序列化出的是 `_def` / `typeName` 等内部结构，严格客户端在发现阶段即报 `inputSchema.type expected "object"`。此乃协议契约第一硬伤。转换器覆盖 object / string（min·max·email·url·uuid·regex）/ number（min·max·int）/ boolean / enum / array / tuple / record / union / intersection / default / optional / nullable / effects / branded，未支持类型一律退化为 `{}`（等价「任意」），保证 `tools/list` 绝不因单个工具而整体失败。
+- **包导出面**（`package.json` 增 `exports`）：AMP 此前只能深引 `build/core/index.js`，一改内部布局即断。新增 `.`、`./amp`、`./amp-spec`、`./thin-prompt`、`./hook-cli` 五个语义入口，另留 `./build/*` 通配以兼容既有 hook 产物深引（见 Fixed）。
+
 ### Changed
 - **触发器引擎合并（第一步：死引擎剟除）**：`core/trigger-detector.ts` 内嵌的继承式 `EnhancedTriggerDetector`（上下文感知五检测器）、`ENHANCED_TRIGGER_DEFINITIONS`、工厂与 `enhancedTriggerDetectorCore` 单例（合计 ~350 行）经查系零消费死代码——生产路径无一处调用 `detectEnhanced`（`detect_trigger` / `activate_with_context` 只用基类 `detect()`），唯一引用是其孤儿单测。整体剟除并在模块头明确双引擎分工：会话级扫描（TriggerDetector，YAML 目录）与事件级实时检测（trigger-detector-enhanced.ts，v4 心跳热路径）。被剟四类触发语义（low_quality / unverified_claim / edge_case_ignored / over_complication）如需复活应落入 YAML 目录而非代码硬编。
 - **事件级检测器获得专属单测**：原孤儿测试文件改造为 `EnhancedTriggerDetector`（事件级活体）13 例直接单测——六事件路由（UserPromptSubmit / PostToolUse / PreCompact / SessionStart / Stop / PreToolUse）、30s 冷却门、Bash 连败 L1 压力升级、状态持久与会话恢复。此前该热路径仅靠 hook 系测试间接覆盖。
+
+### Fixed
+- **hook 产物深引被 `exports` 反噬**：加 `exports` 后 `require('puax-mcp-server/build/cli/hook-cli.js')` 触发 `ERR_PACKAGE_PATH_NOT_EXPORTED`，hook 全线降级为 `{}`（`hook-artifact` / `hook-cli-degradation` 两套测试当场抓获）。补 `./build/*` 通配与 `./hook-cli` 入口后复绿。
+- **MCP 协议契约第一硬伤**（P0-1）：`server/core.ts` 的 `tools/list` 由 `{ ...t }` 原样透传改为经 `toProtocolTool()` 编译后下发——50 个工具的 `inputSchema` 现全部以 `{ type: 'object', properties, required }` 形态出网，Zod 内部结构不再泄漏。`test/core/json-schema.test.ts` 13 例守住不再退化，其中一条直接断言序列化结果**不得含 `_def` / `typeName`**。
+- **入参契约只声明不执行**：`callTool` 此前从不 `safeParse`——schema 写了却从不校验，等于契约摆设。现按工具 schema 校验，失败回 `InvalidParams` 并附字段级原因（path + message），不静默放行。
+- **HTTP 面 CORS 全开**（P0-2）：`/v4/*` 原以 `Access-Control-Allow-Origin: *` 应答，任意网页皆可跨域调用（内中 `doctor/fix` 可写宿主配置）。新增 `loopbackOrigin()` 判定，仅 localhost / `127.x.x.x` / `[::1]` / `*.localhost` 来源获授权，非环回不下发 CORS 头（浏览器同源策略自然拒绝）。本地工具与 MCP 客户端通常不带 `Origin`，故正常调用不受影响。
+- **破坏性操作可被 GET 触发**（P0-2）：`/v4/doctor/fix` 收紧为 POST-only，GET 回 405——写宿主配置不当由一个链接即可造成。
+- **启动横幅幽灵端点**（P0-3）：横幅曾印出 `SSE: /` 与 `Message: /message` 两个端点，其中 `/message` 在路由表中并不存在（访问必 404）。已删去，并把 `/mcp` 与 `/` 统一说明为 Streamable HTTP（POST 发消息 / GET 建 SSE 流）。
+- **防作弊「失败即放行」**（P0-4）：`cli/hook-cli.ts` 的兜底 catch 原对一切事件返回 `{}` + exit 0——判别逻辑自身异常之时，恰是最不该放行高危动作之时。现 PreToolUse + claude 宿主改走**保守拒绝**（`decision: 'block'`，理由 `PUAX_GUARD_ERROR`），其余事件仍守优雅降级契约，绝不中断宿主会话。
+- **护栏可被编码与折叠绕过**（P0-5）：`core/anti-cheat-guard.ts` 原为纯字符串匹配，`test/hidden/..//SOLUTION.md`、`%2e%2e/` 编码、`test\hidden\` 反斜杠、`git   pu"sh"` 皆可绕行。现于匹配前生成归一化视图（URL 解码两轮、反斜杠归正、折叠重复分隔符、解析 `.` 与 `..`；命令侧续行归并、去引号、折叠空白），**原串与归一化串双候选、任一命中即拦**；且只用于判断意图，绝不改写调用方传入值。新增 `test/core/anti-cheat-normalize.test.ts` 8 例守门（含「正常路径与命令不被误伤」反向断言）。
 
 ## [4.3.0] - 2026-09-17
 

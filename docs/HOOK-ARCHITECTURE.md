@@ -1,6 +1,6 @@
 # PUAX Hook 架构
 
-> 版本: v4.2.0 | 配套: [Hook机制演进方案.md](../Hook机制演进方案.md)、[MCP-CONTRACT.md](MCP-CONTRACT.md)
+> 版本: v4.3.0 | 配套: [Hook机制演进方案.md](../Hook机制演进方案.md)、[MCP-CONTRACT.md](MCP-CONTRACT.md)
 
 本文档定义 PUAX 的 Hook 接入架构（Shape A/B/C 路由表、per-harness JSON 契约、gotcha 附录）。
 设计对标 obra/superpowers 的 `porting-to-a-new-harness.md`。

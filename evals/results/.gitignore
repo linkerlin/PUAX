@@ -1,3 +1,7 @@
 # L4 实测结果（含 LLM 回复摘录）— 默认不提交
 *.json
 !.gitkeep
+
+# AMB Live 战报为运行产物（--mock 时为演练值），不入版本库，
+# 免被外引为「战绩」。真实评测请由 evals/amb-live.js 现跑现看。
+amb-live-report.md
