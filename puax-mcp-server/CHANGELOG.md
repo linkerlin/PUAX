@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Streamable HTTP 会话续传**：`MemoryEventStore` 挂上传输，`GET` + `Last-Event-ID` 重放；eventId 与 streamId 分存，避开 SDK 示例用 `_` 拼接导致的解错。
 - **`POST /v4/thin-prompt`**：编排器薄注入不再盲打无 session 的 `/mcp`；Python SDK `get_thin_prompt` 改走此路。
 - **`PUAX_TOOL_SURFACE`**：`tools/list` 默认只下发 13 黄金动词（`public`）；`full` 才列 50。`tools/call` 仍可按名调用未列出工具。
 - **`PUAX_GUARD_MODE`**：默认 `dev` 不拦日常 `git push`；评测集设 `eval`。
@@ -21,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`docs/WEB-ADMIN-SPEC.md` 迁入 `docs/archive/`**。
 
 ### Fixed
+- **`/v4/doctor/fix` targetDir 沙箱**：只允许 cwd / tmp / `~/.puax`；`path-security` 目录边界不再前缀误放行。
+- **`POST /v4/*` 体积上限 1MB**，超限 413。
+- **tools/cli 不再进口 hooks 垫片**（state-manager / 事件检测器等走 `core/`）；`hook-manager` / `feedback-system` 仍为活体，留 hooks。
+- **删除生产不可达 `hooks/failure-detector.ts`** 及其孤儿单测。
 - **custom-role-store / evolution-engine** 补齐原子写。
 - **amp-middleware** 改从 `core/state-manager` 进口，不再走 hooks 垫片。
 - **Python 信封 `state.role`**：缺省 `"none"`，对齐 schema required。

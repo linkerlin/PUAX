@@ -91,4 +91,14 @@ describe("PUAX Host Doctor & TTF Engine", () => {
     expect(typeof authBody.totalFixed).toBe("number");
     expect(Array.isArray(authBody.results)).toBe(true);
   });
+
+  test("dispatchV4 POST /v4/doctor/fix 拒绝逃逸 targetDir", () => {
+    const res = dispatchV4("POST", "/v4/doctor/fix", {
+      allow_write: true,
+      host: "cursor",
+      targetDir: "/etc",
+    });
+    expect(res?.status).toBe(400);
+    expect((res?.json as { error: string }).error).toMatch(/超出允许范围|路径遍历/);
+  });
 });

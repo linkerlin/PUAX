@@ -6,7 +6,7 @@
 
 import { z } from 'zod';
 import { verifyCompletion, type TaskContract } from '../core/governance.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from '../core/state-manager.js';
 import { outcomeStore } from '../core/outcome-store.js';
 import { proofStore } from '../core/proof-store.js';
 

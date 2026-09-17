@@ -2,7 +2,8 @@
  * 路径遍历防护
  */
 
-import { resolve, normalize } from 'path';
+import { resolve, normalize, sep } from 'path';
+import { homedir, tmpdir } from 'os';
 
 export class PathTraversalError extends Error {
   constructor(message: string) {
@@ -33,11 +34,30 @@ export function assertSafeOutputPath(outputPath: string, baseDir?: string): stri
 
   if (baseDir) {
     const base = resolve(baseDir);
-    if (!absolute.startsWith(base)) {
+    if (!isPathInside(absolute, base)) {
       throw new PathTraversalError('outputPath 超出允许的基础目录');
     }
   }
 
+  return absolute;
+}
+
+/** 目录边界：`/tmp/out` 不得放行 `/tmp/out-evil` */
+export function isPathInside(abs: string, base: string): boolean {
+  const a = resolve(abs);
+  const b = resolve(base);
+  return a === b || a.startsWith(b.endsWith(sep) ? b : b + sep);
+}
+
+/**
+ * doctor/fix 写宿主配置：只允许 cwd、系统临时目录、~/.puax。
+ */
+export function assertDoctorTargetDir(targetDir: string): string {
+  const absolute = assertSafeOutputPath(targetDir);
+  const allowed = [resolve(process.cwd()), resolve(tmpdir()), resolve(homedir(), '.puax')];
+  if (!allowed.some((base) => isPathInside(absolute, base))) {
+    throw new PathTraversalError('targetDir 超出允许范围（cwd / tmp / ~/.puax）');
+  }
   return absolute;
 }
 

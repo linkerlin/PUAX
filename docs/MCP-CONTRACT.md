@@ -17,6 +17,8 @@
 - 首次 `initialize` 响应头返回 `mcp-session-id`；后续请求必须携带该头。
 - 服务端按会话 id 维护传输实例，**上限 128 个会话**，超限逐出最老会话（防长跑泄漏）。
 - `GET /mcp`（SSE 流）必须携带有效会话 id，否则拒绝。
+- **断线续传**：传输挂 `MemoryEventStore`（上限 4096 事件）。客户端 `GET` 带 `Last-Event-ID` 时重放该 stream 在锚点之后的事件。eventId 与 streamId 分存，不从 id 字符串解析 stream。
+- `POST /v4/*` 请求体上限 1MB，超限 413。
 - `OPTIONS /v4/*` 返回 204（CORS 预检放行）。
 
 ## 2. initialize 能力协商与监军通道
@@ -59,7 +61,7 @@
 | `/v4/thin-prompt` | POST | `{ role_id, mode? }` | 薄注入编译（minimal/compact/full）；缺 `role_id` 400。Python SDK 走此路，不再盲打无 session 的 `/mcp` |
 | `/v4/shield` `/v4/shield/audit` | GET/POST | audit 需 `{ text }` | 碳基防御（只识别，不施放） |
 | `/v4/doctor` | GET | — | 宿主探测（10 宿主） |
-| `/v4/doctor/fix` | POST | `{ host?, allow_write: true }` | 一键挂载。GET 405；无 `allow_write` / `--allow-write` / `PUAX_ALLOW_WRITE=1` 则 403 |
+| `/v4/doctor/fix` | POST | `{ host?, allow_write: true, targetDir? }` | 一键挂载。GET 405；无写授权 403；`targetDir` 仅允许 cwd / tmp / `~/.puax`，逃逸 400 |
 | `/health` | GET | — | 存活检查 |
 
 ## 6. AMP/0.1 信封形状

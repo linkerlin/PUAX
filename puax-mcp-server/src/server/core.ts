@@ -36,6 +36,7 @@ import { KERNEL_ROLE_IDS, EXPERIMENTAL_ROLE_IDS, SHAMAN_ROLE_IDS } from '../core
 import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater } from '../core/silicon-theater.js';
 import { dispatchV4 } from './v4-http.js';
+import { MemoryEventStore } from './event-store.js';
 import {
     setSamplingRequester,
     bindSamplingRequester,
@@ -95,6 +96,7 @@ export class PuaxMcpServer {
     private config: Required<ServerConfig>;
     private logger: Logger;
     private currentLogLevel: string = 'info';
+    private eventStore = new MemoryEventStore();
 
     constructor(config: ServerConfig = {}) {
         // Merge configuration
@@ -662,6 +664,7 @@ export class PuaxMcpServer {
                     let isClosing = false;
                     const transport = new StreamableHTTPServerTransport({
                         sessionIdGenerator: () => randomUUID(),
+                        eventStore: this.eventStore,
                         onsessioninitialized: (sid: string) => {
                             initializedSid = sid;
                             this.evictStaleTransports();
@@ -691,18 +694,34 @@ export class PuaxMcpServer {
             else if (pathname.startsWith('/v4/')) {
                 let body: unknown = undefined;
                 if (req.method === 'POST') {
+                    const MAX_V4_BODY = 1_000_000;
                     body = await new Promise((resolve) => {
                         let data = '';
-                        req.on('data', chunk => { data += chunk; });
+                        let oversized = false;
+                        req.on('data', chunk => {
+                            if (oversized) return;
+                            data += chunk;
+                            if (data.length > MAX_V4_BODY) {
+                                oversized = true;
+                                req.destroy();
+                                resolve({ __tooLarge: true });
+                            }
+                        });
                         req.on('end', () => {
+                            if (oversized) return;
                             try {
                                 resolve(data ? JSON.parse(data) : {});
                             } catch {
                                 resolve({});
                             }
                         });
-                        req.on('error', () => resolve({}));
+                        req.on('error', () => resolve(oversized ? { __tooLarge: true } : {}));
                     });
+                    if (body && typeof body === 'object' && (body as { __tooLarge?: boolean }).__tooLarge) {
+                        res.writeHead(413, { 'Content-Type': 'text/plain' });
+                        res.end('Payload Too Large');
+                        return;
+                    }
                 }
                 const routed = dispatchV4(req.method || 'GET', pathname, body);
                 if (!routed) {

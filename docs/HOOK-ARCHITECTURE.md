@@ -39,7 +39,7 @@ hooks/hook.js（node 入口）      .opencode/plugins/puax.js
 
 ## 二、事件与决策协议
 
-统一事件枚举 `PuaxHookEvent`（`src/hooks/hook-event.ts`），六个一等公民：
+统一事件枚举 `PuaxHookEvent`（`src/core/hook-event.ts`），六个一等公民：
 
 | 事件 | 语义 | 输出 |
 |------|------|------|

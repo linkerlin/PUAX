@@ -5,9 +5,9 @@
  */
 
 import { z } from 'zod';
-import { pressureSystem } from '../hooks/pressure-system.js';
+import { pressureSystem } from '../core/pressure-system.js';
 import { evolutionEngine } from '../core/evolution-engine.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from '../core/state-manager.js';
 import { outcomeStore } from '../core/outcome-store.js';
 import { namedAgentStore } from '../core/named-agent.js';
 

@@ -13,11 +13,11 @@
  */
 
 import { getGlobalLogger } from '../utils/logger.js';
-import { stateManager } from '../hooks/state-manager.js';
-import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
-import { deterministicTriggersEngine, TriggerType, type TriggerContext } from '../hooks/deterministic-triggers.js';
+import { stateManager } from '../core/state-manager.js';
+import { enhancedTriggerDetector } from '../core/trigger-detector-enhanced.js';
+import { deterministicTriggersEngine, TriggerType, type TriggerContext } from '../core/deterministic-triggers.js';
 import { globalAntiCheatGuard } from '../core/anti-cheat-guard.js';
-import { isPuaxHookEvent, type PuaxHookEvent } from '../hooks/hook-event.js';
+import { isPuaxHookEvent, type PuaxHookEvent } from '../core/hook-event.js';
 import type { PressureLevel } from '../types.js';
 import { runEvolveCycle, normalizeTriggerId } from '../core/evolve-cycle.js';
 

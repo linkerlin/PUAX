@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { enhancedTriggerDetector } from '../hooks/trigger-detector-enhanced.js';
+import { enhancedTriggerDetector } from '../core/trigger-detector-enhanced.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();

@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from '../core/state-manager.js';
 
 const UpdateReasoningStateInputSchema = z.object({
   session_id: z.string(),

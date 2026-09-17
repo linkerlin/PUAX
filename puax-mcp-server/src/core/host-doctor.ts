@@ -9,6 +9,7 @@
 import { existsSync, readFileSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
+import { assertDoctorTargetDir } from "../utils/path-security.js";
 import { exportPlatform, type ExportPlatformId } from "../tools/export-platform.js";
 import { loadVersion } from "../utils/version.js";
 
@@ -246,6 +247,7 @@ export function runHostDoctor(targetDir: string = process.cwd()): DoctorReport {
  * 一键挂载原生 Hook 配置，自动修复未就绪宿主
  */
 export function fixHostDoctor(targetDir: string = process.cwd(), specificHost?: string): DoctorFixReport {
+  const safeDir = assertDoctorTargetDir(targetDir);
   const targets = specificHost
     ? TOP_HOST_DEFINITIONS.filter(d => d.id === specificHost || d.adapterId === specificHost)
     : TOP_HOST_DEFINITIONS.filter(d => d.id !== "amp-native");
@@ -255,7 +257,7 @@ export function fixHostDoctor(targetDir: string = process.cwd(), specificHost?: 
   for (const t of targets) {
     if (t.id === "amp-native") continue;
     try {
-      const outputPath = join(targetDir, t.defaultRelPath);
+      const outputPath = join(safeDir, t.defaultRelPath);
       if (!existsSync(outputPath)) {
         mkdirSync(outputPath, { recursive: true });
       }
@@ -284,7 +286,7 @@ export function fixHostDoctor(targetDir: string = process.cwd(), specificHost?: 
     }
   }
 
-  const updatedReport = runHostDoctor(targetDir);
+  const updatedReport = runHostDoctor(safeDir);
   return {
     timestamp: new Date().toISOString(),
     totalFixed: results.filter(r => r.success).length,

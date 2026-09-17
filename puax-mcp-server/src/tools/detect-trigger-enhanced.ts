@@ -16,8 +16,8 @@ import {
   TriggerContext, 
   HookEventType,
   type EnhancedTriggerResult 
-} from '../hooks/trigger-detector-enhanced.js';
-import { stateManager } from '../hooks/state-manager.js';
+} from '../core/trigger-detector-enhanced.js';
+import { stateManager } from '../core/state-manager.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();

@@ -99,4 +99,39 @@ describe('HTTP Multi-Session Streamable HTTP Integration', () => {
       try { await client2.close(); } catch {}
     }
   });
+
+  test('未占用 GET 的会话可建立 SSE 流（eventStore 续传入口）', async () => {
+    const init = await fetch(serverUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json, text/event-stream',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2024-11-05',
+          capabilities: {},
+          clientInfo: { name: 'sse-probe', version: '0' },
+        },
+      }),
+    });
+    expect(init.status).toBe(200);
+    const sid = init.headers.get('mcp-session-id');
+    expect(sid).toBeTruthy();
+    await init.body?.cancel();
+
+    const sse = await fetch(serverUrl, {
+      method: 'GET',
+      headers: {
+        Accept: 'text/event-stream',
+        'mcp-session-id': sid as string,
+      },
+    });
+    expect(sse.status).toBe(200);
+    expect(sse.headers.get('content-type') || '').toMatch(/text\/event-stream/);
+    sse.body?.cancel();
+  });
 });

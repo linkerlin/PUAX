@@ -13,6 +13,7 @@ import { MANIPULATION_PATTERNS, auditManipulation } from "../core/carbon-shield.
 import { runHostDoctor, fixHostDoctor } from "../core/host-doctor.js";
 import { runEvolveCycle, type TickEvent } from "../core/evolve-cycle.js";
 import { compileThinPrompt, type ThinPromptMode } from "../core/thin-prompt.js";
+import { assertDoctorTargetDir, PathTraversalError } from "../utils/path-security.js";
 
 export interface V4Response {
   status: number;
@@ -180,7 +181,16 @@ export function dispatchV4(method: string, pathname: string, body?: unknown): V4
       }
 
       const host = typeof bodyRecord.host === "string" ? bodyRecord.host : undefined;
-      const targetDir = typeof bodyRecord.targetDir === "string" ? bodyRecord.targetDir : undefined;
+      const rawDir = typeof bodyRecord.targetDir === "string" ? bodyRecord.targetDir : undefined;
+      let targetDir: string | undefined;
+      if (rawDir) {
+        try {
+          targetDir = assertDoctorTargetDir(rawDir);
+        } catch (err) {
+          const message = err instanceof PathTraversalError ? err.message : "invalid targetDir";
+          return { status: 400, json: { error: message } };
+        }
+      }
       return {
         status: 200,
         json: fixHostDoctor(targetDir, host),

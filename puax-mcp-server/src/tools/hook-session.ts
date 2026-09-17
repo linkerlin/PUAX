@@ -10,7 +10,7 @@
 
 import { z } from 'zod';
 import { hookManager } from '../hooks/hook-manager.js';
-import { stateManager } from '../hooks/state-manager.js';
+import { stateManager } from '../core/state-manager.js';
 import { feedbackSystem } from '../hooks/feedback-system.js';
 import { evolutionEngine } from '../core/evolution-engine.js';
 import { getGlobalLogger } from '../utils/logger.js';
