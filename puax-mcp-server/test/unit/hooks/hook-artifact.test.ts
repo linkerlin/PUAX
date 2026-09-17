@@ -8,7 +8,12 @@
  * - PostToolUse stdin exit_code 连续失败 → L1 压力注入
  *
  * 依赖 build/（npm run build 后运行）。
+ *
+ * 满载 Windows runner 上 cmd.exe + node 子进程链偶发超预算（spawnSync
+ * status=null 即超时击杀），retryTimes 兜底；确定性失败不会连过三次。
  */
+
+jest.retryTimes(2);
 
 import { execFileSync, spawnSync } from 'child_process';
 import { mkdtempSync, writeFileSync, rmSync, existsSync, symlinkSync, mkdirSync } from 'fs';
@@ -127,7 +132,10 @@ describe('polyglot run-hook.cmd', () => {
     const result = spawnSync('cmd.exe', ['/c', 'run-hook.cmd', 'session-start', '--harness', 'claude'], {
       cwd: dir,
       encoding: 'utf-8',
-      timeout: 30000
+      // 显式 input 保证子进程 stdin 立即 EOF（hook.js 全链路读 stdin）；
+      // 120s 预算吸收满载 runner 上 cmd.exe+node 冷启动
+      input: '',
+      timeout: 120000
     });
     expect(result.status).toBe(0);
     // 依赖缺失 → hook.js 兜底 {}（stdout 可能附带 cmd 输出，但必须含 {}）
