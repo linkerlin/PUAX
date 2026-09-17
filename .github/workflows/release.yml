@@ -46,11 +46,15 @@ jobs:
 
       - name: Publish to NPM
         working-directory: ./puax-mcp-server
-        # npm ERR 行以 ::error:: 注解上报（公共注解 API 可读，免管理员定位）
+        # 失败时把日志尾行以 ::error:: 注解上报（公共注解 API 可读，免管理员定位）；
+        # npm ≤10 报 "npm ERR!"、npm ≥11 报小写 "npm error!"，两种格式都匹配
         shell: bash
         run: |
           npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"; code=${PIPESTATUS[0]}
-          grep -E 'npm ERR' "$RUNNER_TEMP/npm-publish.log" | head -8 | while IFS= read -r l; do echo "::error::$l"; done
+          if [ "$code" -ne 0 ]; then
+            grep -iE 'npm (err|error)' "$RUNNER_TEMP/npm-publish.log" | head -8 | while IFS= read -r l; do echo "::error::$l"; done
+            tail -12 "$RUNNER_TEMP/npm-publish.log" | while IFS= read -r l; do echo "::error::[tail] $l"; done
+          fi
           exit $code
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
