@@ -112,55 +112,55 @@ export class EnhancedTriggerDetector {
     let severity: 'low' | 'medium' | 'high' | 'critical' = 'low';
 
     // 检测用户沮丧
-    const frustrationResult = this.matchPatterns(message, getTriggerPatterns().userFrustration);
+    const frustrationResult = this.matchPatterns(message, getTriggerPatterns().user_frustration);
     if (frustrationResult.matched && frustrationResult.confidence > maxConfidence) {
       maxConfidence = frustrationResult.confidence;
-      detectedTrigger = 'userFrustration';
+      detectedTrigger = 'user_frustration';
       severity = 'critical';
       matchedPatterns.push(...frustrationResult.patterns);
     }
 
     // 检测放弃语言
-    const givingUpResult = this.matchPatterns(message, getTriggerPatterns().givingUp);
+    const givingUpResult = this.matchPatterns(message, getTriggerPatterns().giving_up_language);
     if (givingUpResult.matched && givingUpResult.confidence > maxConfidence) {
       maxConfidence = givingUpResult.confidence;
-      detectedTrigger = 'givingUp';
+      detectedTrigger = 'giving_up_language';
       severity = 'critical';
       matchedPatterns.push(...givingUpResult.patterns);
     }
 
     // 检测表面修复
-    const surfaceFixResult = this.matchPatterns(message, getTriggerPatterns().surfaceFix);
+    const surfaceFixResult = this.matchPatterns(message, getTriggerPatterns().surface_fix);
     if (surfaceFixResult.matched && surfaceFixResult.confidence > maxConfidence) {
       maxConfidence = surfaceFixResult.confidence;
-      detectedTrigger = 'surfaceFix';
+      detectedTrigger = 'surface_fix';
       severity = 'medium';
       matchedPatterns.push(...surfaceFixResult.patterns);
     }
 
     // 检测被动等待
-    const passiveWaitResult = this.matchPatterns(message, getTriggerPatterns().passiveWait);
+    const passiveWaitResult = this.matchPatterns(message, getTriggerPatterns().passive_wait);
     if (passiveWaitResult.matched && passiveWaitResult.confidence > maxConfidence) {
       maxConfidence = passiveWaitResult.confidence;
-      detectedTrigger = 'passiveWait';
+      detectedTrigger = 'passive_wait';
       severity = 'low';
       matchedPatterns.push(...passiveWaitResult.patterns);
     }
 
     // 检测甩锅环境
-    const blameResult = this.matchPatterns(message, getTriggerPatterns().blameEnvironment);
+    const blameResult = this.matchPatterns(message, getTriggerPatterns().blame_environment);
     if (blameResult.matched && blameResult.confidence > maxConfidence) {
       maxConfidence = blameResult.confidence;
-      detectedTrigger = 'blameEnvironment';
+      detectedTrigger = 'blame_environment';
       severity = 'medium';
       matchedPatterns.push(...blameResult.patterns);
     }
 
     // 检测未使用搜索
-    const noSearchResult = this.matchPatterns(message, getTriggerPatterns().noSearch);
+    const noSearchResult = this.matchPatterns(message, getTriggerPatterns().tool_underuse);
     if (noSearchResult.matched && noSearchResult.confidence > maxConfidence) {
       maxConfidence = noSearchResult.confidence;
-      detectedTrigger = 'noSearch';
+      detectedTrigger = 'tool_underuse';
       severity = 'medium';
       matchedPatterns.push(...noSearchResult.patterns);
     }
@@ -207,12 +207,12 @@ export class EnhancedTriggerDetector {
     );
 
     if (escalation.shouldTrigger) {
-      const recommendedRole = ROLE_RECOMMENDATIONS.bashFailure;
+      const recommendedRole = ROLE_RECOMMENDATIONS.consecutive_failures;
 
       // 记录触发
       stateManager.recordTrigger(
         sessionId,
-        'bashFailure',
+        'consecutive_failures',
         1.0,
         recommendedRole.id,
         escalation.currentLevel
@@ -226,7 +226,7 @@ export class EnhancedTriggerDetector {
 
       return {
         triggered: true,
-        triggerType: 'bashFailure',
+        triggerType: 'consecutive_failures',
         confidence: 1.0,
         severity: 'high',
         pressureLevel: escalation.currentLevel,
@@ -294,7 +294,7 @@ export class EnhancedTriggerDetector {
 
       return {
         triggered: true,
-        triggerType: 'sessionRestore',
+        triggerType: 'need_more_context',
         confidence: 0.9,
         severity: 'medium',
         recommendedRole: { id: 'system', name: 'SessionRestore' },
@@ -409,8 +409,8 @@ export class EnhancedTriggerDetector {
         ? toolResult
         : JSON.stringify(toolResult);
 
-      const errorPatterns = getTriggerPatterns().bashFailure.generic.patterns;
-      const regexFlags = getTriggerPatterns().bashFailure.generic.caseSensitive ? '' : 'i';
+      const errorPatterns = getTriggerPatterns().consecutive_failures.generic.patterns;
+      const regexFlags = getTriggerPatterns().consecutive_failures.generic.caseSensitive ? '' : 'i';
 
       for (const pattern of errorPatterns) {
         try {

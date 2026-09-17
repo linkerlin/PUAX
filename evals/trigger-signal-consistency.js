@@ -3,14 +3,12 @@
  * 双引擎信号一致性评测（无 LLM）
  *
  * 触发器双引擎——会话级扫描（TriggerDetector，YAML 目录）与事件级实时
- * （EnhancedTriggerDetector，v4 心跳热路径）——经 TRIGGER_ALIASES 缝合层
- * （evolve-cycle.normalizeTriggerId）归一到 YAML 目录 id。引擎合并第二步
- * （模式源归一）以此为前置护栏。本门守三层：
+ * （EnhancedTriggerDetector，v4 心跳热路径）。模式源已与 YAML 目录 id 对齐
+ * （合并第二步）。normalizeTriggerId 只消化历史 camelCase。本门守三层：
  *
- * 1. 键完备：模式库每键必被别名归一（normalizeTriggerId(K) !== K）
- * 2. 目标有效：别名目标必须是 YAML 目录真实 id（引擎 A getTrigger 可查）；
- *    无别名的生命周期信号（preCompact/stopFeedback）按设计直通，须与目录 id 零碰撞
- * 3. 场景一致：同一话语/上下文，双引擎归一后必须落在同一目录 id
+ * 1. 键即目录：模式库每键必须是 YAML 目录真实 id
+ * 2. 旧别名：camelCase 仍归一到同一目录 id
+ * 3. 场景一致：同一话语/上下文，双引擎必须落在同一目录 id
  */
 const { loadCore } = require('./lib/puax-core-loader.js');
 
@@ -37,15 +35,21 @@ const { normalizeTriggerId } = loadCore('evolve-cycle');
 const catalog = new TriggerDetector();
 const PATTERN_KEYS = Object.keys(TRIGGER_PATTERNS);
 
-run('模式键↔别名完备（每模式键必被归一）', () => {
-  const bare = PATTERN_KEYS.filter(k => normalizeTriggerId(k) === k);
-  if (bare.length) throw new Error(`无别名的模式键: ${bare.join(', ')}`);
+run('模式键即 YAML 目录 id', () => {
+  const ghosts = PATTERN_KEYS.filter(k => !catalog.getTrigger(k));
+  if (ghosts.length) throw new Error(`模式键不在目录: ${ghosts.join(', ')}`);
 });
 
-run('别名目标全部命中 YAML 目录', () => {
-  const targets = [...PATTERN_KEYS, 'sessionRestore'].map(k => normalizeTriggerId(k));
-  const ghosts = targets.filter(t => !catalog.getTrigger(t));
-  if (ghosts.length) throw new Error(`别名目标不在目录: ${ghosts.join(', ')}`);
+run('旧 camelCase 别名仍归一到目录 id', () => {
+  const samples = [
+    ['userFrustration', 'user_frustration'],
+    ['givingUp', 'giving_up_language'],
+    ['bashFailure', 'consecutive_failures'],
+    ['noSearch', 'tool_underuse'],
+    ['sessionRestore', 'need_more_context'],
+  ];
+  const bad = samples.filter(([from, to]) => normalizeTriggerId(from) !== to);
+  if (bad.length) throw new Error(`别名失效: ${bad.map(([f, t]) => `${f}≠${t}`).join(', ')}`);
 });
 
 run('无别名生命周期信号与目录零碰撞（按设计直通）', () => {
@@ -79,28 +83,28 @@ for (const s of SCENARIOS) {
   });
 }
 
-run('场景一致·Bash 连败（bashFailure ≡ attempt_count → consecutive_failures）', () => {
+run('场景一致·Bash 连败（事件引擎 ≡ attempt_count → consecutive_failures）', () => {
   const sessionId = `tsc-${stamp}-bash`;
   const fail = { sessionId, eventType: 'PostToolUse', toolName: 'Bash', toolResult: { exit_code: 1 }, errorMessage: 'error' };
   enhancedTriggerDetector.detect(fail);
   const b = enhancedTriggerDetector.detect(fail);
-  if (!b.triggered || b.triggerType !== 'bashFailure') throw new Error(`事件引擎未升压 (${b.triggerType})`);
-  const bId = normalizeTriggerId(b.triggerType);
+  if (!b.triggered || b.triggerType !== 'consecutive_failures') throw new Error(`事件引擎未升压 (${b.triggerType})`);
   const a = catalog.detect([], { attempt_count: 2, tools_available: [], tools_used: [] });
-  if (!a.triggers_detected.some(t => t.id === bId)) throw new Error(`会话引擎 attempt_count=2 未检出 ${bId}`);
+  if (!a.triggers_detected.some(t => t.id === 'consecutive_failures')) {
+    throw new Error('会话引擎 attempt_count=2 未检出 consecutive_failures');
+  }
 });
 
-run('场景一致·工具闲置（noSearch ≡ tool_underuse 上下文路径）', () => {
+run('场景一致·工具闲置（事件引擎 ≡ tool_underuse 上下文路径）', () => {
   const sessionId = `tsc-${stamp}-underuse`;
   const b = enhancedTriggerDetector.detect({ sessionId, eventType: 'UserPromptSubmit', message: '我不清楚，我猜测大概是配置问题' });
   if (!b.triggered) throw new Error(`事件引擎未触发 (${b.triggerType})`);
-  if (b.triggerType !== 'noSearch') throw new Error(`事件引擎 triggerType=${b.triggerType}，应为 noSearch`);
-  const bId = normalizeTriggerId(b.triggerType);
+  if (b.triggerType !== 'tool_underuse') throw new Error(`事件引擎 triggerType=${b.triggerType}，应为 tool_underuse`);
   const a = catalog.detect(
     [{ role: 'assistant', content: '我不清楚，我猜测大概是配置问题' }],
     { attempt_count: 2, tools_available: ['search', 'read'], tools_used: [] }
   );
-  if (!a.triggers_detected.some(t => t.id === bId)) throw new Error(`会话引擎未检出 ${bId}`);
+  if (!a.triggers_detected.some(t => t.id === 'tool_underuse')) throw new Error('会话引擎未检出 tool_underuse');
 });
 
 console.log(`\n${fail === 0 ? 'ALL PASS' : 'FAILURES'}: ${pass} pass, ${fail} fail`);

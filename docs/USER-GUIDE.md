@@ -50,7 +50,7 @@ Hook：`UserPromptSubmit` → 心跳发生，薄注入含 `[PUAX-DIAGNOSIS]`。
 
 ### 场景 B：Agent 想放弃
 
-心跳把 `givingUp` 归一成 `giving_up_language`，切换战士/政委。  
+心跳把放弃语言归一成 `giving_up_language`，切换战士/政委。  
 不必先背 `puax_switch_on_failure`；那是旧手动挡。
 
 ### 场景 C：过早收敛 / 卡壳

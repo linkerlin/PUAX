@@ -14,9 +14,28 @@ export interface TriggerPattern {
   caseSensitive?: boolean;
 }
 
+/**
+ * 旧 camelCase 发射名 → YAML 目录 id。
+ * 模式源已用目录 id 作键；此表只消化历史配置、旧 detected_triggers、旧单测。
+ */
+export const PATTERN_KEY_ALIASES: Record<string, string> = {
+  userFrustration: 'user_frustration',
+  givingUp: 'giving_up_language',
+  bashFailure: 'consecutive_failures',
+  blameEnvironment: 'blame_environment',
+  passiveWait: 'passive_wait',
+  surfaceFix: 'surface_fix',
+  noSearch: 'tool_underuse',
+  sessionRestore: 'need_more_context',
+};
+
+export function canonicalPatternKey(key: string): string {
+  return PATTERN_KEY_ALIASES[key] || key;
+}
+
 export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = {
   // UserPromptSubmit 触发模式 - 用户挫折语言
-  userFrustration: {
+  user_frustration: {
     zh: {
       patterns: [
         'try harder', '别偷懒', '又错了', '还不行', '怎么搞',
@@ -45,7 +64,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // 放弃语言检测
-  givingUp: {
+  giving_up_language: {
     zh: {
       patterns: [
         '可能无法实现', '建议放弃', '无法完成', '解决不了', '不可能',
@@ -66,7 +85,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // PostToolUse 触发模式 - Bash 失败
-  bashFailure: {
+  consecutive_failures: {
     generic: {
       patterns: [
         'error', 'Error', 'ERROR',
@@ -81,7 +100,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // 表面修复检测
-  surfaceFix: {
+  surface_fix: {
     zh: {
       patterns: [
         '暂时修复', '先这样', '治标不治本', '绕过这个问题',
@@ -100,7 +119,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // 被动等待检测
-  passiveWait: {
+  passive_wait: {
     zh: {
       patterns: [
         '等你', '请告诉我', '你需要', '请提供', '请确认',
@@ -119,7 +138,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // 甩锅环境检测
-  blameEnvironment: {
+  blame_environment: {
     zh: {
       patterns: [
         '环境问题', '版本问题', '依赖问题', '配置问题',
@@ -138,7 +157,7 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
   },
 
   // 未使用搜索检测
-  noSearch: {
+  tool_underuse: {
     zh: {
       patterns: [
         '不知道', '不了解', '不清楚', '可能可以', '也许是',
@@ -162,11 +181,11 @@ export const TRIGGER_PATTERNS: Record<string, Record<string, TriggerPattern>> = 
 // ============================================================================
 
 export const ROLE_RECOMMENDATIONS: Record<string, { id: string; name: string }> = {
-  userFrustration: { id: 'military-warrior', name: '狂战士' },
-  givingUp: { id: 'military-commissar', name: '政委' },
-  bashFailure: { id: 'military-warrior', name: '狂战士' },
-  surfaceFix: { id: 'shaman-linus', name: '萨满·Linus' },
-  passiveWait: { id: 'self-motivation-awakening', name: '觉醒者' },
-  blameEnvironment: { id: 'military-commissar', name: '政委' },
-  noSearch: { id: 'military-scout', name: '侦察兵' }
+  user_frustration: { id: 'military-warrior', name: '狂战士' },
+  giving_up_language: { id: 'military-commissar', name: '政委' },
+  consecutive_failures: { id: 'military-warrior', name: '狂战士' },
+  surface_fix: { id: 'shaman-linus', name: '萨满·Linus' },
+  passive_wait: { id: 'self-motivation-awakening', name: '觉醒者' },
+  blame_environment: { id: 'military-commissar', name: '政委' },
+  tool_underuse: { id: 'military-scout', name: '侦察兵' },
 };

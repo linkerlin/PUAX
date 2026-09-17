@@ -50,14 +50,14 @@ describe('getTriggerPatterns (config externalization)', () => {
 
     const patterns = getTriggerPatterns(configPath);
     // 覆盖子表：整体替换
-    expect(patterns.userFrustration.zh.patterns).toEqual(['用户自定义咒语']);
-    expect(patterns.userFrustration.zh.weight).toBe(2.0);
-    expect(patterns.userFrustration.zh.patterns).not.toContain('还不行');
+    expect(patterns.user_frustration.zh.patterns).toEqual(['用户自定义咒语']);
+    expect(patterns.user_frustration.zh.weight).toBe(2.0);
+    expect(patterns.user_frustration.zh.patterns).not.toContain('还不行');
     // 未覆盖子表（en）：沿用内置——加词不丢旧词
-    expect(patterns.userFrustration.en).toEqual(TRIGGER_PATTERNS.userFrustration.en);
+    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
     // 未覆盖组：沿用内置
-    expect(patterns.givingUp).toEqual(TRIGGER_PATTERNS.givingUp);
-    expect(patterns.bashFailure).toEqual(TRIGGER_PATTERNS.bashFailure);
+    expect(patterns.giving_up_language).toEqual(TRIGGER_PATTERNS.giving_up_language);
+    expect(patterns.consecutive_failures).toEqual(TRIGGER_PATTERNS.consecutive_failures);
   });
 
   it('empty patterns array clears a subtable', () => {
@@ -70,8 +70,8 @@ describe('getTriggerPatterns (config externalization)', () => {
     }), 'utf-8');
 
     const patterns = getTriggerPatterns(configPath);
-    expect(patterns.userFrustration.zh.patterns).toEqual([]);
-    expect(patterns.userFrustration.en).toEqual(TRIGGER_PATTERNS.userFrustration.en);
+    expect(patterns.user_frustration.zh.patterns).toEqual([]);
+    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
   });
 
   it('falls back to defaults on invalid JSON (graceful degradation)', () => {
@@ -102,10 +102,10 @@ describe('getTriggerPatterns (config externalization)', () => {
 
     const patterns = getTriggerPatterns(configPath);
     // 非法子表整体跳过 → 沿用内置
-    expect(patterns.userFrustration.zh).toEqual(TRIGGER_PATTERNS.userFrustration.zh);
-    expect(patterns.userFrustration.en).toEqual(TRIGGER_PATTERNS.userFrustration.en);
+    expect(patterns.user_frustration.zh).toEqual(TRIGGER_PATTERNS.user_frustration.zh);
+    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
     // 合法子表正常覆盖
-    expect(patterns.givingUp.zh.patterns).toEqual(['合法的']);
+    expect(patterns.giving_up_language.zh.patterns).toEqual(['合法的']);
   });
 });
 
@@ -131,7 +131,7 @@ describe('detector uses merged patterns', () => {
     });
 
     expect(result.triggered).toBe(true);
-    expect(result.triggerType).toBe('userFrustration');
+    expect(result.triggerType).toBe('user_frustration');
     expect(result.metadata.matchedPatterns).toContain('我的专属暗号');
   });
 

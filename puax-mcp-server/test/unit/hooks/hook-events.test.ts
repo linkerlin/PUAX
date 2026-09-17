@@ -57,7 +57,7 @@ describe('Stop event', () => {
   });
 
   it('injects end-of-session feedback when PUA was active', async () => {
-    stateManager.recordTrigger(SESSION, 'userFrustration', 0.9, 'military-warrior', 1);
+    stateManager.recordTrigger(SESSION, 'user_frustration', 0.9, 'military-warrior', 1);
 
     const { json } = await runHook({ event: 'Stop', sessionId: SESSION, harness: 'claude' });
     const payload = JSON.parse(json);
@@ -73,7 +73,7 @@ describe('Stop event', () => {
 describe('PreCompact via CLI', () => {
   it('persists state without injecting into host', async () => {
     stateManager.clearSessionState(SESSION);
-    stateManager.recordTrigger(SESSION, 'userFrustration', 0.9, 'military-warrior', 1);
+    stateManager.recordTrigger(SESSION, 'user_frustration', 0.9, 'military-warrior', 1);
 
     const { json } = await runHook({
       event: 'PreCompact',

@@ -31,7 +31,7 @@ describe('事件级触发检测器 EnhancedTriggerDetector', () => {
       );
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('userFrustration');
+      expect(result.triggerType).toBe('user_frustration');
       expect(result.severity).toBe('critical');
       expect(result.confidence).toBeGreaterThanOrEqual(0.5);
       expect(result.recommendedRole.id).toBe('military-warrior');
@@ -81,7 +81,7 @@ describe('事件级触发检测器 EnhancedTriggerDetector', () => {
 
       const second = enhancedTriggerDetector.detect(failCtx());
       expect(second.triggered).toBe(true);
-      expect(second.triggerType).toBe('bashFailure');
+      expect(second.triggerType).toBe('consecutive_failures');
       expect(second.severity).toBe('high');
       expect(second.confidence).toBe(1.0);
       expect(second.pressureLevel).toBe(1);
@@ -167,7 +167,7 @@ describe('事件级触发检测器 EnhancedTriggerDetector', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('sessionRestore');
+      expect(result.triggerType).toBe('need_more_context');
       expect(result.confidence).toBe(0.9);
       expect(result.metadata.matchedPatterns).toContain('previous_session_detected');
     });

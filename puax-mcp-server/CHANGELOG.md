@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **触发器模式源归一（引擎合并第二步）**：`TRIGGER_PATTERNS` 键与事件检测器发射改为 YAML 目录 id（`user_frustration` 等）。`normalizeTriggerId` / `canonicalPatternKey` 只消化历史 camelCase 与 `~/.puax/hooks.json` 旧键。Gate 32 改为守「键即目录」。
+
 ## [4.3.1] - 2026-09-18
 
 ### Added

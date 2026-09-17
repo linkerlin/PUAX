@@ -6,7 +6,7 @@
  *   格式:
  *   {
  *     "triggerPatterns": {
- *       "userFrustration": {
+ *       "user_frustration": {
  *         "zh": { "patterns": ["我的自定义词"], "weight": 1.5 }
  *       }
  *     }
@@ -26,7 +26,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
-import { TRIGGER_PATTERNS, type TriggerPattern } from './trigger-patterns.js';
+import { TRIGGER_PATTERNS, canonicalPatternKey, type TriggerPattern } from './trigger-patterns.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -103,9 +103,10 @@ export function getTriggerPatterns(
   const merged: Record<string, Record<string, TriggerPattern>> = {
     ...TRIGGER_PATTERNS
   };
-  for (const [group, subtables] of Object.entries(userConfig.triggerPatterns)) {
+  for (const [rawGroup, subtables] of Object.entries(userConfig.triggerPatterns)) {
+    const group = canonicalPatternKey(rawGroup);
     if (!subtables || typeof subtables !== 'object') {
-      logger.warn(`[HookConfig] ${path}: group "${group}" is not an object, skipped`);
+      logger.warn(`[HookConfig] ${path}: group "${rawGroup}" is not an object, skipped`);
       continue;
     }
     const baseSubtables = merged[group] || {};

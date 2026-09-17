@@ -23,6 +23,7 @@ import { compileCouncilItinerary } from './dream-council.js';
 import { recordFirstPressure } from './ttf.js';
 import { isDefaultRecommendable, isShamanRole } from './role-kernel.js';
 import { getRoleRecommender } from './service-registry.js';
+import { canonicalPatternKey } from './trigger-patterns.js';
 
 const logger = getGlobalLogger();
 
@@ -133,21 +134,9 @@ function uniqueSignals(list: string[]): string[] {
   return [...new Set(list.filter(Boolean))];
 }
 
-// 缝合层：enhanced 检测器发射 camelCase，YAML 目录/策略/角色映射说 snake_case。
-// 契约：键集必须覆盖 trigger-patterns 的全部模式键（守门见 trigger-catalog-consistency.test.ts）。
-const TRIGGER_ALIASES: Record<string, string> = {
-  userFrustration: 'user_frustration',
-  givingUp: 'giving_up_language',
-  bashFailure: 'consecutive_failures',
-  blameEnvironment: 'blame_environment',
-  passiveWait: 'passive_wait',
-  surfaceFix: 'surface_fix',
-  noSearch: 'tool_underuse',
-  sessionRestore: 'need_more_context',
-};
-
+/** 兼容旧 camelCase 发射名；模式源已用 YAML 目录 id。 */
 export function normalizeTriggerId(id: string): string {
-  return TRIGGER_ALIASES[id] || id;
+  return canonicalPatternKey(id);
 }
 
 function pickStrategy(signals: string[], repairBias: boolean): EvolveStrategy {

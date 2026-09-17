@@ -46,10 +46,10 @@ describe('config/hooks.example.json', () => {
     const { getTriggerPatterns, resetHookConfigCache } = require('../../../src/hooks/hook-config.js');
     const patterns = getTriggerPatterns(examplePath);
     // 示例配置生效：自定义词可用，清空的组为空
-    expect(patterns.userFrustration.zh.patterns).toContain('我的专属暗号');
-    expect(patterns.givingUp.zh.patterns).toEqual([]);
+    expect(patterns.user_frustration.zh.patterns).toContain('我的专属暗号');
+    expect(patterns.giving_up_language.zh.patterns).toEqual([]);
     // 未覆盖子表沿用内置
-    expect(patterns.userFrustration.en.patterns.length).toBeGreaterThan(0);
+    expect(patterns.user_frustration.en.patterns.length).toBeGreaterThan(0);
     resetHookConfigCache();
   });
 });

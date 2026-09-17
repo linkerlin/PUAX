@@ -63,7 +63,7 @@ describe('PUAX Hook System v3.1.0', () => {
       const result = await hookManager.recordUserMessage(testSessionId, '为什么还不行！');
       
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('userFrustration');
+      expect(result.triggerType).toBe('user_frustration');
       
       void hookManager.endSession(testSessionId);
     });
@@ -79,7 +79,7 @@ describe('PUAX Hook System v3.1.0', () => {
       const result = await hookManager.recordToolUse(toolSessionId, 'Bash', { exit_code: 1 });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('bashFailure');
+      expect(result.triggerType).toBe('consecutive_failures');
 
       await hookManager.endSession(toolSessionId);
     });
@@ -100,7 +100,7 @@ describe('PUAX Hook System v3.1.0', () => {
       const result = await hookManager.quickCheck(testSessionId, '为什么还不行！');
       
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('userFrustration');
+      expect(result.triggerType).toBe('user_frustration');
       
       void hookManager.endSession(testSessionId);
     });
@@ -117,7 +117,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
       
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('bashFailure');
+      expect(result.triggerType).toBe('consecutive_failures');
       
       void hookManager.endSession(testSessionId);
     });
@@ -183,7 +183,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('userFrustration');
+      expect(result.triggerType).toBe('user_frustration');
       expect(result.severity).toBe('critical');
       expect(result.confidence).toBeGreaterThan(0.5);
     });
@@ -197,7 +197,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('givingUp');
+      expect(result.triggerType).toBe('giving_up_language');
       expect(result.severity).toBe('critical');
     });
 
@@ -221,7 +221,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('bashFailure');
+      expect(result.triggerType).toBe('consecutive_failures');
     });
 
     test('should detect surfaceFix', async () => {
@@ -233,7 +233,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('surfaceFix');
+      expect(result.triggerType).toBe('surface_fix');
     });
 
     test('should detect passiveWait', async () => {
@@ -245,7 +245,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('passiveWait');
+      expect(result.triggerType).toBe('passive_wait');
     });
 
     test('should detect blameEnvironment', async () => {
@@ -257,7 +257,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('blameEnvironment');
+      expect(result.triggerType).toBe('blame_environment');
     });
 
     test('should detect noSearch', async () => {
@@ -269,7 +269,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('noSearch');
+      expect(result.triggerType).toBe('tool_underuse');
     });
 
     test('should not trigger on normal messages', async () => {
@@ -293,7 +293,7 @@ describe('PUAX Hook System v3.1.0', () => {
       });
 
       expect(result.triggered).toBe(true);
-      expect(result.triggerType).toBe('givingUp');
+      expect(result.triggerType).toBe('giving_up_language');
     });
   });
 
@@ -352,7 +352,7 @@ describe('PUAX Hook System v3.1.0', () => {
 
     test('should handle cooldown', () => {
       // 记录一次触发
-      stateManager.recordTrigger(testSessionId, 'userFrustration', 0.9, 'military-warrior', 1);
+      stateManager.recordTrigger(testSessionId, 'user_frustration', 0.9, 'military-warrior', 1);
       
       // 检查冷却
       const cooldown = pressureSystem.checkCooldown(testSessionId);
@@ -388,12 +388,12 @@ describe('PUAX Hook System v3.1.0', () => {
 
     test('should record triggers', () => {
       const beforeCount = stateManager.getTriggerHistory(testSessionId).length;
-      stateManager.recordTrigger(testSessionId, 'userFrustration', 0.9, 'military-warrior', 1);
+      stateManager.recordTrigger(testSessionId, 'user_frustration', 0.9, 'military-warrior', 1);
       
       const history = stateManager.getTriggerHistory(testSessionId);
       const latest = history[history.length - 1];
       expect(history.length).toBe(beforeCount + 1);
-      expect(latest.triggerType).toBe('userFrustration');
+      expect(latest.triggerType).toBe('user_frustration');
       expect(latest.confidence).toBe(0.9);
       expect(latest.roleId).toBe('military-warrior');
     });
@@ -431,7 +431,7 @@ describe('PUAX Hook System v3.1.0', () => {
     });
 
     test('should generate session report', () => {
-      stateManager.recordTrigger(testSessionId, 'userFrustration', 0.8, 'military-warrior', 1);
+      stateManager.recordTrigger(testSessionId, 'user_frustration', 0.8, 'military-warrior', 1);
       
       const report = feedbackSystem.generatePUALoopReport(testSessionId);
       expect(report).toContain('PUAX Loop Report');

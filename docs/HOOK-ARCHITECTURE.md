@@ -158,7 +158,7 @@ TTF（Time-to-First-Pressure）指标与冷启动门禁见 `evals/test-ttf.js` �
 # 文件: ~/.puax/hooks.json（或环境变量 PUAX_HOOKS_CONFIG 指定路径）
 {
   "triggerPatterns": {
-    "userFrustration": {
+    "user_frustration": {
       "zh": { "patterns": ["我的自定义词"], "weight": 1.5 }
     }
   }
