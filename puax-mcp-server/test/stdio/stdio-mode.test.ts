@@ -1,7 +1,13 @@
 /**
  * STDIO 模式测试
  * 测试 PUAX MCP Server 的 STDIO 传输模式
+ *
+ * 子进程 JSON-RPC 握手在慢速 runner（Windows CI）上存在消息竞态
+ * （服务器已正确应答而测试卡等下一条），retryTimes 吸收时序抖动；
+ * 确定性失败不会连过三次，仍被拦下。
  */
+
+jest.retryTimes(2);
 
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';

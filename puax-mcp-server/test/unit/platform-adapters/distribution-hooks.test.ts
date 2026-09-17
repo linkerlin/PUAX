@@ -21,10 +21,13 @@ describe('Hook artifact consistency', () => {
     const generated = adapter!.generateHooks({ outputPath: '/tmp/x' } as never);
 
     expect(generated.length).toBeGreaterThan(0);
+    // 换行归一：Windows 检出常带 CRLF（core.autocrlf），生成内容恒为 LF——
+    // 语义一致性按 LF 比对，防跨平台假红
+    const norm = (s: string) => s.replace(/\r\n/g, '\n');
     for (const file of generated) {
       const distPath = join(DIST_HOOKS_DIR, file.path.replace('hooks/', ''));
       expect(existsSync(distPath)).toBe(true);
-      expect(readFileSync(distPath, 'utf-8')).toBe(file.content);
+      expect(norm(readFileSync(distPath, 'utf-8'))).toBe(norm(file.content));
     }
   });
 

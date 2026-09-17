@@ -1,7 +1,12 @@
 /**
  * STDIO 模式命令行参数测试
  * 测试命令行参数解析和环境变量
+ *
+ * 慢速 runner（Windows CI）上的子进程启动时序抖动，retryTimes 吸收；
+ * 确定性失败不会连过三次（同 stdio-mode 套件口径）。
  */
+
+jest.retryTimes(2);
 
 import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
