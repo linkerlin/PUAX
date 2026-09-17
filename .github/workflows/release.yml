@@ -50,6 +50,8 @@ jobs:
         # npm ≤10 报 "npm ERR!"、npm ≥11 报小写 "npm error!"，两种格式都匹配
         shell: bash
         run: |
+          # 默认 bash -eo pipefail 会在 npm publish 失败行直接终止脚本，吞掉注解捕获；先解除
+          set +e
           npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"; code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
             grep -iE 'npm (err|error)' "$RUNNER_TEMP/npm-publish.log" | head -8 | while IFS= read -r l; do echo "::error::$l"; done
