@@ -179,6 +179,10 @@ run('监军反向干预（MCP Sampling 双通道）', () => {
   });
 });
 
+run('双引擎信号一致性', () => {
+  execSync('node evals/trigger-signal-consistency.js', { cwd: ROOT, stdio: 'pipe' });
+});
+
 run('README/docs 数字一致性', () => {
   execSync('node scripts/lib/count-metrics.js > puax-mcp-server/build/metrics.json', { cwd: ROOT, stdio: 'pipe' });
   execSync('node scripts/check-metrics-consistency.js', { cwd: ROOT, stdio: 'pipe' });

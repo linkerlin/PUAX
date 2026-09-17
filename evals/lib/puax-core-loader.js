@@ -32,6 +32,7 @@ const CORE_MODULES = {
   'evolve-cycle': () => require('../../puax-mcp-server/build/core/evolve-cycle.js'),
   'amp': () => require('../../puax-mcp-server/build/core/amp.js'),
   'trigger-detector': () => require('../../puax-mcp-server/build/core/trigger-detector.js'),
+  'trigger-detector-enhanced': () => require('../../puax-mcp-server/build/core/trigger-detector-enhanced.js'),
   'methodology-engine': () => require('../../puax-mcp-server/build/core/methodology-engine.js'),
   'silicon-theater': () => require('../../puax-mcp-server/build/core/silicon-theater.js'),
   'governance': () => require('../../puax-mcp-server/build/core/governance.js'),

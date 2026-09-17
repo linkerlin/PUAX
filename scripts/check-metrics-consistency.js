@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 数字一致性守门（run-all 第 31 门）
+ * 数字一致性守门（run-all 第 32 门）
  *
  * 背景：check-version-consistency.js 只对齐版本号字符串，README/docs 里的
  * 工具数 / 动词数 / 门禁数曾四处漂移（48/49/50、12/13、12/26/28/30 并存）。

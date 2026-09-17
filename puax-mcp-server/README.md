@@ -10,7 +10,7 @@
 | **内置角色** | 59 SKILL + 自定义角色（shaman- 八席全留） |
 | **MCP 工具** | 50（对外主路径 13 动词，旗舰 `puax_thin_prompt` 三档 Token 压缩） |
 | **风味** | 11（`flavor-methodologies.yaml`） |
-| **测试** | 965+ Jest + `evals/run-all.js` 31 项守门 |
+| **测试** | 965+ Jest + `evals/run-all.js` 32 项守门 |
 
 完整变更见 [CHANGELOG.md](./CHANGELOG.md)。
 

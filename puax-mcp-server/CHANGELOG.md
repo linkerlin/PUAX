@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **第 32 门「双引擎信号一致性」**（`evals/trigger-signal-consistency.js`）：触发器双引擎（会话级扫描 / 事件级实时）经 `TRIGGER_ALIASES` 缝合层归一到 YAML 目录 id，本门守三层——模式键↔别名完备、别名目标全部命中目录真实 id（生命周期信号 preCompact/stopFeedback 按设计直通且与目录零碰撞）、七场景跨引擎归一一致（同一话语/上下文双引擎必须落在同一目录 id，含 bashFailure≡attempt_count 与 noSearch≡tool_underuse 两条上下文路径）。引擎合并第二步（模式源归一）以此为前置护栏。
+
 ### Changed
 - **触发器引擎合并（第一步：死引擎剟除）**：`core/trigger-detector.ts` 内嵌的继承式 `EnhancedTriggerDetector`（上下文感知五检测器）、`ENHANCED_TRIGGER_DEFINITIONS`、工厂与 `enhancedTriggerDetectorCore` 单例（合计 ~350 行）经查系零消费死代码——生产路径无一处调用 `detectEnhanced`（`detect_trigger` / `activate_with_context` 只用基类 `detect()`），唯一引用是其孤儿单测。整体剟除并在模块头明确双引擎分工：会话级扫描（TriggerDetector，YAML 目录）与事件级实时检测（trigger-detector-enhanced.ts，v4 心跳热路径）。被剟四类触发语义（low_quality / unverified_claim / edge_case_ignored / over_complication）如需复活应落入 YAML 目录而非代码硬编。
 - **事件级检测器获得专属单测**：原孤儿测试文件改造为 `EnhancedTriggerDetector`（事件级活体）13 例直接单测——六事件路由（UserPromptSubmit / PostToolUse / PreCompact / SessionStart / Stop / PreToolUse）、30s 冷却门、Bash 连败 L1 压力升级、状态持久与会话恢复。此前该热路径仅靠 hook 系测试间接覆盖。
