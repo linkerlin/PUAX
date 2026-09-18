@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.2] - 2026-09-18
+
+### Fixed
+- **CI**：撤回测试步的 `NODE_OPTIONS=--experimental-vm-modules`（Jest 进 ESM 后 `require is not defined`，Node 20 整矩阵变红）。Node 18 仍跳过 SDK StreamableHTTP 客户端用例。
+
 ## [4.4.1] - 2026-09-18
 
 ### Fixed

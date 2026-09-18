@@ -42,8 +42,6 @@ jobs:
 
       - name: Run Full Test Suite
         working-directory: ./puax-mcp-server
-        env:
-          NODE_OPTIONS: --experimental-vm-modules
         run: npm test
 
       - name: Publish to NPM

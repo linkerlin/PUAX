@@ -1,6 +1,6 @@
 # PUAX 使用指南
 
-> **版本**: 4.4.1 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
+> **版本**: 4.4.2 | 配套 [API 参考](API.md) · [MCP README](../puax-mcp-server/README.md)
 
 ---
 

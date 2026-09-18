@@ -1,7 +1,7 @@
 /**
  * PUAX MCP Server - Main Entry Point
  * Refactored server with modular architecture
- * @version 4.4.1
+ * @version 4.4.2
  */
 
 export { PuaxMcpServer } from './server/core.js';

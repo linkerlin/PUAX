@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "puax-amp"
-version = "4.4.1"
+version = "4.4.2"
 description = "PUAX AMP (Agent Moderation Protocol) SDK — zero-dependency middleware for Python agent orchestrators (CrewAI, LangGraph, AutoGen)"
 readme = "README.md"
 license = { text = "MIT" }
