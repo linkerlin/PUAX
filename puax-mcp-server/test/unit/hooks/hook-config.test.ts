@@ -2,7 +2,7 @@
  * Hook 配置外置测试（Hook机制演进方案.md P3-19）
  *
  * 断言：
- * 1. 无覆盖时默认模式 = 内置 TRIGGER_PATTERNS；
+ * 1. 无覆盖时默认模式 = 代码词表 ∪ YAML 目录词表；
  * 2. 用户覆盖文件按"子表级替换"合并（覆盖子表整体替换，未覆盖子表沿用内置——
  *    加词不丢旧词）；
  * 3. 空 patterns 数组等效清空该子表；
@@ -13,7 +13,7 @@
 import { mkdtempSync, writeFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { getTriggerPatterns, resetHookConfigCache } from '../../../src/hooks/hook-config.js';
+import { getTriggerPatterns, resetHookConfigCache, builtinTriggerPatterns } from '../../../src/hooks/hook-config.js';
 import { TRIGGER_PATTERNS } from '../../../src/hooks/trigger-patterns.js';
 import { enhancedTriggerDetector } from '../../../src/hooks/trigger-detector-enhanced.js';
 import { stateManager } from '../../../src/hooks/state-manager.js';
@@ -34,9 +34,13 @@ afterEach(() => {
 });
 
 describe('getTriggerPatterns (config externalization)', () => {
-  it('returns built-in patterns when no override file exists', () => {
+  it('returns code ∪ YAML patterns when no override file exists', () => {
     const patterns = getTriggerPatterns(configPath);
-    expect(patterns).toEqual(TRIGGER_PATTERNS);
+    expect(patterns).toEqual(builtinTriggerPatterns());
+    expect(patterns.user_frustration.zh.patterns).toEqual(
+      expect.arrayContaining(TRIGGER_PATTERNS.user_frustration.zh.patterns)
+    );
+    expect(patterns.user_frustration.zh.patterns).toContain('还没好吗');
   });
 
   it('replaces whole subtable from user override (subtable-level semantics)', () => {
@@ -54,10 +58,10 @@ describe('getTriggerPatterns (config externalization)', () => {
     expect(patterns.user_frustration.zh.weight).toBe(2.0);
     expect(patterns.user_frustration.zh.patterns).not.toContain('还不行');
     // 未覆盖子表（en）：沿用内置——加词不丢旧词
-    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
-    // 未覆盖组：沿用内置
-    expect(patterns.giving_up_language).toEqual(TRIGGER_PATTERNS.giving_up_language);
-    expect(patterns.consecutive_failures).toEqual(TRIGGER_PATTERNS.consecutive_failures);
+    expect(patterns.user_frustration.en).toEqual(builtinTriggerPatterns().user_frustration.en);
+    // 未覆盖组：沿用代码∪YAML
+    expect(patterns.giving_up_language).toEqual(builtinTriggerPatterns().giving_up_language);
+    expect(patterns.consecutive_failures.generic).toEqual(TRIGGER_PATTERNS.consecutive_failures.generic);
   });
 
   it('empty patterns array clears a subtable', () => {
@@ -71,18 +75,18 @@ describe('getTriggerPatterns (config externalization)', () => {
 
     const patterns = getTriggerPatterns(configPath);
     expect(patterns.user_frustration.zh.patterns).toEqual([]);
-    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
+    expect(patterns.user_frustration.en).toEqual(builtinTriggerPatterns().user_frustration.en);
   });
 
   it('falls back to defaults on invalid JSON (graceful degradation)', () => {
     writeFileSync(configPath, '{ not valid json', 'utf-8');
     expect(() => getTriggerPatterns(configPath)).not.toThrow();
-    expect(getTriggerPatterns(configPath)).toEqual(TRIGGER_PATTERNS);
+    expect(getTriggerPatterns(configPath)).toEqual(builtinTriggerPatterns());
   });
 
   it('falls back to defaults when triggerPatterns section missing', () => {
     writeFileSync(configPath, JSON.stringify({ hooks: {} }), 'utf-8');
-    expect(getTriggerPatterns(configPath)).toEqual(TRIGGER_PATTERNS);
+    expect(getTriggerPatterns(configPath)).toEqual(builtinTriggerPatterns());
   });
 
   it('rejects invalid subtables instead of corrupting patterns (regression)', () => {
@@ -102,8 +106,8 @@ describe('getTriggerPatterns (config externalization)', () => {
 
     const patterns = getTriggerPatterns(configPath);
     // 非法子表整体跳过 → 沿用内置
-    expect(patterns.user_frustration.zh).toEqual(TRIGGER_PATTERNS.user_frustration.zh);
-    expect(patterns.user_frustration.en).toEqual(TRIGGER_PATTERNS.user_frustration.en);
+    expect(patterns.user_frustration.zh).toEqual(builtinTriggerPatterns().user_frustration.zh);
+    expect(patterns.user_frustration.en).toEqual(builtinTriggerPatterns().user_frustration.en);
     // 合法子表正常覆盖
     expect(patterns.giving_up_language.zh.patterns).toEqual(['合法的']);
   });
@@ -133,6 +137,18 @@ describe('detector uses merged patterns', () => {
     expect(result.triggered).toBe(true);
     expect(result.triggerType).toBe('user_frustration');
     expect(result.metadata.matchedPatterns).toContain('我的专属暗号');
+  });
+
+  it('YAML 目录独有词也能打事件引擎（代码词表 ∪ YAML）', () => {
+    const sessionId = `yaml-only_${Date.now()}`;
+    stateManager.clearSessionState(sessionId);
+    const result = enhancedTriggerDetector.detect({
+      sessionId,
+      eventType: 'UserPromptSubmit',
+      message: '还没好吗',
+    });
+    expect(result.triggered).toBe(true);
+    expect(result.triggerType).toBe('user_frustration');
   });
 
   it('built-in pattern still triggers when override only adds a new group', () => {

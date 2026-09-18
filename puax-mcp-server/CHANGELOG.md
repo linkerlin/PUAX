@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **触发器模式源归一（引擎合并第二步）**：`TRIGGER_PATTERNS` 键与事件检测器发射改为 YAML 目录 id（`user_frustration` 等）。`normalizeTriggerId` / `canonicalPatternKey` 只消化历史 camelCase 与 `~/.puax/hooks.json` 旧键。Gate 32 改为守「键即目录」。
 - **LangChain AMP 回调**：补 `name: 'puax-amp'`；会话 id 显式传入，不再把 runId 当 session。文档改走 `puax-mcp-server/amp`。
 - **Python 离线 Thin Prompt**：本地回落标明 `source: "local-stub"`，不再冒充从 SKILL 编译。
+- **事件引擎词表 ∪ YAML 目录**（≥4 字，避开「继续」一类过宽词）：心跳热路径开始吃目录语料，Bash generic 错误模式仍走代码表。
 
 ## [4.3.1] - 2026-09-18
 

@@ -27,6 +27,7 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getPuaxHome } from '../utils/storage-paths.js';
 import { TRIGGER_PATTERNS, canonicalPatternKey, type TriggerPattern } from './trigger-patterns.js';
+import { ConfigLoader } from './config-loader.js';
 import { getGlobalLogger } from '../utils/logger.js';
 
 const logger = getGlobalLogger();
@@ -72,6 +73,59 @@ export function readHookConfigFile(path?: string): HookConfigFile | null {
  * 非法子表整表跳过并告警——防止 patterns: "xy" 被 for...of 迭代成单字符
  * 正则导致灾难性假触发（任何含 x/y 的消息都命中）。
  */
+type PatternTable = Record<string, Record<string, TriggerPattern>>;
+
+function yamlToHookTables(): PatternTable {
+  try {
+    const catalog = ConfigLoader.getInstance().loadTriggerCatalog();
+    const out: PatternTable = {};
+    for (const [id, def] of Object.entries(catalog.triggers || {})) {
+      const longEnough = (p: string) => p.length >= 4;
+      const zh = (def.patterns?.zh || []).filter(longEnough);
+      const en = (def.patterns?.en || []).filter(longEnough);
+      if (zh.length === 0 && en.length === 0) continue;
+      const table: Record<string, TriggerPattern> = {};
+      if (zh.length > 0) table.zh = { patterns: zh, weight: 1.0 };
+      if (en.length > 0) table.en = { patterns: en, weight: 1.0 };
+      out[id] = table;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+function unionPatternTables(a: PatternTable, b: PatternTable): PatternTable {
+  const ids = new Set([...Object.keys(a), ...Object.keys(b)]);
+  const out: PatternTable = {};
+  for (const id of ids) {
+    const left = a[id] || {};
+    const right = b[id] || {};
+    const langs = new Set([...Object.keys(left), ...Object.keys(right)]);
+    const merged: Record<string, TriggerPattern> = {};
+    for (const lang of langs) {
+      const lp = left[lang];
+      const rp = right[lang];
+      if (lp && rp) {
+        merged[lang] = {
+          patterns: [...new Set([...(lp.patterns || []), ...(rp.patterns || [])])],
+          weight: lp.weight ?? rp.weight ?? 1.0,
+          caseSensitive: lp.caseSensitive ?? rp.caseSensitive,
+        };
+      } else {
+        merged[lang] = lp || rp;
+      }
+    }
+    out[id] = merged;
+  }
+  return out;
+}
+
+/** 内置代码词表 ∪ YAML 目录词表（用户 hooks.json 覆盖之前） */
+export function builtinTriggerPatterns(): PatternTable {
+  return unionPatternTables(TRIGGER_PATTERNS, yamlToHookTables());
+}
+
 function isValidSubtable(value: unknown): value is TriggerPattern {
   if (!value || typeof value !== 'object') return false;
   const sub = value as Record<string, unknown>;
@@ -93,15 +147,16 @@ export function getTriggerPatterns(
     return cachedPatterns;
   }
 
+  const builtin = builtinTriggerPatterns();
   const userConfig = readHookConfigFile(path);
   if (!userConfig || !userConfig.triggerPatterns) {
     cachedPath = path;
-    cachedPatterns = TRIGGER_PATTERNS;
+    cachedPatterns = builtin;
     return cachedPatterns;
   }
 
   const merged: Record<string, Record<string, TriggerPattern>> = {
-    ...TRIGGER_PATTERNS
+    ...builtin
   };
   for (const [rawGroup, subtables] of Object.entries(userConfig.triggerPatterns)) {
     const group = canonicalPatternKey(rawGroup);
