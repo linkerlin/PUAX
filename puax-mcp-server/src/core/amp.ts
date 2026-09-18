@@ -44,6 +44,13 @@ export interface AmpEnvelope {
   };
 }
 
+/** `[PUAX-RUNTIME:COMPACT]` 仍算 RUNTIME 块，勿要求紧挨着的 `]`。 */
+function injectionHasBlock(injection: string, tag: string): boolean {
+  if (injection.includes(tag)) return true;
+  const name = tag.slice(1, -1);
+  return injection.includes(`[${name}:`);
+}
+
 const SIGNAL_TO_EVENT: Array<[string, AmpEventName]> = [
   ['consecutive_failures', 'failure'],
   ['log_error', 'failure'],
@@ -65,7 +72,7 @@ export function toAmpEnvelope(result: EvolveResult, sessionId: string, event?: T
   }
 
   const injection = result.injection || '';
-  const blocks = AMP_BLOCKS.filter(b => injection.includes(b));
+  const blocks = AMP_BLOCKS.filter(b => injectionHasBlock(injection, b));
 
   let gate: AmpGate = 'none';
   if (result.action === 'gate') gate = 'verify';

@@ -51,6 +51,8 @@ export interface EvolveInput {
   detected_triggers?: string[];
   success?: boolean;
   active_role?: string;
+  /** 剩余上下文窗口；心跳注入固定 compact，超预算再降 minimal。 */
+  context_budget?: number;
 }
 
 export interface EvolveResult {
@@ -281,8 +283,8 @@ function decideAction(input: EvolveInput, signals: string[], strategy: EvolveStr
   return 'silent';
 }
 
-function compileInjection(action: TickAction, role: string, reason: string): string {
-  const thin = compileThinPrompt({ role_id: role });
+function compileInjection(action: TickAction, role: string, reason: string, context_budget?: number): string {
+  const thin = compileThinPrompt({ role_id: role, mode: 'compact', context_budget });
   const header = {
     inject: `[PUAX-TICK] 注入角色 ${role}（${reason}）`,
     switch: `[PUAX-TICK] 失败切换 → ${role}（${reason}）`,
@@ -363,7 +365,7 @@ export function runEvolveCycle(input: EvolveInput): EvolveResult {
   }
   const arena_active = !!arenaStore.get();
   const action = decideAction(input, signals, strategy, arena_active);
-  const injection = action === 'silent' ? undefined : compileInjection(action, role, reason);
+  const injection = action === 'silent' ? undefined : compileInjection(action, role, reason, input.context_budget);
   const happened = action !== 'silent';
 
   memoryGraph.append({

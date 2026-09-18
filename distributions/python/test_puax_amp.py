@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from puax_amp import (
     PuaxAmpMiddleware,
     AMP_SPEC,
+    compile_local_thin_prompt,
     create_crewai_step_callback,
     create_langgraph_node_interceptor,
     create_autogen_tool_guard,
@@ -133,6 +134,12 @@ class TestPuaxAmpPython(unittest.TestCase):
         self.assertGreater(min_p["estimated_tokens"], 0)
         self.assertEqual(min_p["source"], "local-stub")
         self.assertEqual(min_p["kernel_id"], "unknown")
+
+    def test_thin_prompt_context_budget(self):
+        tight = compile_local_thin_prompt("military-commander", mode=None, context_budget=200)
+        self.assertEqual(tight["mode"], "minimal")
+        wide = compile_local_thin_prompt("military-commander", mode=None, context_budget=900)
+        self.assertEqual(wide["mode"], "full")
 
     def test_wrap_tool_execute_and_adk_dify(self):
         class Tool:

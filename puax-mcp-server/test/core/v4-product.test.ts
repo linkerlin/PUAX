@@ -137,7 +137,7 @@ describe('v4 product', () => {
     expect(result.abort).toBeUndefined();
     expect(result.happened).toBe(true);
     expect(result.selected_role).toBeTruthy();
-    expect(result.injection).toContain('[PUAX-RUNTIME]');
+    expect(result.injection).toContain('[PUAX-RUNTIME:COMPACT]');
   });
 
   it('v4 三个动词已注册', () => {

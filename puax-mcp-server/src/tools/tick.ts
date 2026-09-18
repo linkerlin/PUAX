@@ -8,6 +8,7 @@ import { usageStatsCollector } from '../core/usage-stats.js';
 import { getTtfSummary } from '../core/ttf.js';
 import { toAmpEnvelope } from '../core/amp.js';
 import { requestIntervention, type InterventionResult } from '../core/intervention.js';
+import { extraToolsForTick, revealListedTools } from '../core/tool-surface.js';
 
 const TickEvents = [
   'SessionStart',
@@ -31,6 +32,7 @@ const TickInputSchema = z.object({
   detected_triggers: z.array(z.string()).optional(),
   success: z.boolean().optional().describe('Stop 时传入结局'),
   active_role: z.string().optional(),
+  context_budget: z.number().int().positive().optional().describe('剩余上下文窗口（估算 Token）；心跳注入 compact，超预算降 minimal'),
 });
 
 export const puaxTickTool = {
@@ -53,6 +55,7 @@ export const puaxTickTool = {
       detected_triggers: args.detected_triggers,
       success: args.success,
       active_role: args.active_role,
+      context_budget: args.context_budget,
     });
     if (result.selected_role) {
       usageStatsCollector.recordRoleRecommended(result.selected_role);
@@ -64,8 +67,11 @@ export const puaxTickTool = {
     if (result.needs_intervention) {
       commissar = await requestIntervention(result.needs_intervention);
     }
+    const extras = extraToolsForTick(result.action, result.signals, args.event as TickEvent);
+    const surface_delta = await revealListedTools(extras);
     return {
       ...result,
+      surface_delta,
       commissar,
       product: '处境、闸门、梦',
       ttf: getTtfSummary(),

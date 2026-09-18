@@ -25,6 +25,7 @@ describe('POST /v4/tick（AMP 远程心跳）', () => {
     expect(amp.state).toBeDefined();
     expect(typeof amp.state.pressure).toBe('number');
     expect(typeof amp.state.role).toBe('string');
+    expect(Array.isArray(json.surface_delta)).toBe(true);
   });
 
   it('未知 event 回退 Manual，不抛异常', () => {
@@ -64,5 +65,17 @@ describe('POST /v4/thin-prompt', () => {
 
   it('缺 role_id 返回 400', () => {
     expect(dispatchV4('POST', '/v4/thin-prompt', {})!.status).toBe(400);
+  });
+
+  it('context_budget 过小则降到 minimal', () => {
+    const res = dispatchV4('POST', '/v4/thin-prompt', {
+      role_id: 'military-commander',
+      mode: 'full',
+      context_budget: 200,
+    });
+    expect(res!.status).toBe(200);
+    const json = res!.json as Record<string, unknown>;
+    expect(json.mode).toBe('minimal');
+    expect(json.mode_reason).toBe('budget_stepdown');
   });
 });

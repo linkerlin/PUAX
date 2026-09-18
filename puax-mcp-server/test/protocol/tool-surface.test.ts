@@ -24,4 +24,14 @@ describe('tools/list 表面：默认 13 黄金动词', () => {
     expect(listed.length).toBe((Tools as unknown[]).length);
     expect(listed.slice(0, V4_PUBLIC_VERBS.length).map((t) => t.name)).toEqual([...V4_PUBLIC_VERBS]);
   });
+
+  it('public 可并入随访工具且黄金动词仍前置', () => {
+    const listed = selectListedTools(
+      Tools as Array<{ name: string }>,
+      'public',
+      ['puax_switch_on_failure', 'no-such-tool', 'puax_tick']
+    );
+    expect(listed[0].name).toBe('puax_tick');
+    expect(listed.map((t) => t.name)).toEqual([...V4_PUBLIC_VERBS, 'puax_switch_on_failure']);
+  });
 });

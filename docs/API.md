@@ -1,6 +1,6 @@
 # PUAX MCP API 参考
 
-> **版本**: 4.4.2 | **MCP 工具**: 50 | **内置角色**: 59 + 自定义  
+> **版本**: 4.4.4 | **MCP 工具**: 50 | **内置角色**: 59 + 自定义  
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)
 
 ---
@@ -84,7 +84,7 @@ puax_start_session
 | `puax_tick` | 心跳一拍 | `session_id`, `event`, `message` |
 | `puax_set_arena` | 立处境 | `rival`, `audience`, `scarce_badge`, `clear` |
 | `puax_evolve` | 显式进化周期 | `session_id`, `message`, `success` |
-| `puax_thin_prompt` | 薄提示词编译：`full`/`compact`/`minimal` 三档 Token 压缩（minimal 压降逾 90%） | `role_id`, `mode` |
+| `puax_thin_prompt` | 薄提示词编译：`full`/`compact`/`minimal` 三档 Token 压缩；`context_budget` 按剩余窗口选档或降档 | `role_id`, `mode?`, `context_budget?` |
 
 ### SKILL / 角色管理（5）
 

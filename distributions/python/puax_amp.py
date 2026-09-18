@@ -258,20 +258,33 @@ class PuaxAmpMiddleware:
         )
         return needs_verify, env
 
-    def get_thin_prompt(self, role_id: str, mode: str = "compact", language: str = "zh") -> Dict[str, Any]:
+    def get_thin_prompt(
+        self,
+        role_id: str,
+        mode: Optional[str] = "compact",
+        language: str = "zh",
+        context_budget: Optional[int] = None,
+    ) -> Dict[str, Any]:
         """
-        获取薄注入提示词（支持 minimal / compact / full 压缩），极大降低 Token 预算
+        获取薄注入提示词（支持 minimal / compact / full 压缩），极大降低 Token 预算。
+        context_budget 为剩余窗口时按预算选档，超预算降档。
         """
-        remote = self._post("/v4/thin-prompt", {
+        payload: Dict[str, Any] = {
             "role_id": role_id,
-            "mode": mode,
             "language": language,
-        })
+        }
+        if mode:
+            payload["mode"] = mode
+        if context_budget is not None:
+            payload["context_budget"] = context_budget
+        remote = self._post("/v4/thin-prompt", payload)
         if remote and isinstance(remote.get("prompt"), str):
             remote.setdefault("source", "remote")
             return remote
 
-        stub = compile_local_thin_prompt(role_id=role_id, mode=mode, language=language)
+        stub = compile_local_thin_prompt(
+            role_id=role_id, mode=mode, language=language, context_budget=context_budget
+        )
         stub["source"] = "local-stub"
         return stub
 
@@ -280,11 +293,32 @@ class PuaxAmpMiddleware:
 # 本地离线 Thin Prompt 编译器
 # ============================================================================
 
-def compile_local_thin_prompt(role_id: str, mode: str = "compact", language: str = "zh") -> Dict[str, Any]:
+def _select_local_thin_mode(mode: Optional[str], context_budget: Optional[int]) -> str:
+    if mode in ("minimal", "compact", "full") and context_budget is None:
+        return mode
+    if mode not in ("minimal", "compact", "full"):
+        mode = None
+    if mode is None and context_budget is None:
+        return "compact"
+    if mode is None and context_budget is not None:
+        if context_budget < 250:
+            return "minimal"
+        if context_budget < 700:
+            return "compact"
+        return "full"
+    return mode or "compact"
+
+
+def compile_local_thin_prompt(
+    role_id: str,
+    mode: Optional[str] = "compact",
+    language: str = "zh",
+    context_budget: Optional[int] = None,
+) -> Dict[str, Any]:
     """
-    零依赖本地离线 Thin Prompt 编译
+    零依赖本地离线 Thin Prompt 编译（口号骨架，非 SKILL 编译器）
     """
-    mode = mode if mode in ("minimal", "compact", "full") else "compact"
+    mode = _select_local_thin_mode(mode, context_budget)
     steps = ["侦察", "行动", "验证", "巩固", "复盘"]
 
     if mode == "minimal":

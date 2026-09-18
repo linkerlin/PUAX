@@ -31,7 +31,8 @@ import { loadVersion } from '../utils/version.js';
 import { withSpanAsync } from '../core/telemetry.js';
 import { usageStatsCollector } from '../core/usage-stats.js';
 import type { ServerConfig } from '../types.js';
-import { V4_PUBLIC_VERBS, selectListedTools } from '../core/v4-dashboard.js';
+import { V4_PUBLIC_VERBS, getToolSurface, selectListedTools } from '../core/v4-dashboard.js';
+import { listedExtraNames, runWithToolSurfaceOwner } from '../core/tool-surface.js';
 import { KERNEL_ROLE_IDS, EXPERIMENTAL_ROLE_IDS, SHAMAN_ROLE_IDS } from '../core/role-kernel.js';
 import { ampSpecDoc } from '../core/amp.js';
 import { planSiliconTheater } from '../core/silicon-theater.js';
@@ -134,12 +135,8 @@ export class PuaxMcpServer {
                     tools: {
                         listChanged: true,
                     },
-                    prompts: {
-                        listChanged: true,
-                    },
-                    resources: {
-                        listChanged: true,
-                    },
+                    prompts: {},
+                    resources: {},
                     logging: {},
                     completions: {},
                 }
@@ -159,10 +156,15 @@ export class PuaxMcpServer {
         // List tools handler
         server.setRequestHandler(ListToolsRequestSchema, () => {
             const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
-            const ordered = selectListedTools(Tools as Array<{ name: string; description?: string; inputSchema?: z.ZodTypeAny }>);
+            const extras = listedExtraNames(server);
+            const ordered = selectListedTools(
+                Tools as Array<{ name: string; description?: string; inputSchema?: z.ZodTypeAny }>,
+                getToolSurface(),
+                extras
+            );
             // P0-1：inputSchema 必须编译为标准 JSON Schema 再下发，
             // 否则严格客户端在 listTools 阶段即失败（原为 Zod 对象透传）
-            // 默认只列 13 黄金动词（PUAX_TOOL_SURFACE=full 才下发全量 50）
+            // 默认只列 13 黄金动词；心跳触发后 extras 并入，并通知 list_changed
             return {
                 tools: ordered.map((t) =>
                     toProtocolTool({
@@ -180,10 +182,11 @@ export class PuaxMcpServer {
         server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const bound = samplingRequesterOf(server);
             const invoke = () => this.dispatchToolCall(request);
+            const withSurface = () => runWithToolSurfaceOwner(server, invoke);
             if (bound === undefined) {
-                return invoke();
+                return withSurface();
             }
-            return runWithSamplingRequester(bound, invoke);
+            return runWithSamplingRequester(bound, withSurface);
         });
     }
 

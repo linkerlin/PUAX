@@ -47,6 +47,20 @@ describe('AMP/0.1 信封 schema 契约', () => {
     expect(v(env)).toBe(true);
   });
 
+  it('compact 心跳注入仍记 [PUAX-RUNTIME] 块', () => {
+    const tick = runEvolveCycle({
+      session_id: `amp-compact-${Date.now()}`,
+      event: 'UserPromptSubmit',
+      message: '为什么还不行？我要放弃了',
+      force: true,
+      skip_detect: true,
+      detected_triggers: ['user_frustration', 'giving_up_language'],
+    });
+    expect(tick.injection).toContain('[PUAX-RUNTIME:COMPACT]');
+    const amp = toAmpEnvelope(tick, 'amp-compact-blocks', 'UserPromptSubmit');
+    expect(amp.blocks).toContain('[PUAX-RUNTIME]');
+  });
+
   it('gate 枚举与实现一致：gate 值必在 schema 枚举内', () => {
     const v = validate();
     for (const sid of ['amp-schema-g1', 'amp-schema-g2', 'amp-schema-g3']) {

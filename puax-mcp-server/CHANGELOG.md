@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.4] - 2026-09-18
+
+### Added
+- **Thin Prompt `context_budget`**：按剩余窗口自动选档（&lt;250 minimal / &lt;700 compact / 否则 full）；显式 `mode` 超预算则降档至地板。同 (版本, 角色, 档, 语言, 处境) 编译缓存。
+- **工具面渐进暴露**：`puax_tick` 触发后把随访工具并入该会话的 `tools/list`，并发 `notifications/tools/list_changed`。默认仍 13 黄金动词；`PUAX_TOOL_SURFACE=full` 不变。
+
+### Changed
+- **心跳薄注入默认 compact**（`THIN-PROMPT.md` 早已写 Hook 走 compact；实现此前落到 library 默认 full）。AMP 信封把 `[PUAX-RUNTIME:COMPACT]` / `MINIMAL` 仍记为 `[PUAX-RUNTIME]` 块。
+- **capabilities**：只声明会发通知的 `tools.listChanged`；不再谎报 `prompts` / `resources` 的 `listChanged`。
+
 ## [4.4.3] - 2026-09-18
 
 ### Fixed

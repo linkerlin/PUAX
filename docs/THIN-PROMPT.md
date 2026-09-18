@@ -1,6 +1,6 @@
 # Thin Prompt 与 Token 经济学
 
-> **版本**: 4.4.2 | 核心思想：**协议由运行时持有，角色只留口音**。
+> **版本**: 4.4.4 | 核心思想：**协议由运行时持有，角色只留口音**。
 > 本文给出三档压缩模式的正式规格与可复现实测基线。宪法主轴「Thin Prompt Token 经济性」以此为准。
 
 ---
@@ -49,10 +49,15 @@ for (const m of ['full','compact','minimal'])
 
 | 入口 | 参数 |
 |---|---|
-| MCP 工具 `puax_thin_prompt` | `role_id`, `mode`（full/compact/minimal） |
+| MCP 工具 `puax_thin_prompt` | `role_id`, `mode?`（full/compact/minimal）, `context_budget?` |
 | `activate_with_context` / `get_role_with_methodology` | `thin_mode` 透传（另支持 `thin` / `format=thin` 兼容形态） |
-| HTTP `POST /v4/tick` | 响应 `amp` 信封随拍注入薄提示 |
-| Python SDK（`pip install puax-amp`） | `mw.get_thin_prompt(role, mode=...)` 与离线编译器 `compile_local_thin_prompt`（无服务端依赖，含 CJK token 估算） |
+| HTTP `POST /v4/tick` | 响应 `amp` 信封随拍注入薄提示（心跳编译走 compact） |
+| HTTP `POST /v4/thin-prompt` | `{ role_id, mode?, context_budget?, language? }` |
+| Python SDK（`pip install puax-amp`） | `mw.get_thin_prompt(role, mode=..., context_budget=...)` 与离线编译器 `compile_local_thin_prompt`（无服务端依赖，含 CJK token 估算） |
+
+`context_budget` 为剩余窗口（估算 Token）：未给 `mode` 时 &lt;250 选 minimal、&lt;700 选 compact、否则 full；给了 `mode` 仍超预算则降档，minimal 为地板。同输入二次编译走缓存。
+
+心跳 / Hook 路径**固定 compact**（可被 `context_budget` 再压到 minimal），不再落到 library 默认 full。
 
 ## 5. TTF（Time-to-First-Pressure）权衡
 

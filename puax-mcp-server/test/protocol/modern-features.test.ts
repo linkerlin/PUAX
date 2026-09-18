@@ -50,7 +50,10 @@ describe('MCP Modern Protocol Features', () => {
     expect(caps?.logging).toBeDefined();
     expect(caps?.completions).toBeDefined();
     expect(caps?.tools).toBeDefined();
+    expect(caps?.tools?.listChanged).toBe(true);
     expect(caps?.prompts).toBeDefined();
+    expect(caps?.prompts?.listChanged).toBeFalsy();
+    expect(caps?.resources?.listChanged).toBeFalsy();
   });
 
   test('2. resources/templates/list: 服务端声明资源 URI 模板', async () => {

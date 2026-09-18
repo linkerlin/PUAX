@@ -7,8 +7,20 @@ import { methodologyEngine } from './methodology-engine.js';
 import { buildDiagnosisPromptInjection } from './behavior-protocols.js';
 import { arenaStore } from './arena.js';
 import { classifyRole, resolveKernel } from './role-kernel.js';
+import { loadVersion } from '../utils/version.js';
 
 export type ThinPromptMode = 'full' | 'compact' | 'minimal';
+export type ThinPromptModeReason = 'default' | 'explicit' | 'budget' | 'budget_stepdown';
+
+/** 剩余窗口（估算 Token）自动选档上限：低于此值改用更薄一档。 */
+export const THIN_BUDGET_MINIMAL_MAX = 250;
+export const THIN_BUDGET_COMPACT_MAX = 700;
+
+const MODE_DOWN: Record<ThinPromptMode, ThinPromptMode | null> = {
+  full: 'compact',
+  compact: 'minimal',
+  minimal: null,
+};
 
 const VOICE_MAX_CHARS_MAP: Record<ThinPromptMode, number> = {
   minimal: 380,
@@ -62,6 +74,8 @@ export interface ThinPromptInput {
   include_arena?: boolean;
   include_diagnosis?: boolean;
   mode?: ThinPromptMode;
+  /** 剩余上下文窗口（估算 Token）。有值时按预算选档，超预算则降档至 minimal。 */
+  context_budget?: number;
 }
 
 export interface ThinPromptResult {
@@ -73,10 +87,48 @@ export interface ThinPromptResult {
   protocol_steps: string[];
   mode: ThinPromptMode;
   estimated_tokens: number;
+  mode_reason: ThinPromptModeReason;
+  cached: boolean;
 }
 
-export function compileThinPrompt(input: ThinPromptInput): ThinPromptResult {
-  const mode: ThinPromptMode = input.mode || 'full';
+const compileCache = new Map<string, Omit<ThinPromptResult, 'cached' | 'mode_reason'>>();
+
+export function clearThinPromptCache(): void {
+  compileCache.clear();
+}
+
+export function selectThinMode(opts: { mode?: ThinPromptMode; context_budget?: number }): ThinPromptMode {
+  const { mode, context_budget: budget } = opts;
+  if (mode && budget == null) return mode;
+  if (!mode && budget == null) return 'full';
+  if (!mode && budget != null) {
+    if (budget < THIN_BUDGET_MINIMAL_MAX) return 'minimal';
+    if (budget < THIN_BUDGET_COMPACT_MAX) return 'compact';
+    return 'full';
+  }
+  return mode as ThinPromptMode;
+}
+
+function arenaCacheKey(includeArena: boolean): string {
+  if (!includeArena) return '';
+  const a = arenaStore.get();
+  if (!a) return '';
+  return `${a.rival}\x1e${a.scarce_badge ?? ''}`;
+}
+
+function cacheKey(input: ThinPromptInput, mode: ThinPromptMode): string {
+  return [
+    loadVersion(),
+    input.role_id,
+    mode,
+    input.language || 'zh',
+    input.include_arena === false ? '0' : '1',
+    input.include_diagnosis === false ? '0' : '1',
+    arenaCacheKey(input.include_arena !== false),
+  ].join('\x1f');
+}
+
+function compileUncached(input: ThinPromptInput, mode: ThinPromptMode): Omit<ThinPromptResult, 'cached' | 'mode_reason'> {
   const skill = getSkillById(input.role_id);
   const methodology = methodologyEngine.getMethodology(input.role_id);
   const checklist = methodologyEngine.getChecklist(input.role_id);
@@ -160,4 +212,40 @@ export function compileThinPrompt(input: ThinPromptInput): ThinPromptResult {
     mode,
     estimated_tokens: estimateTokens(prompt),
   };
+}
+
+function compileWithCache(
+  input: ThinPromptInput,
+  mode: ThinPromptMode
+): { result: Omit<ThinPromptResult, 'cached' | 'mode_reason'>; cached: boolean } {
+  const key = cacheKey(input, mode);
+  const hit = compileCache.get(key);
+  if (hit) return { result: hit, cached: true };
+  const fresh = compileUncached(input, mode);
+  compileCache.set(key, fresh);
+  return { result: fresh, cached: false };
+}
+
+export function compileThinPrompt(input: ThinPromptInput): ThinPromptResult {
+  let mode = selectThinMode({ mode: input.mode, context_budget: input.context_budget });
+  let mode_reason: ThinPromptModeReason =
+    input.mode != null ? 'explicit' : input.context_budget != null ? 'budget' : 'default';
+
+  let { result, cached } = compileWithCache(input, mode);
+  const budget = input.context_budget;
+
+  if (budget != null && result.estimated_tokens > budget) {
+    let next = MODE_DOWN[mode];
+    while (next) {
+      mode = next;
+      const stepped = compileWithCache(input, mode);
+      result = stepped.result;
+      cached = stepped.cached;
+      mode_reason = 'budget_stepdown';
+      if (result.estimated_tokens <= budget) break;
+      next = MODE_DOWN[mode];
+    }
+  }
+
+  return { ...result, mode_reason, cached };
 }

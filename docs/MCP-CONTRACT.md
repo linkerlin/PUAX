@@ -1,6 +1,6 @@
 # PUAX MCP 协议契约参考（MCP Contract Reference）
 
-> **版本**: 4.4.2 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
+> **版本**: 4.4.4 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)；工具参数明细见 [API.md](API.md)。
 
 ---
@@ -45,6 +45,7 @@
 
 - 注册面共 **50 个 MCP 工具**；`tools/list` **默认只下发 13 个黄金动词**（`V4_PUBLIC_VERBS`：`puax_tick`、`puax_set_arena`、`puax_thin_prompt`、`puax_evolve`、`puax_check_diagnosis`、`puax_confidence_check`、`puax_define_contract`、`puax_verify_completion`、`puax_enter_dreamscape`、`puax_awaken`、`puax_convergence_audit`、`activate_with_context`、`recommend_role`）。
 - 全量目录：环境变量 `PUAX_TOOL_SURFACE=full`。`tools/call` 仍可按名调用未列出的工具。
+- **渐进暴露**：`initialize` 声明 `tools.listChanged`（不声明 prompts/resources 的 listChanged——那两份清单不会变）。`puax_tick` 在本会话揭示随访工具后发 `notifications/tools/list_changed`，客户端应再 `tools/list`。inject → `puax_detect_trigger` / `get_role_with_methodology`；switch 或连败 → `puax_switch_on_failure` / `puax_handle_breakthrough`；PreCompact → `puax_update_reasoning_state`。 extras 按 MCP Server 实例隔离。
 - 公开动词以 `[v4]` 标注。动词级响应经 AMP/0.1 信封封装（见 §6）。
 
 ## 5. v4 HTTP JSON 路由（`/v4/*`，独立于 MCP JSON-RPC）
@@ -58,7 +59,7 @@
 | `/v4/theater` `/v4/theater/run` | GET/POST | — | 硅基剧场计划/推演 |
 | `/v4/ttf` | GET | — | Time-to-First-Pressure 摘要 |
 | `/v4/tick` | POST | `{ session_id, event, message }` | **AMP 编排器远程心跳**：响应含 `amp` 信封（spec/events/blocks/gate/state）；未知 `event` 回退 `Manual`；GET 拒绝 405。监军干预依赖 MCP client 能力，此通道不适用 |
-| `/v4/thin-prompt` | POST | `{ role_id, mode? }` | 薄注入编译（minimal/compact/full）；缺 `role_id` 400。Python SDK 走此路，不再盲打无 session 的 `/mcp` |
+| `/v4/thin-prompt` | POST | `{ role_id, mode?, context_budget? }` | 薄注入编译（minimal/compact/full）；缺 `role_id` 400。`context_budget` 按剩余窗口选档或降档。Python SDK 走此路，不再盲打无 session 的 `/mcp` |
 | `/v4/shield` `/v4/shield/audit` | GET/POST | audit 需 `{ text }` | 碳基防御（只识别，不施放） |
 | `/v4/doctor` | GET | — | 宿主探测（10 宿主） |
 | `/v4/doctor/fix` | POST | `{ host?, allow_write: true, targetDir? }` | 一键挂载。GET 405；无写授权 403；`targetDir` 仅允许 cwd / tmp / `~/.puax`，逃逸 400 |
@@ -100,5 +101,5 @@
 
 - 运行时：Node `>= 18`（`randomUUID` 显式导入，无全局依赖）。
 - 协议不变量：`evals/run-all.js` 32 门守门在 CI（ubuntu）强制执行，含数字一致性门（工具数/动词数/门数与文档强制对齐）。
-- 版本链：3.10 → 4.4.2 全链在 CHANGELOG 门校验；破坏性变更须升主版本号并在本文档登记迁移说明。
+- 版本链：3.10 → 4.4.4 全链在 CHANGELOG 门校验；破坏性变更须升主版本号并在本文档登记迁移说明。
 - `tools/list` 默认 13 动词（`PUAX_TOOL_SURFACE=full` 恢复 50）属 4.3.1 行为变更，`tools/call` 按名仍可用。

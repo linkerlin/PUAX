@@ -43,17 +43,27 @@ export function getToolSurface(env: NodeJS.ProcessEnv = process.env): ToolSurfac
 
 export function selectListedTools<T extends { name: string }>(
   tools: readonly T[],
-  surface: ToolSurface = getToolSurface()
+  surface: ToolSurface = getToolSurface(),
+  extraNames: readonly string[] = []
 ): T[] {
   const byName = new Map(tools.map((t) => [t.name, t] as const));
+  const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
   const publicTools = (V4_PUBLIC_VERBS as readonly string[])
     .map((name) => byName.get(name))
     .filter((t): t is T => Boolean(t));
   if (surface === 'full') {
-    const publicSet = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
     return [...publicTools, ...tools.filter((t) => !publicSet.has(t.name))];
   }
-  return publicTools;
+  const extras: T[] = [];
+  const seen = new Set<string>(V4_PUBLIC_VERBS as unknown as string[]);
+  for (const name of extraNames) {
+    if (seen.has(name)) continue;
+    const tool = byName.get(name);
+    if (!tool) continue;
+    seen.add(name);
+    extras.push(tool);
+  }
+  return extras.length ? [...publicTools, ...extras] : publicTools;
 }
 
 export const V4_SHIELD_VERBS = [

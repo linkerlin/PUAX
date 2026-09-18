@@ -25,7 +25,7 @@ const tick = runEvolveCycle({
 
 if (!tick.happened) throw new Error('失败+沮丧信号下心跳应当发生');
 if (!tick.selected_role) throw new Error('应选出角色');
-if (!tick.injection || !tick.injection.includes('[PUAX-RUNTIME]')) {
+if (!tick.injection || !tick.injection.includes('[PUAX-RUNTIME')) {
   throw new Error('薄注入应含 [PUAX-RUNTIME]');
 }
 
