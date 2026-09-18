@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.0] - 2026-09-18
+
 ### Added
 - **AMP 编排器适配（零新依赖）**：`wrapToolExecute` / OpenAI Agents / Mastra / LangGraph 节点 / Claude Agent SDK hooks / Dify / n8n。接入点是工具 `execute` 或官方 hook 形状，不再假装 `callbacks: [obj]`。Python 侧补 ADK `before_tool_callback` 与 Dify handler。
 - **`puax hookd` 常驻守护（可选）**：本机 socket 复用已加载引擎，免每事件 `exec node` 冷启动。`hook` 入口 40ms 探活，失败或 `PUAX_HOOKD=0` 回落进程内 `runHook`。`doctor` 报告 `hookd.alive`。
 
 ### Changed
 - **触发器模式源归一（引擎合并第二步）**：`TRIGGER_PATTERNS` 键与事件检测器发射改为 YAML 目录 id（`user_frustration` 等）。`normalizeTriggerId` / `canonicalPatternKey` 只消化历史 camelCase 与 `~/.puax/hooks.json` 旧键。Gate 32 改为守「键即目录」。
+- **LangChain AMP 回调**：补 `name: 'puax-amp'`；会话 id 显式传入，不再把 runId 当 session。文档改走 `puax-mcp-server/amp`。
+- **Python 离线 Thin Prompt**：本地回落标明 `source: "local-stub"`，不再冒充从 SKILL 编译。
 
 ## [4.3.1] - 2026-09-18
 
@@ -26,7 +30,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **监军采样按 MCP Server 实例绑定**（ALS + WeakMap）：HTTP 多会话不再进程级单例串台；stdio 仍走全局回退。
 - **MCP 现代特性收口**：删除方向反了的 `roots/list` / `elicitation/create` handler；不声明未实现通知的 `resources/subscribe`。保留 templates / logging / completion。
-- **LangChain AMP 回调**：补 `name: 'puax-amp'`；会话 id 显式传入，不再把 runId 当 session。文档改走 `puax-mcp-server/amp`。
 - **AMP.md 信封与 schema/TS 对齐**：`blocks` 为标签字符串、`gate` 为枚举；去掉未实现的 `trust` / `consecutive_failure` 线格式。
 - **看板 `integrity_metrics`**：缺样本标 `unknown`，不再写死 1.0 轮 / 14.2% / −76.8% pass。
 - **CI**：协议门注释改为 32；`frontend-apps` 不再阻塞 `ci-success`（策令冻结店面）。Linux Jest 挂钟放大后仍断言，仅 Windows 让位 `evals/benchmark.js`。

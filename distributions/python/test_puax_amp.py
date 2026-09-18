@@ -131,6 +131,8 @@ class TestPuaxAmpPython(unittest.TestCase):
         self.assertLess(len(min_p["prompt"]), len(compact_p["prompt"]))
         self.assertLess(len(compact_p["prompt"]), len(full_p["prompt"]))
         self.assertGreater(min_p["estimated_tokens"], 0)
+        self.assertEqual(min_p["source"], "local-stub")
+        self.assertEqual(min_p["kernel_id"], "unknown")
 
     def test_wrap_tool_execute_and_adk_dify(self):
         class Tool:

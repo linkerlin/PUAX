@@ -1,7 +1,7 @@
 # PUAX — AI 에이전트 동기부여 시스템
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.3.1-blue.svg" alt="버전">
+  <img src="https://img.shields.io/badge/version-4.4.0-blue.svg" alt="버전">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="상태">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="스킬">
   <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCP 도구">

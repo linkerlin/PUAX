@@ -268,9 +268,12 @@ class PuaxAmpMiddleware:
             "language": language,
         })
         if remote and isinstance(remote.get("prompt"), str):
+            remote.setdefault("source", "remote")
             return remote
 
-        return compile_local_thin_prompt(role_id=role_id, mode=mode, language=language)
+        stub = compile_local_thin_prompt(role_id=role_id, mode=mode, language=language)
+        stub["source"] = "local-stub"
+        return stub
 
 
 # ============================================================================
@@ -317,13 +320,15 @@ def compile_local_thin_prompt(role_id: str, mode: str = "compact", language: str
 
     return {
         "role_id": role_id,
-        "kernel_id": "kernel-engineering",
-        "classification": "kernel",
+        "kernel_id": "unknown",
+        "classification": "unknown",
         "mode": mode,
         "estimated_tokens": est_tokens,
         "voice_chars": len(role_id) + 30,
         "protocol_steps": steps,
         "prompt": prompt,
+        "source": "local-stub",
+        "note": "offline skeleton; not compiled from SKILL. Prefer POST /v4/thin-prompt.",
     }
 
 

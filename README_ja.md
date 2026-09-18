@@ -1,7 +1,7 @@
 # PUAX — AIエージェント動機づけシステム
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.3.1-blue.svg" alt="バージョン">
+  <img src="https://img.shields.io/badge/version-4.4.0-blue.svg" alt="バージョン">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="ステータス">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="スキル数">
   <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="MCPツール数">

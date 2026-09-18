@@ -55,7 +55,7 @@ run('协议合规 Jest', () => {
 
 run('CHANGELOG 版本链完整（3.10 → 当前）', () => {
   const changelog = readFileSync(join(MCP, 'CHANGELOG.md'), 'utf-8');
-  const required = ['3.10.0', '3.10.1', '4.0.0', '4.1.0', '4.2.0', '4.3.0', '4.3.1'];
+  const required = ['3.10.0', '3.10.1', '4.0.0', '4.1.0', '4.2.0', '4.3.0', '4.3.1', '4.4.0'];
   for (const v of required) {
     if (!changelog.includes(`## [${v}]`)) throw new Error(`CHANGELOG 缺少 ${v}`);
   }
