@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.3] - 2026-09-18
+
+### Fixed
+- **Release 工作流**：补 `contents: write`，否则 `action-gh-release` 无权限建 Release（Too many retries）。包版本仍为 4.4.2。
+
 ## [4.4.2] - 2026-09-18
 
 ### Fixed
