@@ -1,17 +1,16 @@
 /**
  * HTTP 多会话 Streamable HTTP 集成测试
- * 验证：
- * 1. 多个客户端通过 Streamable HTTP 并发/先后连接时，分别被分配独立的 MCP Server 实例与 Session ID；
- * 2. 杜绝 SDK 单 Server 实例重复 connect 导致的第二个连接 500 崩溃；
- * 3. 各客户端均能独立完成 initialize, listTools 与 callTool 操作；
- * 4. 客户端 terminateSession 显式注销后不影响其他活跃会话。
+ *
+ * SDK 客户端（StreamableHTTPClientTransport）依赖 pkce-challenge 的 ESM 动态 import，
+ * Node 18 + Jest 无 --experimental-vm-modules 会炸。Node 18 腿只跑 fetch 续传；
+ * SDK 双客户端路径在 Node ≥20 覆盖。
  */
 
 import { createServer, type Server as HttpServer } from 'http';
 import { type AddressInfo } from 'net';
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { PuaxMcpServer } from '../../src/server/core.js';
+
+const nodeMajor = Number(process.versions.node.split('.')[0]);
 
 describe('HTTP Multi-Session Streamable HTTP Integration', () => {
   let puaxServer: PuaxMcpServer;
@@ -39,15 +38,19 @@ describe('HTTP Multi-Session Streamable HTTP Integration', () => {
     });
   });
 
-  test('支持两个独立客户端并发初始化且互不干扰（无 500 崩溃）', async () => {
-    // 客户端 1
+  (nodeMajor >= 20 ? test : test.skip)(
+    '支持两个独立客户端并发初始化且互不干扰（无 500 崩溃）',
+    async () => {
+    const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
+    const { StreamableHTTPClientTransport } = await import(
+      '@modelcontextprotocol/sdk/client/streamableHttp.js'
+    );
     const transport1 = new StreamableHTTPClientTransport(serverUrl);
     const client1 = new Client(
       { name: 'test-client-1', version: '1.0.0' },
       { capabilities: {} }
     );
 
-    // 客户端 2
     const transport2 = new StreamableHTTPClientTransport(serverUrl);
     const client2 = new Client(
       { name: 'test-client-2', version: '1.0.0' },
@@ -98,7 +101,8 @@ describe('HTTP Multi-Session Streamable HTTP Integration', () => {
       try { await client1.close(); } catch {}
       try { await client2.close(); } catch {}
     }
-  });
+    }
+  );
 
   test('未占用 GET 的会话可建立 SSE 流（eventStore 续传入口）', async () => {
     const init = await fetch(serverUrl, {

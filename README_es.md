@@ -1,7 +1,7 @@
 # PUAX — Sistema de Motivación para Agentes de IA
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.4.0-blue.svg" alt="Versión">
+  <img src="https://img.shields.io/badge/version-4.4.1-blue.svg" alt="Versión">
   <img src="https://img.shields.io/badge/status-production%20ready-green.svg" alt="Estado">
   <img src="https://img.shields.io/badge/skills-59-orange.svg" alt="Habilidades">
   <img src="https://img.shields.io/badge/MCP%20tools-50-purple.svg" alt="Herramientas MCP">

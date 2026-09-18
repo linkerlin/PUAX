@@ -9,7 +9,7 @@
     {
       "name": "puax",
       "description": "PUAX AI agent motivation — diagnosis-first, confidence gate, failure switching, evolution baseline, agent team.",
-      "version": "4.4.0",
+      "version": "4.4.1",
       "source": "./",
       "author": {
         "name": "PUAX Team",

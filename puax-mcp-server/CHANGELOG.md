@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.1] - 2026-09-18
+
+### Fixed
+- **Node 18 Jest**：`StreamableHTTPClientTransport` 拉 `pkce-challenge` ESM 动态 import，无 `--experimental-vm-modules` 整套炸盘。SDK 双客户端用例改为 Node ≥20 才跑；fetch 续传仍覆盖 18。CI 测试步加 `NODE_OPTIONS=--experimental-vm-modules`。
+- **Release 工作流**：`NPM_TOKEN` 空则跳过 npm publish；PyPI 失败不挡 GitHub Release。
+
 ## [4.4.0] - 2026-09-18
 
 ### Added

@@ -80,6 +80,8 @@ jobs:
 
       - name: Run Full Test Suite
         working-directory: ./puax-mcp-server
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
         # 钉 bash：Windows 腿默认 pwsh 的引号规则会弄哑注解脚本
         shell: bash
         # --json 落盘后把失败用例以 ::error:: 注解上报（公共注解 API 可读，

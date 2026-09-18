@@ -1,6 +1,6 @@
 # PUAX MCP 协议契约参考（MCP Contract Reference）
 
-> **版本**: 4.4.0 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
+> **版本**: 4.4.1 | 本文档定义 PUAX MCP Server 对外暴露的**线级行为契约**——宿主、编排器与第三方实现方可据此独立对接或复现消费端。
 > 变更历史见 [puax-mcp-server/CHANGELOG.md](../puax-mcp-server/CHANGELOG.md)；工具参数明细见 [API.md](API.md)。
 
 ---
@@ -100,5 +100,5 @@
 
 - 运行时：Node `>= 18`（`randomUUID` 显式导入，无全局依赖）。
 - 协议不变量：`evals/run-all.js` 32 门守门在 CI（ubuntu）强制执行，含数字一致性门（工具数/动词数/门数与文档强制对齐）。
-- 版本链：3.10 → 4.4.0 全链在 CHANGELOG 门校验；破坏性变更须升主版本号并在本文档登记迁移说明。
+- 版本链：3.10 → 4.4.1 全链在 CHANGELOG 门校验；破坏性变更须升主版本号并在本文档登记迁移说明。
 - `tools/list` 默认 13 动词（`PUAX_TOOL_SURFACE=full` 恢复 50）属 4.3.1 行为变更，`tools/call` 按名仍可用。

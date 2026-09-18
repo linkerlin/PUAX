@@ -42,15 +42,19 @@ jobs:
 
       - name: Run Full Test Suite
         working-directory: ./puax-mcp-server
+        env:
+          NODE_OPTIONS: --experimental-vm-modules
         run: npm test
 
       - name: Publish to NPM
         working-directory: ./puax-mcp-server
-        # 失败时把日志尾行以 ::error:: 注解上报（公共注解 API 可读，免管理员定位）；
-        # npm ≤10 报 "npm ERR!"、npm ≥11 报小写 "npm error!"，两种格式都匹配
+        # 无 NPM_TOKEN 时跳过，不挡后续 GitHub Release
         shell: bash
         run: |
-          # 默认 bash -eo pipefail 会在 npm publish 失败行直接终止脚本，吞掉注解捕获；先解除
+          if [ -z "${NODE_AUTH_TOKEN}" ]; then
+            echo "::warning::NPM_TOKEN 未配置，跳过 npm publish"
+            exit 0
+          fi
           set +e
           npm publish --access public 2>&1 | tee "$RUNNER_TEMP/npm-publish.log"; code=${PIPESTATUS[0]}
           if [ "$code" -ne 0 ]; then
@@ -67,11 +71,10 @@ jobs:
           python -m build distributions/python
 
       - name: Publish puax-amp to PyPI
+        continue-on-error: true
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # python -m build 产物落在 distributions/python/dist/，不在此指明则 action 默认找仓库根 dist/（必空）
           packages-dir: distributions/python/dist
-
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
