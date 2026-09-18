@@ -17,23 +17,25 @@ const { getTtfSummary } = loadCore('ttf');
 const session = 'ttf-cold-start';
 
 // 4.5.1：改测子进程冷启动到首压（度量真实 Node 启动 + 模块解析 + 首压墙钟）
+// 探针为静态脚本 lib/ttf-subprocess.js，载荷经 cwd 下 payload.json 传递，
+// PUAX_HOME 由父进程环境继承。命令与参数全字面量（Mimosa 门禁要求），
+// lib/ 以目录符号链接进临时目录，相对参数方可命中。
+const libSrc = path.join(__dirname, 'lib');
+const libDst = path.join(temp, 'lib');
+try {
+  fs.symlinkSync(libSrc, libDst, 'dir');
+} catch {
+  /* 已存在 */
+}
+
 const runInSubprocess = (msg, detected) => {
-  const code = `
-    const { loadCore } = require(${JSON.stringify(path.join(__dirname, 'lib/puax-core-loader.js'))});
-    const { runEvolveCycle } = loadCore('evolve-cycle');
-    const res = runEvolveCycle({
-      session_id: ${JSON.stringify(session)},
-      event: 'UserPromptSubmit',
-      message: ${JSON.stringify(msg)},
-      skip_detect: true,
-      detected_triggers: ${JSON.stringify(detected)},
-      force: true,
-    });
-    process.stdout.write(JSON.stringify(res));
-  `;
+  fs.writeFileSync(
+    path.join(temp, 'payload.json'),
+    JSON.stringify({ session_id: session, message: msg, detected_triggers: detected })
+  );
   const t0 = performance.now();
-  const stdout = execFileSync(process.execPath, ['-e', code], {
-    env: { ...process.env, PUAX_HOME: temp },
+  const stdout = execFileSync('node', ['lib/ttf-subprocess.js'], {
+    cwd: temp,
     encoding: 'utf-8',
   });
   const wallMs = Math.round(performance.now() - t0);
